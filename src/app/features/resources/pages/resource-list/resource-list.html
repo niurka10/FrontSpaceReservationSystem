@@ -1,0 +1,135 @@
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Recursos</h2>
+            <p class="text-muted mb-0">Administración de los recursos institucionales.</p>
+        </div>
+
+        <button type="button" class="btn btn-primary" (click)="create()">
+            + Nuevo recurso
+        </button>
+    </div>
+
+    @if (error()) { <div class="alert alert-danger">{{ error() }}</div>
+    }
+
+    @if (loading()) { <div class="text-center py-5">
+        <div class="spinner-border" role="status"></div>
+        <p class="mt-2">Cargando recursos...</p>
+    </div>
+    } @else {
+
+    <!-- Recursos activos -->
+    <div class="mb-4">
+        <h5 class="mb-3">
+            {{ activeResources.length }} Recursos activos
+        </h5>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                                <th>Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @for (resource of activeResources; track resource.id) {
+                            <tr>
+                                <td><strong>{{ resource.name }}</strong></td>
+                                <td>{{ resource.description || 'Sin descripción' }}</td>
+                                <td>{{ resource.availableQuantity }}</td>
+
+                                <td>
+                                    <span class="badge bg-success">Activo</span>
+                                </td>
+
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2"
+                                        (click)="edit(resource.id)">
+                                        Editar
+                                    </button>
+
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        (click)="deactivate(resource.id)">
+                                        Desactivar
+                                    </button>
+                                </td>
+                            </tr>
+                            } @empty {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No existen recursos activos.
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recursos desactivados -->
+    <div>
+        <h5 class="mb-3">Recursos desactivados</h5>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                                <th>Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @for (resource of inactiveResources; track resource.id) {
+                            <tr>
+                                <td><strong>{{ resource.name }}</strong></td>
+                                <td>{{ resource.description || 'Sin descripción' }}</td>
+                                <td>{{ resource.availableQuantity }}</td>
+
+                                <td>
+                                    <span class="badge bg-secondary">Inactivo</span>
+                                </td>
+
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-2"
+                                        (click)="edit(resource.id)">
+                                        Editar
+                                    </button>
+
+                                    <button type="button" class="btn btn-sm btn-outline-success"
+                                        (click)="activate(resource.id)">
+                                        Activar
+                                    </button>
+                                </td>
+                            </tr>
+                            } @empty {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No existen recursos desactivados.
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+</div>

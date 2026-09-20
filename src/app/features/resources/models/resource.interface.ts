@@ -4,7 +4,7 @@ export interface Resource {
   name: string;
   description: string | null;
   availableQuantity: number;
-  status: number;
+  status: boolean;
 }
 
 // Enviamos para CREAR

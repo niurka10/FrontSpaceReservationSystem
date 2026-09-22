@@ -1,0 +1,79 @@
+<div class="container-fluid py-4">
+
+    <div class="form-header mb-4">
+        <div>
+            <h2>Nueva alerta</h2>
+            <p>Registra una incidencia relacionada con un espacio o recurso.</p>
+        </div>
+    </div>
+
+    @if (error()) {
+    <div class="alert alert-danger">
+        {{ error() }}
+    </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="mb-3">
+                <label for="type" class="form-label">
+                    Tipo de alerta
+                </label>
+
+                <select id="type" class="form-select" [ngModel]="type()" (ngModelChange)="type.set(+$event)">
+
+                    <option [value]="1">Daño</option>
+                    <option [value]="2">No disponible</option>
+                    <option [value]="3">Mantenimiento</option>
+                    <option [value]="4">Incidencia</option>
+                    <option [value]="5">Otro</option>
+
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">
+                    Descripción
+                </label>
+
+                <textarea id="description" class="form-control" rows="4" placeholder="Describe la incidencia..."
+                    [ngModel]="description()" (ngModelChange)="description.set($event)">
+        </textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="spaceId" class="form-label">
+                    ID del espacio
+                </label>
+
+                <input id="spaceId" type="text" class="form-control" placeholder="Ingrese el ID del espacio"
+                    [ngModel]="spaceId()" (ngModelChange)="spaceId.set($event || null)">
+            </div>
+
+            <div class="mb-4">
+                <label for="resourceId" class="form-label">
+                    ID del recurso
+                </label>
+
+                <input id="resourceId" type="text" class="form-control" placeholder="Ingrese el ID del recurso"
+                    [ngModel]="resourceId()" (ngModelChange)="resourceId.set($event || null)">
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="cancel()">
+                    Cancelar
+                </button>
+
+                <button type="button" class="btn btn-primary" [disabled]="loading()" (click)="save()">
+
+                    @if (loading()) {
+                    Guardando...
+                    } @else {
+                    Guardar alerta
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

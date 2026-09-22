@@ -1,0 +1,57 @@
+.container-fluid {
+  max-width: 1400px;
+}
+
+h2 {
+  color: #101d38;
+  font-weight: 600;
+}
+
+.card {
+  border: none;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table {
+  vertical-align: middle;
+}
+
+.table thead th {
+  background-color: #101d38;
+  color: white;
+  font-weight: 500;
+  padding: 14px 16px;
+  border: none;
+}
+
+.table tbody td {
+  padding: 14px 16px;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.btn-primary {
+  background-color: #3457e8;
+  border-color: #3457e8;
+}
+
+.btn-primary:hover {
+  background-color: #2948c7;
+  border-color: #2948c7;
+}
+
+.btn-outline-success {
+  border-color: #198754;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 6px 10px;
+}
+
+.alert {
+  border-radius: 8px;
+}

@@ -6,205 +6,189 @@
       <p>Administra los espacios físicos de la institución.</p>
     </div>
 
+    @if(canManageSpaces()){
     <a routerLink="/spaces/new" class="btn-new">
       + Nuevo espacio
     </a>
+    }
   </div>
 
   @if (loading()) {
 
-    <div class="alert alert-info">
-      Cargando espacios...
-    </div>
+  <div class="alert alert-info">
+    Cargando espacios...
+  </div>
 
   } @else if (error()) {
 
-    <div class="alert alert-danger">
-      {{ error() }}
-    </div>
+  <div class="alert alert-danger">
+    {{ error() }}
+  </div>
 
   } @else {
 
-    <!-- ========================= -->
-    <!-- ESPACIOS ACTIVOS -->
-    <!-- ========================= -->
+  <!-- ========================= -->
+  <!-- ESPACIOS ACTIVOS -->
+  <!-- ========================= -->
 
-    <div class="summary-card">
-      <strong>{{ activeSpaces.length }}</strong>
-      <span>Espacios activos</span>
+  <div class="summary-card">
+    <strong>{{ activeSpaces.length }}</strong>
+    <span>Espacios activos</span>
+  </div>
+
+  <div class="table-card">
+
+    <h2>Espacios activos</h2>
+
+    @if (activeSpaces.length === 0) {
+
+    <div class="empty-state">
+      <h3>No hay espacios activos</h3>
+      <p>No existen espacios disponibles actualmente.</p>
     </div>
 
-    <div class="table-card">
+    } @else {
 
-      <h2>Espacios activos</h2>
+    <div class="table-responsive">
 
-      @if (activeSpaces.length === 0) {
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Capacidad</th>
+            <th>Ubicación</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
 
-        <div class="empty-state">
-          <h3>No hay espacios activos</h3>
-          <p>No existen espacios disponibles actualmente.</p>
-        </div>
+        <tbody>
 
-      } @else {
+          @for (space of activeSpaces; track space.id) {
 
-        <div class="table-responsive">
+          <tr>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Tipo</th>
-                <th>Capacidad</th>
-                <th>Ubicación</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
+            <td>{{ space.name }}</td>
 
-            <tbody>
+            <td>
+              {{ getSpaceType(space.type) }}
+            </td>
 
-              @for (space of activeSpaces; track space.id) {
+            <td>
+              {{ space.capacity }}
+            </td>
 
-                <tr>
+            <td>
+              {{ space.location }}
+            </td>
 
-                  <td>{{ space.name }}</td>
+            <td>
+              <span class="status-active">
+                Activo
+              </span>
+            </td>
 
-                  <td>
-                    {{ getSpaceType(space.type) }}
-                  </td>
+            <td class="actions">
+              @if(canManageSpaces()) {
+              <a [routerLink]="['/spaces', space.id, 'edit']" class="btn-edit">
+                Editar
+              </a>
 
-                  <td>
-                    {{ space.capacity }}
-                  </td>
-
-                  <td>
-                    {{ space.location }}
-                  </td>
-
-                  <td>
-                    <span class="status-active">
-                      Activo
-                    </span>
-                  </td>
-
-                  <td class="actions">
-
-                    <a
-                      [routerLink]="['/spaces', space.id, 'edit']"
-                      class="btn-edit">
-                      Editar
-                    </a>
-
-                    <button
-                      type="button"
-                      class="btn-deactivate"
-                      (click)="deactivate(space.id)">
-                      Desactivar
-                    </button>
-
-                  </td>
-
-                </tr>
-
+              <button type="button" class="btn-deactivate" (click)="deactivate(space.id)">
+                Desactivar
+              </button>
               }
+            </td>
 
-            </tbody>
-          </table>
+          </tr>
 
-        </div>
+          }
 
-      }
+        </tbody>
+      </table>
 
     </div>
 
+    }
 
-    <!-- ========================= -->
-    <!-- ESPACIOS DESACTIVADOS -->
-    <!-- ========================= -->
+  </div>
 
-    <div class="table-card inactive-card">
 
-      <h2>Espacios desactivados</h2>
+  <!-- ========================= -->
+  <!-- ESPACIOS DESACTIVADOS -->
+  <!-- ========================= -->
 
-      @if (inactiveSpaces.length === 0) {
+  <div class="table-card inactive-card">
 
-        <div class="empty-state">
-          <h3>No hay espacios desactivados</h3>
-          <p>Los espacios que desactives aparecerán aquí.</p>
-        </div>
+    <h2>Espacios desactivados</h2>
 
-      } @else {
+    @if (inactiveSpaces.length === 0) {
 
-        <div class="table-responsive">
+    <div class="empty-state">
+      <h3>No hay espacios desactivados</h3>
+      <p>Los espacios que desactives aparecerán aquí.</p>
+    </div>
 
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Tipo</th>
-                <th>Capacidad</th>
-                <th>Ubicación</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
+    } @else {
 
-            <tbody>
+    <div class="table-responsive">
 
-              @for (space of inactiveSpaces; track space.id) {
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Capacidad</th>
+            <th>Ubicación</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
 
-                <tr>
+        <tbody>
 
-                  <td>{{ space.name }}</td>
+          @for (space of inactiveSpaces; track space.id) {
 
-                  <td>
-                    {{ getSpaceType(space.type) }}
-                  </td>
+          <tr>
 
-                  <td>
-                    {{ space.capacity }}
-                  </td>
+            <td>{{ space.name }}</td>
 
-                  <td>
-                    {{ space.location }}
-                  </td>
+            <td>
+              {{ getSpaceType(space.type) }}
+            </td>
 
-                  <td>
-                    <span class="status-inactive">
-                      Inactivo
-                    </span>
-                  </td>
+            <td>
+              {{ space.capacity }}
+            </td>
 
-                  <td class="actions">
+            <td>
+              {{ space.location }}
+            </td>
 
-                    <a
-                      [routerLink]="['/spaces', space.id, 'edit']"
-                      class="btn-edit">
-                      Editar
-                    </a>
+            <td>
+              <span class="status-inactive">
+                Inactivo
+              </span>
+            </td>
 
-                    <button
-                      type="button"
-                      class="btn-activate"
-                      (click)="activate(space.id)">
-                      Activar
-                    </button>
+            <td class="actions">
+              @if(canManageSpaces()) {
+              <a [routerLink]="['/spaces', space.id, 'edit']" class="btn-edit">
+                Editar
+              </a>
 
-                  </td>
-
-                </tr>
-
+              <button type="button" class="btn-activate" (click)="activate(space.id)">
+                Activar
+              </button>
               }
-
-            </tbody>
-          </table>
-
-        </div>
-
-      }
-
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
     </div>
-
+    }
+  </div>
   }
-
 </div>

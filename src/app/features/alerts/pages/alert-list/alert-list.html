@@ -1,0 +1,122 @@
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Alertas</h2>
+            <p class="text-muted mb-0">
+                Gestión de incidencias reportadas en espacios y recursos.
+            </p>
+        </div>
+
+        <button class="btn btn-primary" (click)="create()">
+            + Nueva alerta
+        </button>
+    </div>
+
+    @if (loading()) {
+    <div class="text-center py-5">
+        <p>Cargando alertas...</p>
+    </div>
+    }
+
+    @else if (error()) {
+    <div class="alert alert-danger">
+        {{ error() }}
+    </div>
+    }
+
+    @else if (alerts().length === 0) {
+    <div class="alert alert-info">
+        No existen alertas registradas.
+    </div>
+    }
+
+    @else {
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Destino</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @for (alert of alerts(); track alert.id) {
+                        <tr>
+
+                            <td>
+                                @switch (alert.type) {
+                                @case (1) {
+                                Daño
+                                }
+                                @case (2) {
+                                No disponible
+                                }
+                                @case (3) {
+                                Mantenimiento
+                                }
+                                @case (4) {
+                                Incidencia
+                                }
+                                @case (5) {
+                                Otro
+                                }
+                                }
+                            </td>
+
+                            <td>
+                                {{ alert.description }}
+                            </td>
+
+                            <td>
+                                @if (alert.spaceId) {
+                                Espacio
+                                }
+
+                                @if (alert.resourceId) {
+                                Recurso
+                                }
+                            </td>
+
+                            <td>
+                                @if (alert.isResolved) {
+                                <span class="badge bg-success">
+                                    Resuelta
+                                </span>
+                                } @else {
+                                <span class="badge bg-warning text-dark">
+                                    Pendiente
+                                </span>
+                                }
+                            </td>
+
+                            <td class="text-end">
+                                @if (!alert.isResolved) {
+                                    @if (canResolve()) {
+                                        <button class="btn btn-sm btn-outline-success" (click)="resolve(alert)">
+                                            Resolver
+                                        </button>
+                                    }
+                                } @else {
+                                <span class="text-muted">
+                                    Resuelta
+                                </span>
+                                }
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    }
+</div>

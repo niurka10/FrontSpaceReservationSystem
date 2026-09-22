@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SpaceService } from '../../services/space.service';
 import { Space } from '../../models/space.interface';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-space-list',
@@ -13,10 +14,16 @@ import { Space } from '../../models/space.interface';
 export class SpaceListComponent implements OnInit {
 
   private spaceService = inject(SpaceService);
+  private authService = inject(AuthService);
 
   spaces = signal<Space[]>([]);
   loading = signal(true);
   error = signal('');
+
+  // Verifica si el usuario tiene permiso para resolver alertas
+  canManageSpaces(): boolean {
+    return this.authService.hasRole('Admin');
+  }
 
   ngOnInit(): void {
     this.loadSpaces();

@@ -15,4 +15,11 @@ export const RESERVATIONS_ROUTES: Routes = [
         (m) => m.ReservationForm
       ),
   },
+
+  {
+    path: 'pending-coordinator',
+    loadComponent: () =>
+      import('./pending-coordinator/pending-coordinator').then(
+        (m) => m.PendingCoordinatorComponent)
+  },
 ];

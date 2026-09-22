@@ -1,0 +1,114 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="h3 mb-1">Solicitudes por gestionar</h1>
+      <p class="text-muted">Revisa y remite las solicitudes de tu carrera</p>
+    </div>
+  </div>
+
+  <div class="info-banner">
+    Ves las solicitudes de docentes y estudiantes de tu carrera.
+  </div>
+
+  <div class="tabs">
+    @for (tab of tabs; track tab.value) {
+      <button
+        class="tab"
+        [class.active]="activeTab() === tab.value"
+        (click)="selectTab(tab.value)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <p class="text-muted">Cargando...</p>
+  } @else if (errorMessage()) {
+    <div class="alert-error">{{ errorMessage() }}</div>
+  } @else if (filteredReservations().length === 0) {
+    <div class="empty-state">
+      <p>No hay solicitudes en esta categoría.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Solicitante</th>
+            <th>Espacio</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of filteredReservations(); track r.id) {
+            <tr>
+              <td class="code-cell">{{ pseudoCode(r.id) }}</td>
+              <td>
+                <div class="requester-name">{{ r.requesterName ?? r.userId }}</div>
+                @if (requesterLabel(r)) {
+                  <div class="requester-role">{{ requesterLabel(r) }}</div>
+                }
+              </td>
+              <td>{{ r.spaceName ?? '—' }}</td>
+              <td>{{ r.date | date: 'dd-MMM' }}</td>
+              <td>
+                <span class="status-badge" [attr.data-status]="r.currentStatus">
+                  {{ statusLabels[r.currentStatus] }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                @if (r.currentStatus === 'PendingCoordinator') {
+                  <button
+                    class="icon-btn icon-btn--accept"
+                    title="Elevar a Vicerrectorado"
+                    (click)="openAction(r.id, 'elevate')"
+                  >✓</button>
+                  <button
+                    class="icon-btn icon-btn--reject"
+                    title="Rechazar"
+                    (click)="openAction(r.id, 'reject')"
+                  >✕</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (action(); as current) {
+  <div class="modal-backdrop" (click)="closeAction()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h2>{{ current.kind === 'elevate' ? 'Elevar a Vicerrectorado' : 'Rechazar solicitud' }}</h2>
+
+      <label>
+        Justificación
+        <span class="required-mark">*</span>
+      </label>
+      <textarea
+        [(ngModel)]="current.justification"
+        rows="3"
+        placeholder="Explica el motivo de esta decisión"
+      ></textarea>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeAction()" [disabled]="current.isSaving">
+          Cancelar
+        </button>
+        <button
+          [class]="current.kind === 'elevate' ? 'btn-elevate' : 'btn-reject'"
+          (click)="confirmAction()"
+          [disabled]="current.isSaving || !current.justification.trim()"
+        >
+          {{ current.isSaving ? 'Guardando...' : 'Confirmar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -61,6 +61,9 @@ export interface Reservation{
     currentStatus: ReservationStatus;
     userId: string;
     spaceId: string | null;
+    requesterName?: string;
+    requesterRole?: string;
+    spaceName?: string;
 }
 
 export interface ReservationResourceRequest {

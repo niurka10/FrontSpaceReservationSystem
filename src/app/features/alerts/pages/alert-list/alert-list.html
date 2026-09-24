@@ -1,6 +1,7 @@
 <div class="container-fluid py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <div>
             <h2 class="mb-1">Alertas</h2>
             <p class="text-muted mb-0">
@@ -8,9 +9,71 @@
             </p>
         </div>
 
-        <button class="btn btn-primary" (click)="create()">
-            + Nueva alerta
-        </button>
+        <div class="d-flex align-items-center gap-3">
+
+            <!-- Campanita -->
+            <div class="position-relative">
+
+                <button type="button" class="btn btn-light position-relative" (click)="toggleNotifications()">
+
+                    🔔
+
+                    @if (notifications().length > 0) {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ notifications().length }}
+                    </span>
+                    }
+
+                </button>
+
+                <!-- Panel de notificaciones -->
+                @if (showNotifications()) {
+                <div class="card shadow position-absolute end-0 mt-2" style="width: 320px; z-index: 1050;">
+
+                    <div class="card-header">
+                        <strong>🔔 Notificaciones</strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        @if (notifications().length === 0) {
+
+                        <p class="text-muted mb-0">
+                            No tienes notificaciones.
+                        </p>
+
+                        } @else {
+
+                        @for (notification of notifications(); track notification.id) {
+
+                        <div class="border-bottom pb-2 mb-2">
+
+                            <div>
+                                {{ notification.message }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ notification.createdAt | date:'short' }}
+                            </small>
+
+                        </div>
+
+                        }
+
+                        }
+
+                    </div>
+                </div>
+                }
+
+            </div>
+
+            <button class="btn btn-primary" (click)="create()">
+                + Nueva alerta
+            </button>
+
+        </div>
+
     </div>
 
     @if (loading()) {
@@ -101,17 +164,17 @@
                             </td>
 
                             @if (canResolve()) {
-                                <td class="text-end">
-                                    @if (!alert.isResolved) {
-                                        <button class="btn btn-sm btn-outline-success" (click)="resolve(alert)">
-                                            Resolver
-                                        </button>
-                                    } @else {
-                                        <span class="text-muted">
-                                            Resuelta
-                                        </span>
-                                    }
-                                </td>
+                            <td class="text-end">
+                                @if (!alert.isResolved) {
+                                <button class="btn btn-sm btn-outline-success" (click)="openResolveModal(alert)">
+                                    Resolver
+                                </button>
+                                } @else {
+                                <span class="text-muted">
+                                    Resuelta
+                                </span>
+                                }
+                            </td>
                             }
                         </tr>
                         }
@@ -122,3 +185,42 @@
     </div>
     }
 </div>
+
+@if (showResolveModal()) {
+<div class="modal-backdrop fade show"></div>
+
+<div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Resolver alerta</h5>
+                <button type="button" class="btn-close" (click)="cancelResolve()"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <label class="form-label">
+                    Observación
+                </label>
+
+                <textarea class="form-control" rows="4" placeholder="Escriba la observación de la resolución..."
+                    [value]="resolutionObservation()" (input)="resolutionObservation.set($any($event.target).value)">
+                </textarea>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="cancelResolve()">
+                    Cancelar
+                </button>
+
+                <button type="button" class="btn btn-success" (click)="confirmResolve()">
+                    Resolver y notificar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+}

@@ -16,3 +16,7 @@ export interface CreateAlertRequest {
   resourceId: string | null;
   spaceId: string | null;
 }
+
+export interface ResolveAlertRequest {
+  observation: string;
+}

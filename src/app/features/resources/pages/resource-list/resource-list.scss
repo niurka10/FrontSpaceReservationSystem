@@ -1,18 +1,246 @@
+.resources-page {
+  .page-header h2 {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}
+
+.btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-weight: 500;
+
+  .icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Encabezado de cada sección */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+
+  h5 {
+    font-weight: 600;
+  }
+}
+
+.count-pill {
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.count-pill-muted {
+  background: #f1f3f5;
+  color: #868e96;
+}
+
+/* Puntos de estado */
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-dot-active {
+  background: #2f9e44;
+  box-shadow: 0 0 0 3px rgba(47, 158, 68, 0.15);
+}
+
+.status-dot-inactive {
+  background: #adb5bd;
+}
+
+.status-dot-sm {
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+}
+
+/* Sección de inactivos, un poco más "apagada" */
+.resource-section-inactive {
+  opacity: 0.92;
+
+  .section-header h5 {
+    color: #6c757d;
+  }
+}
+
+/* Tarjeta y tabla */
 .card {
   border: none;
   border-radius: 12px;
+  overflow: hidden;
+}
+
+.table {
+  margin-bottom: 0;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .table th {
   white-space: nowrap;
   font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: none;
+  color: #6c757d;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eef0f2;
 }
 
 .table td {
   vertical-align: middle;
+  padding: 14px 16px;
 }
 
-.badge {
-  font-size: 0.8rem;
-  padding: 0.45rem 0.7rem;
+.table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* Ancho de columnas */
+.table th:nth-child(1), .table td:nth-child(1) { width: 22%; }
+.table th:nth-child(2), .table td:nth-child(2) { width: 33%; }
+.table th:nth-child(3), .table td:nth-child(3) { width: 13%; text-align: center; }
+.table th:nth-child(4), .table td:nth-child(4) { width: 15%; text-align: center; }
+.table th:nth-child(5), .table td:nth-child(5) { width: 17%; text-align: right; }
+
+/* Nombre con ícono */
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.name-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.name-icon-active {
+  background: #ebfbee;
+  color: #2f9e44;
+}
+
+.name-icon-inactive {
+  background: #f1f3f5;
+  color: #adb5bd;
+}
+
+/* Descripción */
+.table td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cantidad como pill */
+.qty-pill {
+  display: inline-block;
+  min-width: 32px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f3f5;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.qty-pill-muted {
+  color: #868e96;
+}
+
+/* Estado */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.status-badge-active {
+  background: #ebfbee;
+  color: #2f9e44;
+}
+
+.status-badge-inactive {
+  background: #f1f3f5;
+  color: #868e96;
+}
+
+/* Botones */
+.table .btn {
+  white-space: nowrap;
+  border-radius: 6px;
+}
+
+.table .btn:focus-visible,
+.btn-new:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+/* Estado vacío */
+.empty-row td {
+  padding: 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: #adb5bd;
+
+  svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+}
+
+/* En pantallas pequeñas */
+@media (max-width: 768px) {
+  .table {
+    table-layout: auto;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+  }
+
+  .table td:nth-child(2) {
+    max-width: 220px;
+  }
+
+  .name-cell {
+    gap: 6px;
+  }
 }

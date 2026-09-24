@@ -44,7 +44,9 @@
                             <th>Descripción</th>
                             <th>Destino</th>
                             <th>Estado</th>
+                            @if (canResolve()) {
                             <th class="text-end">Acciones</th>
+                            }
                         </tr>
                     </thead>
 
@@ -98,19 +100,19 @@
                                 }
                             </td>
 
-                            <td class="text-end">
-                                @if (!alert.isResolved) {
-                                    @if (canResolve()) {
+                            @if (canResolve()) {
+                                <td class="text-end">
+                                    @if (!alert.isResolved) {
                                         <button class="btn btn-sm btn-outline-success" (click)="resolve(alert)">
                                             Resolver
                                         </button>
+                                    } @else {
+                                        <span class="text-muted">
+                                            Resuelta
+                                        </span>
                                     }
-                                } @else {
-                                <span class="text-muted">
-                                    Resuelta
-                                </span>
-                                }
-                            </td>
+                                </td>
+                            }
                         </tr>
                         }
                     </tbody>

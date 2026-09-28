@@ -46,7 +46,11 @@ export const NAV_ITEMS: NavItem[] = [
         path: '/reservations/pending-coordinator',
         roles: ['Coordinator', 'Admin'],
     },
-
+    {
+        label: 'notificaciones',
+        path: '/alerts',
+        roles: ['Admin','Student','Teacher'],
+    },
     {
       label: 'Autorizaciones',
       path: '/reservations/pending-vicerrector',

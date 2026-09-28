@@ -1,10 +1,14 @@
-import { Component, inject, OnInit, signal } from "@angular/core";
-import { CreateReservationRequest, Reservation, ResourceOption, SPACE_TYPE_LABELS, SpaceOption } from "../models/reservation.interface";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { OptionsService } from "../services/options.service";
-import { ReservationService } from "../services/reservation.service";
-import { Route, Router, RouterLink } from "@angular/router";
+import { Route, Router, RouterLink, RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
+import { ResourceOption, SPACE_TYPE_LABELS, SpaceOption, CreateReservationRequest } from "../../models/reservation.interface";
+import { OptionsService } from "../../services/options.service";
+import { ReservationService } from "../../services/reservation.service";
+import { UserSummaryResponse } from "../../../users/models/user-summary.model";
+import { AuthService } from "../../../../core/auth/auth.service";
+import { UserService } from "../../../users/user.service";
+import { forkJoin } from "rxjs";
 
 interface ResourceRow {
   option: ResourceOption;
@@ -15,11 +19,11 @@ interface ResourceRow {
 @Component({
   selector: 'app-reservation-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './reservation-form.html',
   styleUrl: './reservation-form.scss',
 })
-export class ReservationForm implements OnInit {
+export class ReservationFormComponent implements OnInit {
 
   private readonly fb = inject(FormBuilder);
 
@@ -30,6 +34,10 @@ export class ReservationForm implements OnInit {
   readonly isLoadingOptions = signal(false);
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly canCreateForOthers = computed(() =>
+    this.authService.hasRole('Coordinator', 'Vicerrector', 'Bienes', 'Admin')
+  );
+  readonly candidates = signal<UserSummaryResponse[]>([]);
 
   readonly form = this.fb.group({
     spaceId: [''],
@@ -37,6 +45,7 @@ export class ReservationForm implements OnInit {
     startTime: ['', [Validators.required]],
     endTime: ['', [Validators.required]],
     reason: ['', [Validators.required, Validators.minLength(10)]],
+    onBehalfOfUserId: [''],
   })
 
   hasSelectionError(): boolean {
@@ -46,15 +55,16 @@ export class ReservationForm implements OnInit {
   }
 
   constructor(
-    // private fb: FormBuilder,
     private optionsService: OptionsService,
     private reservationsService: ReservationService,
+    private authService: AuthService,
+    private userService: UserService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
     this.isLoadingOptions.set(true);
-    
+
     this.optionsService.getAvailableSpaces().subscribe({
       next: (spaces) => this.spaces.set(spaces),
       error: () => this.errorMessage.set('No se pudieron cargar los espacios disponibles.'),
@@ -72,7 +82,12 @@ export class ReservationForm implements OnInit {
         this.isLoadingOptions.set(false);
       },
     });
+
+    if (this.canCreateForOthers()) {
+      this.loadCandidates();
+    }
   }
+
 
   toggleResource(row: ResourceRow): void {
     this.resourceRows.update((rows) =>
@@ -87,7 +102,7 @@ export class ReservationForm implements OnInit {
     );
   }
 
-  submit(): void {
+  save(shouldSubmit: boolean): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -104,26 +119,57 @@ export class ReservationForm implements OnInit {
     const raw = this.form.getRawValue();
 
     const request: CreateReservationRequest = {
-      // El backend espera DateTime; se manda como fecha ISO a medianoche,
-      // la hora real va en startTime/endTime por separado.
       date: `${raw.date}T00:00:00`,
       startTime: `${raw.startTime}:00`,
       endTime: `${raw.endTime}:00`,
       reason: raw.reason!,
       spaceId: raw.spaceId || null,
+      onBehalfOfUserId: raw.onBehalfOfUserId || null,
       resources: this.resourceRows()
         .filter((r) => r.selected)
         .map((r) => ({ resourceId: r.option.id, quantity: r.quantity })),
     };
 
     this.reservationsService.create(request).subscribe({
-      next: () => this.router.navigate(['/reservations']),
+      next: (created) => {
+        //guardar borrador
+        if (!shouldSubmit) {
+          this.router.navigate(['/reservations']);
+          return;
+        }
+
+        this.reservationsService.submit(created.id, raw.reason!).subscribe({
+          next: () => this.router.navigate(['/reservations']),
+          error: (err) => {
+            this.isSubmitting.set(false);
+            this.errorMessage.set(
+              err?.error?.description ?? 'La reserva se guardo como borrador, pero no se envio. Intenta enviar desde Mis Solicitudes'
+            );
+          },
+        })
+      },
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(
-          err?.error?.description ?? 'No se pudo crear la reserva. Verifica los datos.'
-        );
-      },
+          err?.error?.description ?? 'No se pudo crear la reserva. Verifica los datos'
+        )
+      }
+    })
+  }
+
+
+  private loadCandidates(): void {
+    if (!this.authService.hasRole('Coordinator')) return; // TODO: Vicerrector/Bienes/Admin, otro chat
+
+    this.userService.ensureMeLoaded().subscribe((me) => {
+      if (!me.careerId) return;
+
+      forkJoin([
+        this.userService.search('Student', me.careerId),
+        this.userService.search('Teacher', me.careerId),
+      ]).subscribe(([students, teachers]) => {
+        this.candidates.set([...students, ...teachers]);
+      });
     });
   }
 }

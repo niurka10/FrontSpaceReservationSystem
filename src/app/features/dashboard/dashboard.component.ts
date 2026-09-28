@@ -1,15 +1,20 @@
 import { Component } from '@angular/core';
+import { AuthService } from '../../core/auth/auth.service';
+import { DashboardStudentComponent } from '../reservations/dashboard/dashboard-student/dashboard-student';
+import { DashboardCoordinatorComponent } from '../reservations/dashboard/dashboard-coordinator/dashboard-coordinator';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  imports: [DashboardStudentComponent, DashboardCoordinatorComponent],
   template: `
-    <h1 class="h3 mb-1">Dashboard</h1>
-    <p class="text-muted">Resumen general de tu actividad en el sistema</p>
-    <div class="alert alert-secondary mt-4">
-      Aquí van las tarjetas de métricas (solicitudes, reservas, espacios, etc.)
-      una vez que conectemos los servicios reales de cada feature.
-    </div>
+    @if (authService.hasRole('Coordinator')) {
+      <app-dashboard-coordinator/>
+    } @else {
+      <app-dashboard-student/>
+    }
   `,
 })
-export class DashboardComponent {}
+export class DashboardComponent {
+  constructor(public authService: AuthService) { }
+}

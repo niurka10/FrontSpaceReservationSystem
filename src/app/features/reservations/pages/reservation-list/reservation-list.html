@@ -1,0 +1,169 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="h3 mb-1">Mis reservas</h1>
+      <p class="text-muted">Historial y estado de tus solicitudes.</p>
+    </div>
+    <a routerLink="/reservations/new" class="btn-primary">+ Nueva reserva</a>
+  </div>
+
+  @if (isLoading()) {
+  <p class="text-muted">Cargando...</p>
+  } @else if (errorMessage()) {
+  <div class="alert-error">{{ errorMessage() }}</div>
+  } @else if (reservations().length === 0) {
+  <div class="empty-state">
+    <p>Todavía no tienes reservas.</p>
+    <a routerLink="/reservations/new">Crea tu primera solicitud</a>
+  </div>
+  } @else {
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Motivo</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of reservations(); track r.id) {
+        <tr>
+          <td>{{ r.date | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ r.startTime.slice(0, 5) }}–{{ r.endTime.slice(0, 5) }}</td>
+          <td>{{ r.reason }}</td>
+          <td>
+            <span class="status-badge" [attr.data-status]="r.currentStatus">
+              {{ statusLabels[r.currentStatus] }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-outline-primary" title="Ver detalle" (click)="openDetail(r.id)"><i
+                class="bi bi-eye-fill"></i></button>
+            @if (r.currentStatus === 'Draft') {
+            <button class="btn btn-outline-success" title="Enviar solicitud" (click)="sendDraft(r.id)"
+              [disabled]="sendingId() === r.id"><i class="bi bi-send-fill"></i>
+            </button>
+            }
+            @if (['Draft', 'PendingCoordinator', 'PendingVicerrector', 'PendingAssets'].includes(r.currentStatus)) {
+            <button class="icon-btn icon-btn--reject" title="Cancelar solicitud" (click)="openCancel(r.id)">✕</button>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+</div>
+
+@if (selectedDetail(); as detail) {
+<div class="modal-backdrop" (click)="closeDetail()">
+  <div class="modal-card--wide" (click)="$event.stopPropagation()">
+
+    <div class="detail-header">
+      <div>
+        <h2>Detalle de solicitud <span class="detail-code">{{ pseudoCode(detail.id) }}</span></h2>
+        <p class="detail-subtitle">
+          {{ detail.spaceName ?? '—' }} · {{ detail.date | date: 'dd/MM/yyyy' }} ·
+          {{ detail.startTime }}–{{ detail.endTime }}
+        </p>
+      </div>
+      <button class="close-btn" (click)="closeDetail()">✕</button>
+    </div>
+
+    <div class="stepper">
+      @for (step of [
+      { num: 1, label: 'Solicitud' },
+      { num: 2, label: 'Coordinador' },
+      { num: 3, label: 'Vicerrectorado' },
+      { num: 4, label: 'Asignación' }
+      ]; track step.num) {
+      <div class="step" [class.step--done]="step.num < stepByStatus[detail.currentStatus]"
+        [class.step--current]="step.num === stepByStatus[detail.currentStatus]">
+        <span class="step-circle">
+          @if (step.num < stepByStatus[detail.currentStatus]) { ✓ } @else { {{ step.num }} } </span>
+            <span class="step-label">{{ step.label }}</span>
+      </div>
+      }
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-row">
+        <span class="detail-label">Motivo</span>
+        <span class="detail-value">{{ detail.reason }}</span>
+      </div>
+      @if (detail.resources.length > 0) {
+      <div class="detail-row">
+        <span class="detail-label">Recursos solicitados</span>
+        <span class="detail-value">
+          @for (res of detail.resources; track res.resourceName) {
+          <div>{{ res.resourceName }} x{{ res.quantity }}</div>
+          }
+        </span>
+      </div>
+      }
+    </div>
+
+    <div class="history-section">
+      <h3>Historial de gestión</h3>
+      @if (detail.history.length === 0) {
+      <p class="text-muted">Sin movimientos registrados todavía.</p>
+      } @else {
+      <ul class="history-list">
+        @for (entry of detail.history; track entry.changeDate) {
+        <li>
+          <div class="history-action">
+            {{ historyActionLabels[entry.newStatus] }} — {{ entry.changedByName }}
+            @if (entry.changedByRole) { ({{ entry.changedByRole }}) }
+          </div>
+          <div class="history-date">{{ entry.changeDate | date: 'dd/MM/yyyy HH:mm' }}</div>
+          @if (entry.justification) {
+          <div class="history-justification">"{{ entry.justification }}"</div>
+          }
+        </li>
+        }
+      </ul>
+      }
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeDetail()">Cerrar</button>
+    </div>
+  </div>
+</div>
+}
+
+
+@if (cancelling(); as current) {
+  <div class="modal-backdrop" (click)="closeCancel()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h2>Cancelar solicitud</h2>
+
+      <label>
+        Motivo
+        <span class="required-mark">*</span>
+      </label>
+      <textarea
+        [(ngModel)]="current.justification"
+        rows="3"
+        placeholder="¿Por qué cancelas esta solicitud?"
+      ></textarea>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeCancel()" [disabled]="current.isSaving">
+          Volver
+        </button>
+        <button
+          class="btn-reject"
+          (click)="confirmCancel()"
+          [disabled]="current.isSaving || !current.justification.trim()"
+        >
+          {{ current.isSaving ? 'Cancelando...' : 'Confirmar cancelación' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

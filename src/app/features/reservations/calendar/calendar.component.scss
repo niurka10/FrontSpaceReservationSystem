@@ -1,0 +1,125 @@
+.cal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.cal-title {
+  font-size: 15px;
+  font-weight: 700;
+  min-width: 190px;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #d7dceb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.btn-outline {
+  border: 1.5px solid #d7dceb;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+// El grid ahora es FLEX, no CSS Grid: una columna angosta de horas + 7
+// columnas de día, todas del mismo alto. Esto es lo que elimina el bug del
+// overlay: ya no hay una capa separada tratando de "adivinar" dónde cae
+// cada día usando %.
+.week-grid {
+  display: flex;
+  border: 1px solid #e4e8f2;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.hour-col {
+  flex: 0 0 56px; // ancho fijo, no crece ni se achica
+  background: #fafbfe;
+}
+
+.hcell {
+  height: 44px; // == rowHeight del .ts
+  box-sizing: border-box;
+  padding: 4px 6px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  border-bottom: 1px solid #e4e8f2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hcell--empty {
+  background: #fff;
+}
+
+.hcell small {
+  display: block;
+  font-weight: 500;
+  color: #6c7690;
+  font-size: 10.5px;
+}
+
+.hour-label {
+  height: 44px; // == rowHeight
+  box-sizing: border-box;
+  font-size: 10.5px;
+  color: #6c7690;
+  text-align: right;
+  padding: 2px 6px;
+  border-top: 1px solid #e4e8f2;
+}
+
+// Cada día es su propio contenedor relative — el ancla para sus bloques.
+// flex:1 = los 7 días se reparten el espacio sobrante en partes iguales,
+// sin que tengamos que calcular ningún %.
+.day-col {
+  flex: 1;
+  position: relative;
+  border-left: 1px solid #e4e8f2;
+}
+
+.hour-cell {
+  height: 44px; // == rowHeight
+  box-sizing: border-box;
+  border-top: 1px solid #e4e8f2;
+}
+
+.blk {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  overflow: hidden;
+  line-height: 1.25;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+  background: #fff3dd;
+  color: #b3720a;
+  border: 1px solid #f2d79a;
+}
+
+.blk[data-status='Approved'] {
+  background: #dbe6ff;
+  color: #3457e8;
+  border-color: #b7c8fb;
+}
+
+.blk small {
+  display: block;
+  font-weight: 500;
+  opacity: .85;
+}

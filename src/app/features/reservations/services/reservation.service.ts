@@ -1,45 +1,51 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { CreateReservationRequest, Reservation } from "../models/reservation.interface";
+import { CreateReservationRequest, Reservation, ReservationDetail } from "../models/reservation.interface";
 import { Observable } from "rxjs";
 
 const API_BASE = '/api/reservations';
 
-@Injectable({ providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class ReservationService {
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-    create(request: CreateReservationRequest): Observable<Reservation>{
+    create(request: CreateReservationRequest): Observable<Reservation> {
         return this.http.post<Reservation>(API_BASE, request)
     }
 
-    getById (id: string): Observable<Reservation>{
-        return this.http.get<Reservation>(`${API_BASE}/${id}`)  
+    getById(id: string): Observable<ReservationDetail> {
+        return this.http.get<ReservationDetail>(`${API_BASE}/${id}`)
     }
 
-    listMine(): Observable<Reservation[]>{
+    listMine(): Observable<Reservation[]> {
         return this.http.get<Reservation[]>(`${API_BASE}/mine`)
     }
 
-    submit(id: string, justification: string): Observable<Reservation>{
+    submit(id: string, justification: string): Observable<Reservation> {
         return this.http.post<Reservation>(`${API_BASE}/${id}/submit`, { justification })
     }
 
-    // Backend: pendiente construir GET /api/reservations/career. A diferencia
-    // de un simple "pendientes para mí", esta trae TODOS los estados de la
-    // carrera del Coordinator logueado (filtrado por User.CareerId en el
-    // backend) — las tabs de la pantalla filtran del lado del cliente.
-
-
-    listForMyCareer(): Observable<Reservation[]>{
+    listForMyCareer(): Observable<Reservation[]> {
         return this.http.get<Reservation[]>(`${API_BASE}/career`)
     }
 
-    elevate(id: string, justification: string): Observable<Reservation>{
+    elevate(id: string, justification: string): Observable<Reservation> {
         return this.http.post<Reservation>(`${API_BASE}/${id}/elevate`, { justification })
     }
 
-    reject(id: string, justification: string): Observable<Reservation>{
+    reject(id: string, justification: string): Observable<Reservation> {
         return this.http.post<Reservation>(`${API_BASE}/${id}/reject`, { justification })
+    }
+
+    listForVicerrector(): Observable<Reservation[]> {
+        return this.http.get<Reservation[]>(`${API_BASE}/vicerrector`)
+    }
+
+    approve(id: string, justification: string): Observable<Reservation> {
+        return this.http.post<Reservation>(`${API_BASE}/${id}/approve`, { justification })
+    }
+
+    cancel(id: string, justification: string): Observable<Reservation> {
+        return this.http.post<Reservation>(`${API_BASE}/${id}/cancel`, { justification })
     }
 }

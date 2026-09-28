@@ -1,0 +1,54 @@
+<div class="page">
+    <h1 class="h3 mb-1">Calendario</h1>
+    <p class="text-muted">Tus reservas activas de la semana</p>
+
+    <div class="cal-toolbar">
+        <button class="icon-btn" (click)="prevWeek()">‹</button>
+        <div class="cal-title">
+            {{ days()[0].date | date: 'dd-MMM' }} – {{ days()[6].date | date: 'dd-MMM, yyyy' }}
+        </div>
+        <button class="icon-btn" (click)="nextWeek()">›</button>
+        <button class="btn-outline" (click)="goToday()">Hoy</button>
+    </div>
+
+    @if (isLoading()) {
+    <p class="text-muted">Cargando...</p>
+    } @else {
+    <div class="week-grid">
+
+        <!-- columna fija de la izquierda: solo las horas -->
+        <div class="hour-col">
+            <div class="hcell hcell--empty"></div>
+            @for (hour of hours; track hour) {
+            <div class="hour-label">{{ hour }}:00</div>
+            }
+        </div>
+
+        <!-- una columna por día — TODO lo del día (header + celdas + bloques)
+           vive adentro de este mismo div, por eso ya no necesitamos ni %
+           ni overlays separados: el bloque se posiciona relativo a SU
+           propia columna. -->
+        @for (day of days(); track day.dayNumber) {
+        <div class="day-col">
+            <div class="hcell">
+                {{ day.dowLabel }}
+                <small>{{ day.dayNumber }}</small>
+            </div>
+
+            @for (hour of hours; track hour) {
+            <div class="hour-cell"></div>
+            }
+
+            @for (b of blocksForDay(day.date); track b.reservation.id) {
+            <div class="blk" [attr.data-status]="b.reservation.currentStatus" [style.top.px]="b.top"
+                [style.height.px]="b.height">
+                {{ b.reservation.spaceName ?? 'Sin espacio' }}
+                <small>{{ b.reservation.startTime.slice(0,5) }}–{{ b.reservation.endTime.slice(0,5) }}</small>
+            </div>
+            }
+        </div>
+        }
+
+    </div>
+    }
+</div>

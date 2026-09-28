@@ -6,7 +6,22 @@
     <div class="alert-error">{{ errorMessage() }}</div>
   }
 
-  <form [formGroup]="form" (ngSubmit)="submit()" class="reservation-form">
+  <form [formGroup]="form" class="reservation-form">
+    
+        @if (canCreateForOthers()) {
+      <div class="field">
+        <label for="onBehalfOfUserId">¿Para quién es esta reserva?</label>
+        <select id="onBehalfOfUserId" formControlName="onBehalfOfUserId">
+          <option value="">Para mí</option>
+          @for (candidate of candidates(); track candidate.id) {
+            <option [value]="candidate.id">
+              {{ candidate.name }} — {{ candidate.role }}
+            </option>
+          }
+        </select>
+      </div>
+    }
+    
     <div class="field">
       <label for="spaceId">Espacio (opcional si eliges algun recurso)</label>
       <select id="spaceId" formControlName="spaceId">
@@ -84,9 +99,11 @@
     </div>
 
     <div class="form-actions">
-      <a routerLink="/reservations" class="btn-ghost">Cancelar</a>
-      <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
-        {{ isSubmitting() ? 'Enviando...' : 'Enviar solicitud' }}
+      <button type="button" class="btn-ghost" (click)="save(false)" [disabled]="isSubmitting()">
+        Guardar Borrador
+      </button>
+      <button type="button" class="btn-primary" (click)="save(true)" [disabled]="isSubmitting()">
+        Enviar Solicitud
       </button>
     </div>
   </form>

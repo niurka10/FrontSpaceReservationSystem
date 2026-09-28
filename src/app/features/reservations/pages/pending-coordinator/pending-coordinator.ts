@@ -1,8 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { Reservation, RESERVATION_STATUS_LABELS, ReservationStatus } from "../models/reservation.interface";
-import { ReservationService } from "../services/reservation.service";
+import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, RESERVATION_STEP_BY_STATUS, ReservationDetail, ReservationStatus } from "../../models/reservation.interface";
+import { ReservationService } from "../../services/reservation.service";
 
 type TabValue = 'Todas' | ReservationStatus;
 
@@ -31,7 +31,11 @@ function pseudoCode(id: string): string {
 })
 export class PendingCoordinatorComponent implements OnInit {
     readonly statusLabels = RESERVATION_STATUS_LABELS;
+    readonly historyActionLabels = RESERVATION_HISTORY_ACTION_LABELS;
+    readonly stepByStatus = RESERVATION_STEP_BY_STATUS;
     readonly pseudoCode = pseudoCode;
+    readonly selectedDetail = signal<ReservationDetail | null>(null);
+    readonly isLoadingDetail = signal(false);
 
     readonly tabs: Tab[] = [
         { value: 'Todas', label: 'Todas' },
@@ -84,8 +88,8 @@ export class PendingCoordinatorComponent implements OnInit {
     }
 
     requesterLabel(r: Reservation): string {
-        if(r.requesterRole === 'Teacher') return 'Docente';
-        if(r.requesterRole === 'Student') return 'Estudiante';
+        if (r.requesterRole === 'Teacher') return 'Docente';
+        if (r.requesterRole === 'Student') return 'Estudiante';
         return '';
     }
 
@@ -98,27 +102,45 @@ export class PendingCoordinatorComponent implements OnInit {
     }
 
     confirmAction(): void {
-    const current = this.action();
-    if (!current || !current.justification.trim()) return;
- 
-    this.action.set({ ...current, isSaving: true });
- 
-    const call =
-      current.kind === 'elevate'
-        ? this.reservationService.elevate(current.reservationId, current.justification)
-        : this.reservationService.reject(current.reservationId, current.justification);
- 
-    call.subscribe({
-      next: (updated) => {
-        this.reservations.update((rows) =>
-          rows.map((r) => (r.id === updated.id ? updated : r))
-        );
-        this.action.set(null);
-      },
-      error: () => {
-        this.errorMessage.set('No se pudo procesar la solicitud. Intenta de nuevo.');
-        this.action.update((a) => (a ? { ...a, isSaving: false } : a));
-      },
-    });
-  }
+        const current = this.action();
+        if (!current || !current.justification.trim()) return;
+
+        this.action.set({ ...current, isSaving: true });
+
+        const call =
+            current.kind === 'elevate'
+                ? this.reservationService.elevate(current.reservationId, current.justification)
+                : this.reservationService.reject(current.reservationId, current.justification);
+
+        call.subscribe({
+            next: (updated) => {
+                this.reservations.update((rows) =>
+                    rows.map((r) => (r.id === updated.id ? updated : r))
+                );
+                this.action.set(null);
+            },
+            error: () => {
+                this.errorMessage.set('No se pudo procesar la solicitud. Intenta de nuevo.');
+                this.action.update((a) => (a ? { ...a, isSaving: false } : a));
+            },
+        });
+    }
+
+    openDetail(reservationId: string): void {
+        this.isLoadingDetail.set(true);
+        this.reservationService.getById(reservationId).subscribe({
+            next: (detail) => {
+                this.selectedDetail.set(detail);
+                this.isLoadingDetail.set(false);
+            },
+            error: () => {
+                this.errorMessage.set('No se pudo cargar el detalle de la solicitud.');
+                this.isLoadingDetail.set(false);
+            },
+        });
+    }
+
+    closeDetail(): void {
+        this.selectedDetail.set(null);
+    }
 }

@@ -19,45 +19,103 @@
   <nav class="nav flex-column flex-grow-1">
 
     <!-- DASHBOARD -->
+    <!-- NUEVO: cada bloque ahora está envuelto en @if (canSee(...)) —
+         canSee() vive en sidebar.component.ts y consulta la config única
+         de nav-items.ts. Si el rol logueado no tiene ese path permitido,
+         Angular directamente NO renderiza el bloque en el DOM (no es solo
+         display:none, no existe en la página). -->
+    @if (canSee('/dashboard')) {
     <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="navitem">
 
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="9" rx="1.5" />
-        <rect x="14" y="3" width="7" height="5" rx="1.5" />
-        <rect x="14" y="12" width="7" height="9" rx="1.5" />
-        <rect x="3" y="16" width="7" height="5" rx="1.5" />
-      </svg>
+      <i class="bi bi-layout-wtf"></i>
 
       <span>Dashboard</span>
 
     </a>
+    }
+
+    @if (canSee('/reservations/calendar')) {
+    <a routerLink="/reservations/calendar" routerLinkActive="active" class="navitem main-item">
+      <i class="bi bi-calendar-check"></i>
+      <span>Calendario</span>
+    </a>
+    }
+
+
+    <!-- MIS RESERVAS (Student / Teacher) -->
+    @if (canSee('/reservations') && !canSee('/users')) {
+    <!-- El "&& !canSee('/users')" evita que Admin vea este link duplicado:
+         Admin ya tiene "Reservas (todas)" abajo, dentro de Administración,
+         apuntando a la misma ruta '/reservations'. Es un pequeño hack para
+         no repetir el mismo path dos veces en nav-items.ts con distinto
+         label según el rol — si el día de mañana Admin y Student necesitan
+         ver cosas distintas en esa ruta, ahí sí conviene separar los paths
+         (ej. '/reservations/mine' vs '/reservations') en vez de esta condición. -->
+    <a routerLink="/reservations" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
+      class="navitem main-item">
+      <i class="bi bi-list-check"></i>
+      <span>Mis reservas</span>
+    </a>
+    }
+
+    <!-- AGREGAR RESERVA -->
+
+    @if (canSee('/reservations/new') ) {
+    <a routerLink="/reservations/new" routerLinkActive="active" class="navitem main-item">
+      <i class="bi bi-plus-circle"></i>
+      <span>Agregar Reserva</span>
+    </a>
+    }
+
+    <!-- PENDIENTES (COORDINADOR) -->
+    @if (canSee('/reservations/pending-coordinator')) {
+    <a routerLink="/reservations/pending-coordinator" routerLinkActive="active" class="navitem main-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 11l3 3L22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+      <span>Pendientes (Coordinador)</span>
+    </a>
+    }
+
+    <!-- AUTORIZACIONES (VICERRECTOR) -->
+    <!-- NUEVO: mismo bloque que el de Coordinador de arriba, apuntando a la
+         nueva ruta y filtrado por canSee(), que ya sabe que este path solo
+         es visible para Vicerrector/Admin (ver nav-items.ts). -->
+    @if (canSee('/reservations/pending-vicerrector')) {
+    <a routerLink="/reservations/pending-vicerrector" routerLinkActive="active" class="navitem main-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l7 4v5c0 5-3 9-7 11-4-2-7-6-7-11V6l7-4Z" />
+        <path d="M9 12l2 2 4-4" />
+      </svg>
+      <span>Autorizaciones</span>
+    </a>
+    }
 
 
     <!-- =========================
          ADMINISTRACIÓN
          ========================= -->
 
+    <!-- canSee con varios paths = "¿al menos uno de los links de adentro
+         es visible?" — si ninguno lo es, ni siquiera pintamos la sección
+         colapsable vacía. -->
+    @if (canSee('/users', '/admin/reservations')) {
     <details class="nav-section">
-
       <summary class="section-title">
-
         <span class="section-left">
-
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2l7 4v5c0 5-3 9-7 11-4-2-7-6-7-11V6l7-4Z" />
             <path d="M9 12l2 2 4-4" />
           </svg>
-
           <span>Administración</span>
-
         </span>
-
         <span class="chevron">⌄</span>
-
       </summary>
 
       <div class="submenu">
 
+        @if (canSee('/users')) {
         <a routerLink="/users" routerLinkActive="active" class="navitem submenu-item">
 
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -70,8 +128,9 @@
           <span>Usuarios</span>
 
         </a>
+        }
 
-
+        @if (canSee('/reservations')) {
         <a routerLink="/reservations" routerLinkActive="active" class="navitem submenu-item">
 
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -82,16 +141,19 @@
           <span>Reservas (todas)</span>
 
         </a>
+        }
 
       </div>
 
     </details>
+    }
 
 
     <!-- =========================
          CATÁLOGOS
          ========================= -->
 
+    @if (canSee('/faculties', '/careers')) {
     <details class="nav-section">
 
       <summary class="section-title">
@@ -114,6 +176,7 @@
       <div class="submenu">
 
         <!-- FACULTADES -->
+        @if (canSee('/faculties')) {
         <a routerLink="/faculties" routerLinkActive="active" class="navitem submenu-item">
 
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -124,9 +187,11 @@
           <span>Facultades</span>
 
         </a>
+        }
 
 
         <!-- CARRERAS -->
+        @if (canSee('/careers')) {
         <a routerLink="/careers" routerLinkActive="active" class="navitem submenu-item">
 
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -140,16 +205,19 @@
           <span>Carreras</span>
 
         </a>
+        }
 
       </div>
 
     </details>
+    }
 
 
     <!-- =========================
          RECURSOS
          ========================= -->
 
+    @if (canSee('/spaces', '/resources')) {
     <details class="nav-section">
 
       <summary class="section-title">
@@ -175,6 +243,7 @@
       <div class="submenu">
 
         <!-- ESPACIOS Y RECURSOS -->
+        @if (canSee('/spaces')) {
         <a routerLink="/spaces" routerLinkActive="active" class="navitem submenu-item">
 
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -186,9 +255,10 @@
           <span>Espacios</span>
 
         </a>
+        }
 
         <!-- RECURSOS -->
-
+        @if (canSee('/resources')) {
         <a routerLink="/resources" routerLinkActive="active" class="navitem submenu-item">
 
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -198,25 +268,19 @@
 
           <span>Recursos</span>
         </a>
-
-        <!--ALERTAS-->
-        <a routerLink="/alerts" routerLinkActive="active" class="navitem submenu-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
-            <path d="M10 21h4" />
-          </svg>
-
-          <span>Alertas</span>
-        </a>
-
+        }
 
       </div>
 
     </details>
+    }
 
 
-    <!--REPORTES-->
+    <!-- =========================
+         REPORTES
+         ========================= -->
 
+    @if (canSee('/reports')) {
     <a routerLink="/reports" routerLinkActive="active" class="navitem main-item">
 
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -231,11 +295,14 @@
       <span>Reportes</span>
 
     </a>
+    }
 
   </nav>
 
 
-  <!--USUARIO-->
+  <!-- =========================
+       USUARIO
+       ========================= -->
 
   <div class="sidebar-foot">
 

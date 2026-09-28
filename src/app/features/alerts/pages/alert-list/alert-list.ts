@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AlertService } from '../../services/alert.service';
 import { Alert } from '../../models/alert.interface';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { NotificationService, Notification } from '../../../notifications/services/notification.service';
 
 
 @Component({
@@ -18,11 +19,17 @@ export class AlertList implements OnInit {
     private alertService = inject(AlertService);
     private router = inject(Router);
     private authService = inject(AuthService);
-
+    private notificationService = inject(NotificationService);
 
     alerts = signal<Alert[]>([]);
     loading = signal(true);
     error = signal<string | null>(null);
+
+    showResolveModal = signal(false);
+    selectedAlert = signal<Alert | null>(null);
+    resolutionObservation = signal('');
+    notifications = signal<Notification[]>([]);
+    showNotifications = signal(false);
 
     // Verifica si el usuario tiene permiso para resolver alertas
     canResolve(): boolean {
@@ -31,6 +38,7 @@ export class AlertList implements OnInit {
 
     ngOnInit(): void {
         this.loadAlerts();
+        this.loadNotifications();
     }
 
     loadAlerts(): void {
@@ -54,9 +62,36 @@ export class AlertList implements OnInit {
         this.router.navigate(['/alerts/new']);
     }
 
-    resolve(alert: Alert): void {
-        this.alertService.resolve(alert.id).subscribe({
+    openResolveModal(alert: Alert): void {
+        this.selectedAlert.set(alert);
+        this.resolutionObservation.set('');
+        this.showResolveModal.set(true);
+    }
+
+    cancelResolve(): void {
+        this.showResolveModal.set(false);
+        this.selectedAlert.set(null);
+        this.resolutionObservation.set('');
+    }
+
+    confirmResolve(): void {
+        const alert = this.selectedAlert();
+        const observation = this.resolutionObservation().trim();
+
+        if (!alert) {
+            return;
+        }
+
+        if (!observation) {
+            this.error.set('La observación es obligatoria.');
+            return;
+        }
+
+        this.alertService.resolve(alert.id, observation).subscribe({
             next: () => {
+                this.showResolveModal.set(false);
+                this.selectedAlert.set(null);
+                this.resolutionObservation.set('');
                 this.loadAlerts();
             },
             error: (err) => {
@@ -64,5 +99,20 @@ export class AlertList implements OnInit {
                 this.error.set('No se pudo resolver la alerta.');
             }
         });
+    }
+
+    loadNotifications(): void {
+        this.notificationService.getMyNotifications().subscribe({
+            next: (data) => {
+                this.notifications.set(data);
+            },
+            error: (err) => {
+                console.error('Error al cargar notificaciones:', err);
+            }
+        });
+    }
+
+    toggleNotifications(): void {
+        this.showNotifications.update(value => !value);
     }
 }

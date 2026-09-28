@@ -1,13 +1,18 @@
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container-fluid py-4 resources-page">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-1">Recursos</h2>
             <p class="text-muted mb-0">Administración de los recursos institucionales.</p>
         </div>
 
-        <button type="button" class="btn btn-primary" (click)="create()">
-            + Nuevo recurso
+        @if (canManageResources()) {
+        <button type="button" class="btn btn-primary btn-new" (click)="create()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+            </svg>
+            Nuevo recurso
         </button>
+        }
     </div>
 
     @if (error()) { <div class="alert alert-danger">{{ error() }}</div>
@@ -20,10 +25,12 @@
     } @else {
 
     <!-- Recursos activos -->
-    <div class="mb-4">
-        <h5 class="mb-3">
-            {{ activeResources.length }} Recursos activos
-        </h5>
+    <div class="mb-4 resource-section">
+        <div class="section-header">
+            <span class="status-dot status-dot-active"></span>
+            <h5 class="mb-0">Recursos activos</h5>
+            <span class="count-pill">{{ activeResources.length }}</span>
+        </div>
 
         <div class="card shadow-sm">
             <div class="card-body p-0">
@@ -35,21 +42,37 @@
                                 <th>Descripción</th>
                                 <th>Cantidad</th>
                                 <th>Estado</th>
+                                @if(canManageResources()) {
                                 <th class="text-end">Acciones</th>
+                                }
                             </tr>
                         </thead>
 
                         <tbody>
                             @for (resource of activeResources; track resource.id) {
                             <tr>
-                                <td><strong>{{ resource.name }}</strong></td>
-                                <td>{{ resource.description || 'Sin descripción' }}</td>
-                                <td>{{ resource.availableQuantity }}</td>
+                                <td>
+                                    <div class="name-cell">
+                                        <span class="name-icon name-icon-active">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                                                <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </span>
+                                        <strong>{{ resource.name }}</strong>
+                                    </div>
+                                </td>
+                                <td class="text-muted">{{ resource.description || 'Sin descripción' }}</td>
+                                <td><span class="qty-pill">{{ resource.availableQuantity }}</span></td>
 
                                 <td>
-                                    <span class="badge bg-success">Activo</span>
+                                    <span class="badge status-badge status-badge-active">
+                                        <span class="status-dot status-dot-sm"></span>
+                                        Activo
+                                    </span>
                                 </td>
 
+                                @if(canManageResources()) {
                                 <td class="text-end">
                                     <button type="button" class="btn btn-sm btn-outline-primary me-2"
                                         (click)="edit(resource.id)">
@@ -61,11 +84,18 @@
                                         Desactivar
                                     </button>
                                 </td>
+                                }
                             </tr>
                             } @empty {
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
-                                    No existen recursos activos.
+                            <tr class="empty-row">
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <rect x="3" y="7" width="18" height="13" rx="2"/>
+                                            <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" stroke-linecap="round"/>
+                                        </svg>
+                                        <p class="mb-0">No existen recursos activos.</p>
+                                    </div>
                                 </td>
                             </tr>
                             }
@@ -77,8 +107,12 @@
     </div>
 
     <!-- Recursos desactivados -->
-    <div>
-        <h5 class="mb-3">Recursos desactivados</h5>
+    <div class="resource-section resource-section-inactive">
+        <div class="section-header">
+            <span class="status-dot status-dot-inactive"></span>
+            <h5 class="mb-0">Recursos desactivados</h5>
+            <span class="count-pill count-pill-muted">{{ inactiveResources.length }}</span>
+        </div>
 
         <div class="card shadow-sm">
             <div class="card-body p-0">
@@ -90,21 +124,36 @@
                                 <th>Descripción</th>
                                 <th>Cantidad</th>
                                 <th>Estado</th>
+                                @if (canManageResources()) {
                                 <th class="text-end">Acciones</th>
+                                }
                             </tr>
                         </thead>
 
                         <tbody>
                             @for (resource of inactiveResources; track resource.id) {
                             <tr>
-                                <td><strong>{{ resource.name }}</strong></td>
-                                <td>{{ resource.description || 'Sin descripción' }}</td>
-                                <td>{{ resource.availableQuantity }}</td>
+                                <td>
+                                    <div class="name-cell">
+                                        <span class="name-icon name-icon-inactive">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="3" width="18" height="18" rx="3"/>
+                                            </svg>
+                                        </span>
+                                        <strong>{{ resource.name }}</strong>
+                                    </div>
+                                </td>
+                                <td class="text-muted">{{ resource.description || 'Sin descripción' }}</td>
+                                <td><span class="qty-pill qty-pill-muted">{{ resource.availableQuantity }}</span></td>
 
                                 <td>
-                                    <span class="badge bg-secondary">Inactivo</span>
+                                    <span class="badge status-badge status-badge-inactive">
+                                        <span class="status-dot status-dot-sm status-dot-inactive"></span>
+                                        Inactivo
+                                    </span>
                                 </td>
 
+                                @if(canManageResources()) {
                                 <td class="text-end">
                                     <button type="button" class="btn btn-sm btn-outline-primary me-2"
                                         (click)="edit(resource.id)">
@@ -116,11 +165,17 @@
                                         Activar
                                     </button>
                                 </td>
+                                }
                             </tr>
                             } @empty {
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
-                                    No existen recursos desactivados.
+                            <tr class="empty-row">
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                            <path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <p class="mb-0">No existen recursos desactivados.</p>
+                                    </div>
                                 </td>
                             </tr>
                             }
@@ -131,5 +186,4 @@
         </div>
     </div>
     }
-
 </div>

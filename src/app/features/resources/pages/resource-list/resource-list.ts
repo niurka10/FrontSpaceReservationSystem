@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ResourceService } from '../../services/resource.service';
 import { Resource } from '../../models/resource.interface';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-resource-list',
@@ -15,9 +16,15 @@ export class ResourceList implements OnInit {
   private resourceService = inject(ResourceService);
   private router = inject(Router);
 
+  private authService = inject(AuthService)
+
   resources = signal<Resource[]>([]);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  canManageResources(): boolean {
+    return this.authService.hasRole('Admin')
+  }
 
   ngOnInit(): void {
     this.load();

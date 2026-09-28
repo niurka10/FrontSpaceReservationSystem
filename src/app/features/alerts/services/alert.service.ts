@@ -25,10 +25,10 @@ export class AlertService {
         return this.http.post<Alert>(this.apiUrl, request);
     }
 
-    resolve(id: string): Observable<void> {
+    resolve(id: string, observation: string): Observable<void> {
         return this.http.patch<void>(
         `${this.apiUrl}/${id}/resolve`,
-        {}
+        {observation}
         );
     }
 

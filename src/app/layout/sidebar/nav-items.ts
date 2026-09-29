@@ -88,6 +88,12 @@ export const NAV_ITEMS: NavItem[] = [
     },
 
     {
+        label: 'Alertas',
+        path: '/alerts',
+        roles: ['Student', 'Teacher', 'Coordinator', 'Vicerrector', 'Bienes', 'Admin'],
+    },
+
+    {
         label: 'Reportes',
         path: '/reports',
         roles: ['Admin'],

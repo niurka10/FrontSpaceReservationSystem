@@ -1,57 +1,267 @@
 .container-fluid {
-  max-width: 1400px;
+    max-width: 1400px;
 }
 
 h2 {
-  color: #101d38;
-  font-weight: 600;
+    color: #101d38;
+    font-weight: 600;
 }
 
 .card {
-  border: none;
-  border-radius: 10px;
-  overflow: hidden;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 .table {
-  vertical-align: middle;
+    vertical-align: middle;
 }
 
 .table thead th {
-  background-color: #101d38;
-  color: white;
-  font-weight: 500;
-  padding: 14px 16px;
-  border: none;
+    background-color: #101d38;
+    color: white;
+    font-weight: 500;
+    padding: 14px 16px;
+    border: none;
 }
 
 .table tbody td {
-  padding: 14px 16px;
+    padding: 14px 16px;
 }
 
 .table tbody tr:last-child td {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .btn-primary {
-  background-color: #3457e8;
-  border-color: #3457e8;
+    background-color: #3457e8;
+    border-color: #3457e8;
 }
 
 .btn-primary:hover {
-  background-color: #2948c7;
-  border-color: #2948c7;
+    background-color: #2948c7;
+    border-color: #2948c7;
 }
 
 .btn-outline-success {
-  border-color: #198754;
+    border-color: #198754;
 }
 
 .badge {
-  font-size: 0.8rem;
-  padding: 6px 10px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
 }
 
 .alert {
-  border-radius: 8px;
+    border-radius: 8px;
+}
+
+
+/* =========================================
+   PESTAÑAS DE ALERTAS
+   ========================================= */
+
+.alert-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+
+/* Tarjeta individual */
+
+.alert-tab {
+    position: relative;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e1e5ec;
+    border-radius: 10px;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(16, 29, 56, 0.04);
+}
+
+
+/* Línea superior */
+
+.alert-tab::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    border-radius: 10px 10px 0 0;
+    transition: background-color 0.2s ease;
+}
+
+
+/* Hover */
+
+.alert-tab:hover {
+    border-color: #cbd3e1;
+    box-shadow: 0 5px 14px rgba(16, 29, 56, 0.08);
+    transform: translateY(-1px);
+}
+
+
+/* Seleccionada */
+
+.alert-tab.active {
+    border-color: #3457e8;
+    box-shadow: 0 5px 16px rgba(52, 87, 232, 0.10);
+}
+
+.alert-tab.active::before {
+    background-color: #3457e8;
+}
+
+
+/* Contenido */
+
+.alert-tab-content {
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+}
+
+
+/* Iconos */
+
+.alert-tab-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+/* Pendientes */
+
+.pending-icon {
+    background: #fff4db;
+    color: #9a6700;
+}
+
+
+/* Resueltas */
+
+.resolved-icon {
+    background: #e8f6ef;
+    color: #198754;
+}
+
+
+/* Todas */
+
+.all-icon {
+    background: #eef2ff;
+    color: #3457e8;
+}
+
+
+/* Texto */
+
+.alert-tab-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-tab-title {
+    color: #101d38;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.alert-tab-description {
+    color: #7a8496;
+    font-size: 0.78rem;
+    margin-top: 3px;
+}
+
+
+/* Número */
+
+.alert-tab-count {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 9px;
+
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+
+/* Colores de contadores */
+
+.pending-count {
+    background: #fff4db;
+    color: #9a6700;
+}
+
+.resolved-count {
+    background: #e8f6ef;
+    color: #198754;
+}
+
+.all-count {
+    background: #eef2ff;
+    color: #3457e8;
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 900px) {
+
+    .alert-tabs {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .alert-tab-content {
+        min-height: 76px;
+        padding: 14px;
+    }
+
+    .alert-tab-icon {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+    }
+
+}
+
+.table tbody tr.alert-selected td {
+    background-color: #fff3cd !important;
+}
+
+.table tbody tr.alert-selected td:first-child {
+    box-shadow: inset 4px 0 0 #ffc107;
 }

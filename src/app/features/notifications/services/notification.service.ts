@@ -7,6 +7,9 @@ export interface Notification {
   message: string;
   isRead: boolean;
   createdAt: string;
+
+  // Alerta relacionada con esta notificación
+  alertId: string | null;
 }
 
 @Injectable({
@@ -15,10 +18,13 @@ export interface Notification {
 export class NotificationService {
 
   private http = inject(HttpClient);
-
   private apiUrl = '/api/Notification';
 
   getMyNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(this.apiUrl);
+  }
+
+  markAsRead(id: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/read`, {});
   }
 }

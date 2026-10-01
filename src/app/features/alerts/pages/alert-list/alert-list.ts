@@ -54,6 +54,8 @@ export class AlertList implements OnInit {
     selectedAlert = signal<Alert | null>(null);
     selectedAlertId = signal<string | null>(null);
     resolutionObservation = signal('');
+    showDetailModal = signal(false);
+    detailAlert = signal<Alert | null>(null);
 
     notifications = signal<Notification[]>([]);
 
@@ -126,6 +128,15 @@ export class AlertList implements OnInit {
         this.router.navigate(['/alerts/new']);
     }
 
+    openDetailModal(alert: Alert): void {
+        this.detailAlert.set(alert);
+        this.showDetailModal.set(true);
+    }
+
+    closeDetailModal(): void {
+        this.showDetailModal.set(false);
+        this.detailAlert.set(null);
+    }
     openResolveModal(alert: Alert): void {
         this.selectedAlert.set(alert);
         this.resolutionObservation.set('');

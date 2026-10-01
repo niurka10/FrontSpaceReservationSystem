@@ -1,0 +1,70 @@
+<div class="notification-wrapper">
+
+    <!-- Campanita -->
+    <button
+        type="button"
+        class="notification-button"
+        (click)="toggleNotifications()">
+
+        <span class="bell-icon">🔔</span>
+
+        @if (unreadNotifications().length > 0) {
+            <span class="notification-badge">
+                {{ unreadNotifications().length }}
+            </span>
+        }
+
+    </button>
+
+
+    <!-- Panel -->
+    @if (showNotifications()) {
+
+        <div class="notification-panel">
+
+            <div class="notification-header">
+                <strong>Notificaciones</strong>
+            </div>
+
+            <div class="notification-body">
+
+                @if (visibleNotifications().length === 0) {
+
+                    <p class="empty-notifications">
+                        No tienes notificaciones.
+                    </p>
+
+                } @else {
+
+                    @for (
+                        notification of visibleNotifications();
+                        track notification.id
+                    ) {
+
+                        <div
+                            class="notification-item"
+                            [class.unread]="!notification.isRead"
+                            role="button"
+                            (click)="markNotificationAsRead(notification)">
+
+                            <div class="notification-message">
+                                {{ getNotificationMessage(notification) }}
+                            </div>
+
+                            <small class="notification-date">
+                                {{ notification.createdAt | date:'short' }}
+                            </small>
+
+                        </div>
+
+                    }
+
+                }
+
+            </div>
+
+        </div>
+
+    }
+
+</div>

@@ -10,7 +10,7 @@
         <div class="d-flex align-items-center gap-3">
 
             <!-- Campanita -->
-            <div class="position-relative">
+            <!--<div class="position-relative">
                 <button type="button" class="btn btn-light position-relative" (click)="toggleNotifications()">
                     🔔
                     @if (unreadNotifications().length > 0) {
@@ -20,7 +20,7 @@
                     }
                 </button>
 
-                <!-- Panel de notificaciones -->
+                Panel de notificaciones 
                 @if (showNotifications()) {
                 <div class="card shadow position-absolute end-0 mt-2" style="width: 320px; z-index: 1050;">
 
@@ -43,25 +43,25 @@
                         track notification.id
                         ) {
 
-                            <div class="border-bottom pb-2 mb-2" role="button"
-                                (click)="markNotificationAsRead(notification)">
+                        <div class="border-bottom pb-2 mb-2" role="button"
+                            (click)="markNotificationAsRead(notification)">
 
-                                <div>
-                                    {{ notification.message }}
-                                </div>
-
-                                <small class="text-muted">
-                                    {{ notification.createdAt | date:'short' }}
-                                </small>
-
+                            <div>
+                                {{ notification.message }}
                             </div>
-                            }
+
+                            <small class="text-muted">
+                                {{ notification.createdAt | date:'short' }}
+                            </small>
+
+                        </div>
+                        }
                         }
 
                     </div>
                 </div>
                 }
-            </div>
+            </div> -->
 
             <button class="btn btn-primary" (click)="create()">
                 + Nueva alerta
@@ -173,7 +173,7 @@
         } @else if (activeTab() === 'resolved') {
         No hay alertas resueltas.
         } @else {
-            No existen alertas registradas.
+        No existen alertas registradas.
         }
     </div>
     } @else {
@@ -208,21 +208,21 @@
                         <tr [class.alert-selected]="alert.id === selectedAlertId()">
                             <td>
                                 @switch (alert.type) {
-                                    @case (1) {
-                                    Daño
-                                    }
-                                    @case (2) {
-                                    No disponible
-                                    }
-                                    @case (3) {
-                                    Mantenimiento
-                                    }
-                                    @case (4) {
-                                    Incidencia
-                                    }
-                                    @case (5) {
-                                    Otro
-                                    }
+                                @case (1) {
+                                Daño
+                                }
+                                @case (2) {
+                                No disponible
+                                }
+                                @case (3) {
+                                Mantenimiento
+                                }
+                                @case (4) {
+                                Incidencia
+                                }
+                                @case (5) {
+                                Otro
+                                }
                                 }
                             </td>
 
@@ -232,10 +232,10 @@
 
                             <td>
                                 @if (alert.spaceId) {
-                                    Espacio
+                                Espacio
                                 }
                                 @if (alert.resourceId) {
-                                    Recurso
+                                Recurso
                                 }
                             </td>
 
@@ -253,15 +253,25 @@
 
                             @if (canResolve()) {
                             <td class="text-end">
-                                @if (!alert.isResolved) {
-                                <button class="btn btn-sm btn-outline-success" (click)="openResolveModal(alert)">
-                                    Resolver
-                                </button>
-                                } @else {
-                                <span class="text-muted">
-                                    Resuelta
-                                </span>
-                                }
+                                <div class="d-flex justify-content-end gap-2">
+
+                                    <button type="button" class="btn btn-sm btn-outline-primary" title="Ver detalle"
+                                        (click)="openDetailModal(alert)">
+                                        👁️
+                                    </button>
+
+                                    @if (!alert.isResolved) {
+                                    <button type="button" class="btn btn-sm btn-outline-success"
+                                        (click)="openResolveModal(alert)">
+                                        Resolver
+                                    </button>
+                                    } @else {
+                                    <span class="text-muted align-self-center">
+                                        Resuelta
+                                    </span>
+                                    }
+
+                                </div>
                             </td>
                             }
                         </tr>
@@ -307,6 +317,112 @@
                     Resolver y notificar
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+}
+<!-- MODAL DETALLE -->
+@if (showDetailModal()) {
+<div class="modal-backdrop fade show"></div>
+
+<div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content detail-modal">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de la alerta</h5>
+                <button type="button" class="btn-close" (click)="closeDetailModal()"></button>
+            </div>
+
+            @if (detailAlert(); as alert) {
+            <div class="modal-body">
+
+                <!-- Resumen: tipo + estado -->
+                <div class="detail-summary">
+                    <div>
+                        <span class="detail-label">Tipo de incidencia</span>
+                        <div class="detail-type">
+                            @switch (alert.type) {
+                                @case (1) { Daño }
+                                @case (2) { No disponible }
+                                @case (3) { Mantenimiento }
+                                @case (4) { Incidencia }
+                                @case (5) { Otro }
+                            }
+                        </div>
+                    </div>
+
+                    @if (alert.isResolved) {
+                        <span class="badge bg-success">Resuelta</span>
+                    } @else {
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                    }
+                </div>
+
+                <!-- Descripción -->
+                <div class="detail-section">
+                    <h6 class="detail-section-title">Descripción</h6>
+                    <div class="detail-description">{{ alert.description }}</div>
+                </div>
+
+                <!-- Información del reporte -->
+                <div class="detail-section">
+                    <h6 class="detail-section-title">Información del reporte</h6>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Reportado por</span>
+                        <span class="detail-row-value">{{ alert.createdByName || 'No disponible' }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Fecha de reporte</span>
+                        <span class="detail-row-value">{{ alert.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Destino</span>
+                        <span class="detail-row-value">
+                            @if (alert.spaceId && alert.resourceId) {
+                                Espacio y Recurso
+                            } @else if (alert.resourceId) {
+                                Recurso
+                            } @else if (alert.spaceId) {
+                                Espacio
+                            } @else {
+                                No especificado
+                            }
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Resolución -->
+                @if (alert.isResolved) {
+                <div class="detail-section detail-resolution">
+                    <h6 class="detail-section-title">Resolución</h6>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Fecha de resolución</span>
+                        <span class="detail-row-value">
+                            {{ alert.resolvedAt ? (alert.resolvedAt | date:'dd/MM/yyyy, HH:mm') : 'No disponible' }}
+                        </span>
+                    </div>
+
+                    <div class="detail-observation">
+                        <span class="detail-row-label">Observación</span>
+                        <p>{{ alert.resolutionObservation || 'Sin observación' }}</p>
+                    </div>
+                </div>
+                }
+
+            </div>
+            }
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+                    Cerrar
+                </button>
+            </div>
+
         </div>
     </div>
 </div>

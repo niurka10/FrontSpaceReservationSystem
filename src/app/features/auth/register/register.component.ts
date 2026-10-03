@@ -35,15 +35,38 @@ export class RegisterComponent {
     { label: 'Docente', value: RegisterRoleCode.Teacher },
   ];
 
+  readonly emailDomain = '@unibe.com';
   readonly form = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(3)]],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    phone: ['', [Validators.required]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150),
+    Validators.pattern(/^[\p{L}\s'.-]+$/u)]],
+    emailUser: ['', [Validators.required, Validators.pattern(/^[a-z0-9.]+$/)]],
+    password: ['', [Validators.required, Validators.minLength(8),
+    Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]],
+    phone: ['', [Validators.required, Validators.pattern(/^\d{7,10}$/)]],
     requestedRole: [RegisterRoleCode.Student, [Validators.required]],
     facultyId: ['', [Validators.required]],
     careerId: [{ value: '', disabled: true }, [Validators.required]],
   });
+
+  readonly showPassword = signal(false);
+
+  get pwd(): string { return this.form.controls.password.value ?? ''; }
+  get pwdHasLength(): boolean { return this.pwd.length >= 8; }
+  get pwdHasLetter(): boolean { return /[A-Za-z]/.test(this.pwd); }
+  get pwdHasNumber(): boolean { return /\d/.test(this.pwd); }
+
+  onEmailInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const clean = input.value
+      .split('@')[0]                  
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // quita tildes
+      .replace(/[^a-z0-9.]/g, '');      // deja solo letras, números y punto
+    if (clean !== input.value) {
+      input.value = clean;
+      this.form.controls.emailUser.setValue(clean);
+    }
+  }
 
   ngOnInit(): void {
     this.facultyService.getAll().subscribe({
@@ -106,8 +129,8 @@ export class RegisterComponent {
 
     this.authService
       .register({
-        name: raw.name!,
-        email: raw.email!,
+        name: raw.name!.trim(),
+        email: (raw.emailUser! + this.emailDomain).toLowerCase(),
         password: raw.password!,
         phone: raw.phone!,
         requestedRole: Number(raw.requestedRole),

@@ -7,14 +7,13 @@ $muted: #6c7690;
 $border: #e4e8f2;
 $danger: #c22b2b;
 $danger-bg: #fdeaea;
+$success: #1f9d55;
 
 .login-wrap {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: 
+  padding: 16px;
+  background:
     radial-gradient(circle at 15% 20%, rgba(92, 124, 245, 0.18), transparent 45%),
     radial-gradient(circle at 85% 80%, rgba(52, 87, 232, 0.22), transparent 40%),
     linear-gradient(160deg, $navy 0%, #0b1428 100%);
@@ -22,11 +21,19 @@ $danger-bg: #fdeaea;
 
 .login-card {
   width: 100%;
-  max-width: 440px; // Ligeramente ampliado para acomodar los selectores
+  max-width: 460px;
+  margin: auto;
+  padding: 22px 26px;
   background: #ffffff;
   border-radius: 18px;
   box-shadow: 0 30px 60px -20px rgba(0, 0, 10, 0.5);
   padding: 34px 32px;
+  animation: cardIn 0.4s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .brand {
@@ -34,11 +41,11 @@ $danger-bg: #fdeaea;
   align-items: center;
   gap: 10px;
   justify-content: center;
-  padding: 0 0 22px 0;
+  padding: 0 0 12px 0;
 
   .mark {
-    width: 30px;
-    height: 30px;
+    width: 26px;
+    height: 26px;
     border-radius: 8px;
     background: linear-gradient(135deg, $accent-2, $accent);
     position: relative;
@@ -56,7 +63,7 @@ $danger-bg: #fdeaea;
 
   .word {
     font-weight: 800;
-    font-size: 16.5px;
+    font-size: 15px;
     letter-spacing: 0.3px;
     color: $text;
 
@@ -73,7 +80,7 @@ $danger-bg: #fdeaea;
 }
 
 .login-title {
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
   text-align: center;
   margin: 0 0 3px;
@@ -81,10 +88,10 @@ $danger-bg: #fdeaea;
 }
 
 .login-desc {
-  font-size: 13px;
+  font-size: 12.5px;
   color: $muted;
   text-align: center;
-  margin: 0 0 22px;
+  margin: 0 0 12px;
 }
 
 .login-error {
@@ -97,32 +104,54 @@ $danger-bg: #fdeaea;
   margin-bottom: 14px;
 }
 
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: $accent;
+  margin: 14px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid $border;
+
+  &:first-of-type { margin-top: 0; }
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
 .field {
-  margin-bottom: 14px;
+  margin-bottom: 9px;
 
   label {
     display: block;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 600;
     color: $text;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
   }
 
   // Estilos compartidos para Inputs y Selects
   input, select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 7px 10px;
     border: 1.5px solid $border;
-    border-radius: 9px;
-    font-size: 14px;
+    border-radius: 8px;
+    font-size: 13.5px;
     background: #fbfcfe;
     color: $text;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
 
     &:focus {
       outline: none;
       border-color: $accent-2;
       background: #fff;
+      box-shadow: 0 0 0 3px rgba(92, 124, 245, 0.15);
     }
 
     &:disabled {
@@ -130,6 +159,12 @@ $danger-bg: #fdeaea;
       color: $muted;
       cursor: not-allowed;
     }
+  }
+
+  input.ng-invalid.ng-touched,
+  select.ng-invalid.ng-touched {
+    border-color: $danger;
+    background: #fffafa;
   }
 }
 
@@ -140,12 +175,107 @@ $danger-bg: #fdeaea;
   display: block;
 }
 
+// Campo con adorno a un lado (dominio del correo / botón mostrar contraseña)
+.input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+
+  .suffix { font-size: 12.5px; padding: 0 10px; }
+  .toggle { font-size: 12px; padding: 0 12px; }
+
+  background: #fbfcfe;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus-within {
+    border-color: $accent-2;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(92, 124, 245, 0.15);
+  }
+
+  &:has(input.ng-invalid.ng-touched) { border-color: $danger; }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+
+    &:focus {
+      box-shadow: none;
+      background: transparent;
+    }
+  }
+
+  .suffix {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: $accent-light;
+    color: $accent;
+    font-weight: 600;
+    font-size: 13.5px;
+    border-left: 1.5px solid $border;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .toggle {
+    border: none;
+    border-left: 1.5px solid $border;
+    background: $accent-light;
+    color: $accent;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 0 14px;
+    cursor: pointer;
+
+    &:hover { filter: brightness(0.96); }
+  }
+}
+
+// Requisitos de la contraseña
+.checklist {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+
+  li {
+    font-size: 11px;
+    color: $muted;
+    padding-left: 15px;
+    position: relative;
+    transition: color 0.2s;
+
+    &::before {
+      content: "○";
+      position: absolute;
+      left: 0;
+    }
+
+    &.ok {
+      color: $success;
+
+      &::before {
+        content: "✓";
+        font-weight: 700;
+      }
+    }
+  }
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 11px 16px;
+  padding: 9px 16px;
   border-radius: 9px;
   border: none;
   font-size: 14px;
@@ -154,7 +284,7 @@ $danger-bg: #fdeaea;
   color: #fff;
   transition: filter 0.15s, transform 0.1s;
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 4px;
 
   &:hover {
     filter: brightness(1.08);
@@ -174,11 +304,24 @@ $danger-bg: #fdeaea;
   width: 100%;
 }
 
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .register-link {
   text-align: center;
   font-size: 13px;
   color: $muted;
-  margin-top: 18px;
+  margin-top: 12px;
 
   a {
     color: $accent;

@@ -1,57 +1,546 @@
 .container-fluid {
-  max-width: 1400px;
+    max-width: 1400px;
 }
 
 h2 {
-  color: #101d38;
-  font-weight: 600;
+    color: #101d38;
+    font-weight: 600;
 }
 
 .card {
-  border: none;
-  border-radius: 10px;
-  overflow: hidden;
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 .table {
-  vertical-align: middle;
+    vertical-align: middle;
 }
 
 .table thead th {
-  background-color: #101d38;
-  color: white;
-  font-weight: 500;
-  padding: 14px 16px;
-  border: none;
+    background-color: #101d38;
+    color: white;
+    font-weight: 500;
+    padding: 14px 16px;
+    border: none;
 }
 
 .table tbody td {
-  padding: 14px 16px;
+    padding: 14px 16px;
 }
 
 .table tbody tr:last-child td {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .btn-primary {
-  background-color: #3457e8;
-  border-color: #3457e8;
+    background-color: #3457e8;
+    border-color: #3457e8;
 }
 
 .btn-primary:hover {
-  background-color: #2948c7;
-  border-color: #2948c7;
+    background-color: #2948c7;
+    border-color: #2948c7;
 }
 
 .btn-outline-success {
-  border-color: #198754;
+    border-color: #198754;
 }
 
 .badge {
-  font-size: 0.8rem;
-  padding: 6px 10px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
 }
 
 .alert {
-  border-radius: 8px;
+    border-radius: 8px;
+}
+
+
+/* =========================================
+   PESTAÑAS DE ALERTAS
+   ========================================= */
+
+.alert-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+
+/* Tarjeta individual */
+
+.alert-tab {
+    position: relative;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e1e5ec;
+    border-radius: 10px;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(16, 29, 56, 0.04);
+}
+
+
+/* Línea superior */
+
+.alert-tab::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    border-radius: 10px 10px 0 0;
+    transition: background-color 0.2s ease;
+}
+
+
+/* Hover */
+
+.alert-tab:hover {
+    border-color: #cbd3e1;
+    box-shadow: 0 5px 14px rgba(16, 29, 56, 0.08);
+    transform: translateY(-1px);
+}
+
+
+/* Seleccionada */
+
+.alert-tab.active {
+    border-color: #3457e8;
+    box-shadow: 0 5px 16px rgba(52, 87, 232, 0.10);
+}
+
+.alert-tab.active::before {
+    background-color: #3457e8;
+}
+
+
+/* Contenido */
+
+.alert-tab-content {
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+}
+
+
+/* Iconos */
+
+.alert-tab-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+/* Pendientes */
+
+.pending-icon {
+    background: #fff4db;
+    color: #9a6700;
+}
+
+
+/* Resueltas */
+
+.resolved-icon {
+    background: #e8f6ef;
+    color: #198754;
+}
+
+
+/* Todas */
+
+.all-icon {
+    background: #eef2ff;
+    color: #3457e8;
+}
+
+
+/* Texto */
+
+.alert-tab-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-tab-title {
+    color: #101d38;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.alert-tab-description {
+    color: #7a8496;
+    font-size: 0.78rem;
+    margin-top: 3px;
+}
+
+
+/* Número */
+
+.alert-tab-count {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 9px;
+
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+
+/* Colores de contadores */
+
+.pending-count {
+    background: #fff4db;
+    color: #9a6700;
+}
+
+.resolved-count {
+    background: #e8f6ef;
+    color: #198754;
+}
+
+.all-count {
+    background: #eef2ff;
+    color: #3457e8;
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 900px) {
+
+    .alert-tabs {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .alert-tab-content {
+        min-height: 76px;
+        padding: 14px;
+    }
+
+    .alert-tab-icon {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+    }
+
+}
+
+.table tbody tr.alert-selected td {
+    background-color: #fff3cd !important;
+}
+
+.table tbody tr.alert-selected td:first-child {
+    box-shadow: inset 4px 0 0 #ffc107;
+}
+
+
+/* =========================================
+   MEJORAS DE TABLA (solo visual)
+   ========================================= */
+
+.card.shadow-sm {
+    border: 1px solid #e1e5ec;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(16, 29, 56, 0.05) !important;
+}
+
+.table {
+    table-layout: fixed;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Encabezado */
+.table thead th {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 16px 20px;
+    white-space: nowrap;
+}
+
+/* Celdas */
+.table tbody td {
+    padding: 18px 20px;
+    font-size: 0.92rem;
+    color: #2b3445;
+    border-bottom: 1px solid #eef0f4;
+}
+
+/* Anchos de columna: Tipo | Descripción | Destino | Estado | Acciones */
+.table thead th:nth-child(1) { width: 17%; }
+.table thead th:nth-child(2) { width: 33%; }
+.table thead th:nth-child(3) { width: 18%; }
+.table thead th:nth-child(4) { width: 14%; }
+.table thead th:nth-child(5) { width: 18%; }
+
+/* Descripción larga: no rompe la tabla */
+.table tbody td:nth-child(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table tbody td:first-child {
+    font-weight: 500;
+    color: #101d38;
+}
+
+.table-hover tbody tr:not(.alert-selected):hover td {
+    background-color: #f6f8fc;
+}
+
+.table .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.table td .btn-sm {
+    height: 34px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table td .btn-outline-primary {
+    width: 34px;
+    padding: 0;
+    font-size: 0.95rem;
+}
+
+.table td .btn-outline-success:hover {
+    background-color: #198754;
+    color: #fff;
+}
+
+.alert-tabs {
+    margin-bottom: 24px !important;
+}
+
+/* =========================================
+   TABLA MÁS COMPACTA Y CENTRADA
+   ========================================= */
+
+.container-fluid {
+    max-width: 1150px;
+}
+
+/* Anchos: Tipo | Descripción | Destino | Estado | Acciones */
+.table thead th:nth-child(1) { width: 16%; }
+.table thead th:nth-child(2) { width: 30%; }
+.table thead th:nth-child(3) { width: 18%; }
+.table thead th:nth-child(4) { width: 16%; }
+.table thead th:nth-child(5) { width: 20%; }
+
+/* Tipo, Destino y Estado centrados (encabezado y celdas) */
+.table thead th:nth-child(1),
+.table tbody td:nth-child(1),
+.table thead th:nth-child(3),
+.table tbody td:nth-child(3),
+.table thead th:nth-child(4),
+.table tbody td:nth-child(4) {
+    text-align: center;
+}
+
+/* Descripción a la izquierda, con aire */
+.table thead th:nth-child(2),
+.table tbody td:nth-child(2) {
+    text-align: left;
+    padding-left: 28px;
+}
+
+/* Filas un poco menos altas */
+.table tbody td {
+    padding: 14px 20px;
+}
+
+/* =========================================
+   MODAL DE DETALLE
+   ========================================= */
+
+.detail-modal {
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(16, 29, 56, 0.25);
+}
+
+.detail-modal .modal-header {
+    background: #101d38;
+    color: #fff;
+    border-bottom: none;
+    padding: 18px 24px;
+}
+
+.detail-modal .modal-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.detail-modal .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.detail-modal .modal-body {
+    padding: 22px 24px 8px;
+}
+
+.detail-modal .modal-footer {
+    border-top: 1px solid #eef0f4;
+    padding: 14px 24px;
+}
+
+/* Resumen: tipo + estado */
+.detail-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #eef0f4;
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #7a8496;
+    margin-bottom: 4px;
+}
+
+.detail-type {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #101d38;
+}
+
+/* Secciones */
+.detail-section {
+    margin-bottom: 20px;
+}
+
+.detail-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #3457e8;
+    margin-bottom: 10px;
+}
+
+/* Descripción */
+.detail-description {
+    background: #f6f8fc;
+    border: 1px solid #e1e5ec;
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: #2b3445;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+/* Filas etiqueta / valor */
+.detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eef0f4;
+}
+
+.detail-section .detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row-label {
+    font-size: 0.85rem;
+    color: #7a8496;
+}
+
+.detail-row-value {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: #101d38;
+    text-align: right;
+}
+
+/* Resolución */
+.detail-resolution {
+    background: #f1faf5;
+    border: 1px solid #c6e8d6;
+    border-left: 4px solid #198754;
+    border-radius: 10px;
+    padding: 14px 16px 6px;
+}
+
+.detail-resolution .detail-section-title {
+    color: #198754;
+}
+
+.detail-resolution .detail-row {
+    border-bottom-color: #d9efe3;
+}
+
+.detail-observation {
+    padding: 12px 0 8px;
+}
+
+.detail-observation p {
+    margin: 6px 0 0;
+    color: #2b3445;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+/* Tipo alineado a la izquierda */
+.table thead th:nth-child(1),
+.table tbody td:nth-child(1) {
+    text-align: left;
+    padding-left: 28px;
 }

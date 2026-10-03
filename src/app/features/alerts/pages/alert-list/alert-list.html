@@ -1,7 +1,5 @@
 <div class="container-fluid py-4">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
-
         <div>
             <h2 class="mb-1">Alertas</h2>
             <p class="text-muted mb-0">
@@ -12,21 +10,17 @@
         <div class="d-flex align-items-center gap-3">
 
             <!-- Campanita -->
-            <div class="position-relative">
-
+            <!--<div class="position-relative">
                 <button type="button" class="btn btn-light position-relative" (click)="toggleNotifications()">
-
                     🔔
-
-                    @if (notifications().length > 0) {
+                    @if (unreadNotifications().length > 0) {
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {{ notifications().length }}
+                        {{ unreadNotifications().length }}
                     </span>
                     }
-
                 </button>
 
-                <!-- Panel de notificaciones -->
+                Panel de notificaciones 
                 @if (showNotifications()) {
                 <div class="card shadow position-absolute end-0 mt-2" style="width: 320px; z-index: 1050;">
 
@@ -44,9 +38,13 @@
 
                         } @else {
 
-                        @for (notification of notifications(); track notification.id) {
+                        @for (
+                        notification of notifications();
+                        track notification.id
+                        ) {
 
-                        <div class="border-bottom pb-2 mb-2">
+                        <div class="border-bottom pb-2 mb-2" role="button"
+                            (click)="markNotificationAsRead(notification)">
 
                             <div>
                                 {{ notification.message }}
@@ -57,26 +55,22 @@
                             </small>
 
                         </div>
-
                         }
-
                         }
 
                     </div>
                 </div>
                 }
-
-            </div>
+            </div> -->
 
             <button class="btn btn-primary" (click)="create()">
                 + Nueva alerta
             </button>
-
         </div>
-
     </div>
 
     @if (loading()) {
+
     <div class="text-center py-5">
         <p>Cargando alertas...</p>
     </div>
@@ -87,36 +81,131 @@
         {{ error() }}
     </div>
     }
+    @else {
+    @if (canResolve()) {
 
-    @else if (alerts().length === 0) {
-    <div class="alert alert-info">
-        No existen alertas registradas.
+    <!-- PESTAÑAS DE ALERTAS -->
+    <div class="alert-tabs mb-4">
+        <button type="button" class="alert-tab" [class.active]="activeTab() === 'pending'" (click)="setTab('pending')">
+            <div class="alert-tab-content">
+                <div class="alert-tab-icon pending-icon">
+                    <span>!</span>
+                </div>
+                <div class="alert-tab-info">
+                    <span class="alert-tab-title">
+                        Pendientes
+                    </span>
+                    <span class="alert-tab-description">
+                        Incidencias por atender
+                    </span>
+                </div>
+                <span class="alert-tab-count pending-count">
+                    {{ alerts().filter(a => !a.isResolved).length }}
+                </span>
+            </div>
+        </button>
+
+
+        <button type="button" class="alert-tab" [class.active]="activeTab() === 'resolved'"
+            (click)="setTab('resolved')">
+
+            <div class="alert-tab-content">
+
+                <div class="alert-tab-icon resolved-icon">
+                    <span>✓</span>
+                </div>
+
+                <div class="alert-tab-info">
+                    <span class="alert-tab-title">
+                        Resueltas
+                    </span>
+
+                    <span class="alert-tab-description">
+                        Incidencias solucionadas
+                    </span>
+                </div>
+
+                <span class="alert-tab-count resolved-count">
+                    {{ alerts().filter(a => a.isResolved).length }}
+                </span>
+
+            </div>
+
+        </button>
+
+
+        <button type="button" class="alert-tab" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+
+            <div class="alert-tab-content">
+
+                <div class="alert-tab-icon all-icon">
+                    <span>≡</span>
+                </div>
+
+                <div class="alert-tab-info">
+                    <span class="alert-tab-title">
+                        Todas
+                    </span>
+
+                    <span class="alert-tab-description">
+                        Total de incidencias
+                    </span>
+                </div>
+
+                <span class="alert-tab-count all-count">
+                    {{ alerts().length }}
+                </span>
+
+            </div>
+
+        </button>
+
     </div>
+
     }
 
-    @else {
+
+    <!-- CONTENIDO DE LA PESTAÑA -->
+    @if (filteredAlerts().length === 0) {
+    <div class="alert alert-info">
+        @if (activeTab() === 'pending') {
+        No hay alertas pendientes.
+        } @else if (activeTab() === 'resolved') {
+        No hay alertas resueltas.
+        } @else {
+        No existen alertas registradas.
+        }
+    </div>
+    } @else {
     <div class="card shadow-sm">
         <div class="card-body p-0">
-
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
-
                     <thead>
                         <tr>
                             <th>Tipo</th>
                             <th>Descripción</th>
                             <th>Destino</th>
                             <th>Estado</th>
+
                             @if (canResolve()) {
-                            <th class="text-end">Acciones</th>
+                            <th class="text-end">
+                                Acciones
+                            </th>
                             }
+
                         </tr>
+
                     </thead>
 
                     <tbody>
-                        @for (alert of alerts(); track alert.id) {
-                        <tr>
 
+                        @for (
+                        alert of filteredAlerts();
+                        track alert.id
+                        ) {
+
+                        <tr [class.alert-selected]="alert.id === selectedAlertId()">
                             <td>
                                 @switch (alert.type) {
                                 @case (1) {
@@ -145,7 +234,6 @@
                                 @if (alert.spaceId) {
                                 Espacio
                                 }
-
                                 @if (alert.resourceId) {
                                 Recurso
                                 }
@@ -165,15 +253,25 @@
 
                             @if (canResolve()) {
                             <td class="text-end">
-                                @if (!alert.isResolved) {
-                                <button class="btn btn-sm btn-outline-success" (click)="openResolveModal(alert)">
-                                    Resolver
-                                </button>
-                                } @else {
-                                <span class="text-muted">
-                                    Resuelta
-                                </span>
-                                }
+                                <div class="d-flex justify-content-end gap-2">
+
+                                    <button type="button" class="btn btn-sm btn-outline-primary" title="Ver detalle"
+                                        (click)="openDetailModal(alert)">
+                                        👁️
+                                    </button>
+
+                                    @if (!alert.isResolved) {
+                                    <button type="button" class="btn btn-sm btn-outline-success"
+                                        (click)="openResolveModal(alert)">
+                                        Resolver
+                                    </button>
+                                    } @else {
+                                    <span class="text-muted align-self-center">
+                                        Resuelta
+                                    </span>
+                                    }
+
+                                </div>
                             </td>
                             }
                         </tr>
@@ -184,30 +282,30 @@
         </div>
     </div>
     }
+    }
 </div>
 
+<!-- MODAL RESOLVER -->
 @if (showResolveModal()) {
 <div class="modal-backdrop fade show"></div>
-
 <div class="modal fade show d-block" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-
             <div class="modal-header">
-                <h5 class="modal-title">Resolver alerta</h5>
-                <button type="button" class="btn-close" (click)="cancelResolve()"></button>
+                <h5 class="modal-title">
+                    Resolver alerta
+                </h5>
+                <button type="button" class="btn-close" (click)="cancelResolve()">
+                </button>
             </div>
 
             <div class="modal-body">
-
                 <label class="form-label">
                     Observación
                 </label>
-
                 <textarea class="form-control" rows="4" placeholder="Escriba la observación de la resolución..."
                     [value]="resolutionObservation()" (input)="resolutionObservation.set($any($event.target).value)">
-                </textarea>
-
+                    </textarea>
             </div>
 
             <div class="modal-footer">
@@ -217,6 +315,111 @@
 
                 <button type="button" class="btn btn-success" (click)="confirmResolve()">
                     Resolver y notificar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+<!-- MODAL DETALLE -->
+@if (showDetailModal()) {
+<div class="modal-backdrop fade show"></div>
+
+<div class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content detail-modal">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de la alerta</h5>
+                <button type="button" class="btn-close" (click)="closeDetailModal()"></button>
+            </div>
+
+            @if (detailAlert(); as alert) {
+            <div class="modal-body">
+
+                <!-- Resumen: tipo + estado -->
+                <div class="detail-summary">
+                    <div>
+                        <span class="detail-label">Tipo de incidencia</span>
+                        <div class="detail-type">
+                            @switch (alert.type) {
+                                @case (1) { Daño }
+                                @case (2) { No disponible }
+                                @case (3) { Mantenimiento }
+                                @case (4) { Incidencia }
+                                @case (5) { Otro }
+                            }
+                        </div>
+                    </div>
+
+                    @if (alert.isResolved) {
+                        <span class="badge bg-success">Resuelta</span>
+                    } @else {
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                    }
+                </div>
+
+                <!-- Descripción -->
+                <div class="detail-section">
+                    <h6 class="detail-section-title">Descripción</h6>
+                    <div class="detail-description">{{ alert.description }}</div>
+                </div>
+
+                <!-- Información del reporte -->
+                <div class="detail-section">
+                    <h6 class="detail-section-title">Información del reporte</h6>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Reportado por</span>
+                        <span class="detail-row-value">{{ alert.createdByName || 'No disponible' }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Fecha de reporte</span>
+                        <span class="detail-row-value">{{ alert.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Destino</span>
+                        <span class="detail-row-value">
+                            @if (alert.spaceId && alert.resourceId) {
+                                Espacio y Recurso
+                            } @else if (alert.resourceId) {
+                                Recurso
+                            } @else if (alert.spaceId) {
+                                Espacio
+                            } @else {
+                                No especificado
+                            }
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Resolución -->
+                @if (alert.isResolved) {
+                <div class="detail-section detail-resolution">
+                    <h6 class="detail-section-title">Resolución</h6>
+
+                    <div class="detail-row">
+                        <span class="detail-row-label">Fecha de resolución</span>
+                        <span class="detail-row-value">
+                            {{ alert.resolvedAt ? (alert.resolvedAt | date:'dd/MM/yyyy, HH:mm') : 'No disponible' }}
+                        </span>
+                    </div>
+
+                    <div class="detail-observation">
+                        <span class="detail-row-label">Observación</span>
+                        <p>{{ alert.resolutionObservation || 'Sin observación' }}</p>
+                    </div>
+                </div>
+                }
+
+            </div>
+            }
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">
+                    Cerrar
                 </button>
             </div>
 

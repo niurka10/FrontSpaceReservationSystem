@@ -1,4 +1,3 @@
-
 .shell {
   display: flex;
   flex-direction: column;
@@ -13,4 +12,13 @@
 .shell-content {
   flex: 1;
   padding: 1.5rem;
+}
+
+.shell-topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 15px 25px 0 25px;
+  position: relative;
+  z-index: 1100;
 }

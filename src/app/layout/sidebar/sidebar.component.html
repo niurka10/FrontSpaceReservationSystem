@@ -58,12 +58,20 @@
     </a>
     }
 
-    <!-- AGREGAR RESERVA -->
+    <!-- AGREGAR RESERVA ESPACIOS -->
 
     @if (canSee('/reservations/new') ) {
     <a routerLink="/reservations/new" routerLinkActive="active" class="navitem main-item">
       <i class="bi bi-plus-circle"></i>
-      <span>Agregar Reserva</span>
+      <span>Reservar Espacios</span>
+    </a>
+    }
+
+    <!-- RESERVAR SOLO RECURSOS -->
+    @if (canSee('/reservations/new-resources')) {
+    <a routerLink="/reservations/new-resources" routerLinkActive="active" class="navitem main-item">
+      <i class="bi bi-box-seam"></i>
+      <span>Reservar Recursos</span>
     </a>
     }
 
@@ -285,11 +293,19 @@
     </details>
     }
 
+    <!--ALERTAS-->
+    @if (canSee('/alerts')) {
+    <a routerLink="/alerts" routerLinkActive="active" class="navitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-3-9-9" />
+        <path d="M10 21h4" />
+      </svg>
 
-    <!-- =========================
-         REPORTES
-         ========================= -->
+      <span>Alertas</span>
+    </a>
+    }
 
+    <!--REPORTES-->
     @if (canSee('/reports')) {
     <a routerLink="/reports" routerLinkActive="active" class="navitem main-item">
 
@@ -310,10 +326,7 @@
   </nav>
 
 
-  <!-- =========================
-       USUARIO
-       ========================= -->
-
+  <!-- USUARIO-->
   <div class="sidebar-foot">
 
     @if (authService.currentUser(); as user) {

@@ -58,12 +58,20 @@
     </a>
     }
 
-    <!-- AGREGAR RESERVA -->
+    <!-- AGREGAR RESERVA ESPACIOS -->
 
     @if (canSee('/reservations/new') ) {
     <a routerLink="/reservations/new" routerLinkActive="active" class="navitem main-item">
       <i class="bi bi-plus-circle"></i>
-      <span>Agregar Reserva</span>
+      <span>Reservar Espacios</span>
+    </a>
+    }
+
+    <!-- RESERVAR SOLO RECURSOS -->
+    @if (canSee('/reservations/new-resources')) {
+    <a routerLink="/reservations/new-resources" routerLinkActive="active" class="navitem main-item">
+      <i class="bi bi-box-seam"></i>
+      <span>Reservar Recursos</span>
     </a>
     }
 

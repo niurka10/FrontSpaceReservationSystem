@@ -93,22 +93,28 @@ tbody tr:last-child td {
   color: #8892a6;
 }
 
-// ---- acciones de la tabla (ojo, enviar) ----
+// ---- acciones de la tabla ----
 .icon-btn--view {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  border: 1px solid transparent;
-  font-weight: 700;
-  cursor: pointer;
-  margin-left: 6px;
+  background: #e8f0fe;
+  color: #3457e8;
+  border-color: #c3d4f9;
 }
 
-.icon-btn--view {
-  background: #eef0f5;
-  color: #4a5266;
-  border-color: #d7dceb;
+.icon-btn--send {
+  background: #e6f7ee;
+  color: #158a4c;
+  border-color: #b9e6cd;
 }
+
+.icon-btn--edit {
+  background: #fff3dd;
+  color: #b3720a;
+  border-color: #f5ddab;
+}
+
+.icon-btn--view:hover { background: #c3d4f9; }
+.icon-btn--send:hover { background: #b9e6cd; }
+.icon-btn--edit:hover { background: #f5ddab; }
 
 .icon-btn--accept {
   background: #e6f7ee;
@@ -318,3 +324,83 @@ tbody tr:last-child td {
   color: #4a5266;
 }
 
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.icon-btn--reject {
+  background: #fdeaea;
+  color: #c22b2b;
+  border-color: #f4c2c2;
+}
+
+.icon-btn--reject:hover {
+  background: #f4c2c2;
+}
+
+
+.modal-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  width: 420px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.modal-card h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.modal-card label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5266;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.required-mark {
+  color: #c22b2b;
+}
+
+.modal-card textarea {
+  width: 100%;
+  border: 1px solid #d7dceb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.modal-card textarea:focus {
+  outline: none;
+  border-color: #3457e8;
+}
+
+.btn-reject {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #c22b2b;
+  color: #fff;
+}
+
+.btn-reject:disabled {
+  background: #e8a8a8;
+  cursor: not-allowed;
+}

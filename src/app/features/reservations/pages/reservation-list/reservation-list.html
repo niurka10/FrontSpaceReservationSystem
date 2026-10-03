@@ -40,12 +40,18 @@
             </span>
           </td>
           <td>
-            <button class="btn btn-outline-primary" title="Ver detalle" (click)="openDetail(r.id)"><i
+            <button class="icon-btn icon-btn--view" title="Ver detalle" (click)="openDetail(r.id)"><i
                 class="bi bi-eye-fill"></i></button>
             @if (r.currentStatus === 'Draft') {
-            <button class="btn btn-outline-success" title="Enviar solicitud" (click)="sendDraft(r.id)"
+            <button class="icon-btn icon-btn--send" title="Enviar solicitud" (click)="sendDraft(r.id)"
               [disabled]="sendingId() === r.id"><i class="bi bi-send-fill"></i>
             </button>
+            }
+            @if (r.currentStatus === 'Draft') {
+            <button class="icon-btn icon-btn--edit" title="Editar Solicitud"
+              [routerLink]="['/reservations', r.id, 'edit']"><i class="bi bi-pencil-fill"></i>
+            </button>
+            
             }
             @if (['Draft', 'PendingCoordinator', 'PendingVicerrector', 'PendingAssets'].includes(r.currentStatus)) {
             <button class="icon-btn icon-btn--reject" title="Cancelar solicitud" (click)="openCancel(r.id)">✕</button>
@@ -138,32 +144,25 @@
 
 
 @if (cancelling(); as current) {
-  <div class="modal-backdrop" (click)="closeCancel()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <h2>Cancelar solicitud</h2>
+<div class="modal-backdrop" (click)="closeCancel()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <h2>Cancelar solicitud</h2>
 
-      <label>
-        Motivo
-        <span class="required-mark">*</span>
-      </label>
-      <textarea
-        [(ngModel)]="current.justification"
-        rows="3"
-        placeholder="¿Por qué cancelas esta solicitud?"
-      ></textarea>
+    <label>
+      Motivo
+      <span class="required-mark">*</span>
+    </label>
+    <textarea [(ngModel)]="current.justification" rows="3" placeholder="¿Por qué cancelas esta solicitud?"></textarea>
 
-      <div class="modal-actions">
-        <button class="btn-cancel" (click)="closeCancel()" [disabled]="current.isSaving">
-          Volver
-        </button>
-        <button
-          class="btn-reject"
-          (click)="confirmCancel()"
-          [disabled]="current.isSaving || !current.justification.trim()"
-        >
-          {{ current.isSaving ? 'Cancelando...' : 'Confirmar cancelación' }}
-        </button>
-      </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeCancel()" [disabled]="current.isSaving">
+        Volver
+      </button>
+      <button class="btn-reject" (click)="confirmCancel()"
+        [disabled]="current.isSaving || !current.justification.trim()">
+        {{ current.isSaving ? 'Cancelando...' : 'Confirmar cancelación' }}
+      </button>
     </div>
   </div>
+</div>
 }

@@ -17,6 +17,12 @@ export const RESERVATIONS_ROUTES: Routes = [
   },
 
   {
+    path: ':id/edit',
+    loadComponent: () =>
+      import('./pages/reservation-form/reservation-form').then(
+        (m) => m.ReservationFormComponent)
+  },
+  {
     path: 'pending-coordinator',
     loadComponent: () =>
       import('./pages/pending-coordinator/pending-coordinator').then(
@@ -33,5 +39,13 @@ export const RESERVATIONS_ROUTES: Routes = [
     loadComponent: () =>
       import('./calendar/calendar.component').then(
         (m) => m.CalendarComponent)
+  },
+  {
+    path: 'new-resources',
+    data: { resourcesOnly: true },
+    loadComponent: () =>
+      import('./pages/reservation-form/reservation-form').then(
+        (m) => m.ReservationFormComponent
+      ),
   },
 ];

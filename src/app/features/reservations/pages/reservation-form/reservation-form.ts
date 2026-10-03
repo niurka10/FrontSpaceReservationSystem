@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { Route, Router, RouterLink, RouterModule } from "@angular/router";
+import { ActivatedRoute, Route, Router, RouterLink, RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { ResourceOption, SPACE_TYPE_LABELS, SpaceOption, CreateReservationRequest } from "../../models/reservation.interface";
 import { OptionsService } from "../../services/options.service";
@@ -38,6 +38,12 @@ export class ReservationFormComponent implements OnInit {
     this.authService.hasRole('Coordinator', 'Vicerrector', 'Bienes', 'Admin')
   );
   readonly candidates = signal<UserSummaryResponse[]>([]);
+  readonly isEditMode = signal(false);
+  private editingId: string | null = null;
+
+  readonly resourcesOnly = signal(false);
+  readonly wantsResources = signal(false);
+  readonly showResourcesSection = computed(() => this.resourcesOnly() || this.wantsResources());
 
   readonly form = this.fb.group({
     spaceId: [''],
@@ -59,10 +65,16 @@ export class ReservationFormComponent implements OnInit {
     private reservationsService: ReservationService,
     private authService: AuthService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
+    this.editingId = this.route.snapshot.paramMap.get('id');
+    this.isEditMode.set(!!this.editingId);
+    this.resourcesOnly.set(this.route.snapshot.data['resourcesOnly'] === true);
+    this.loadCandidates();
+
     this.isLoadingOptions.set(true);
 
     this.optionsService.getAvailableSpaces().subscribe({
@@ -76,6 +88,10 @@ export class ReservationFormComponent implements OnInit {
           resources.map((option) => ({ option, selected: false, quantity: 1 }))
         );
         this.isLoadingOptions.set(false);
+
+        if (this.editingId) {
+          this.loadExisting(this.editingId);
+        }
       },
       error: () => {
         this.errorMessage.set('No se pudieron cargar los recursos disponibles.');
@@ -83,9 +99,32 @@ export class ReservationFormComponent implements OnInit {
       },
     });
 
-    if (this.canCreateForOthers()) {
-      this.loadCandidates();
-    }
+  }
+
+  private loadExisting(id: string): void {
+    this.reservationsService.getById(id).subscribe({
+      next: (detail) => {
+        this.form.patchValue({
+          spaceId: detail.spaceId ?? '',
+          date: detail.date.slice(0, 10),
+          startTime: detail.startTime.slice(0, 5), // "18:00:00" -> "18:00"
+          endTime: detail.endTime.slice(0, 5),
+          reason: detail.reason,
+        });
+
+        if(!detail.spaceId){
+          this.resourcesOnly.set(true);
+        }
+
+        this.resourceRows.update((rows) =>
+          rows.map((row) => {
+            const match = detail.resources.find((r) => r.resourceName === row.option.name);
+            return match ? { ...row, selected: true, quantity: match.quantity } : row;
+          })
+        );
+      },
+      error: () => this.errorMessage.set('no se pudo cargar la reserva a editar.'),
+    })
   }
 
 
@@ -130,31 +169,34 @@ export class ReservationFormComponent implements OnInit {
         .map((r) => ({ resourceId: r.option.id, quantity: r.quantity })),
     };
 
-    this.reservationsService.create(request).subscribe({
-      next: (created) => {
-        //guardar borrador
+    const write$ = this.isEditMode()
+      ? this.reservationsService.edit(this.editingId!, request)
+      : this.reservationsService.create(request);
+
+    write$.subscribe({
+      next: (saved) => {
         if (!shouldSubmit) {
           this.router.navigate(['/reservations']);
           return;
         }
 
-        this.reservationsService.submit(created.id, raw.reason!).subscribe({
+        this.reservationsService.submit(saved.id, raw.reason!).subscribe({
           next: () => this.router.navigate(['/reservations']),
           error: (err) => {
             this.isSubmitting.set(false);
             this.errorMessage.set(
-              err?.error?.description ?? 'La reserva se guardo como borrador, pero no se envio. Intenta enviar desde Mis Solicitudes'
+              err?.error?.description ?? 'La reserva se guardó como borrador, pero no se envió. Intenta enviar desde Mis Solicitudes'
             );
           },
-        })
+        });
       },
       error: (err) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(
-          err?.error?.description ?? 'No se pudo crear la reserva. Verifica los datos'
-        )
-      }
-    })
+          err?.error?.description ?? (this.isEditMode() ? 'No se pudo guardar la edición.' : 'No se pudo crear la reserva. Verifica los datos')
+        );
+      },
+    });
   }
 
 

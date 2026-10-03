@@ -48,4 +48,8 @@ export class ReservationService {
     cancel(id: string, justification: string): Observable<Reservation> {
         return this.http.post<Reservation>(`${API_BASE}/${id}/cancel`, { justification })
     }
+
+    edit(id: string, request: CreateReservationRequest) : Observable<Reservation>{
+        return this.http.put<Reservation>(`${API_BASE}/${id}`, request)
+    }
 }

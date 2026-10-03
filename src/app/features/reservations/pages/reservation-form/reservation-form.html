@@ -1,110 +1,120 @@
 <div class="page">
+  @if (resourcesOnly()) {
+  <h1 class="h3 mb-1">Reservar recursos</h1>
+  <p class="text-muted">Completa los datos para solicitar recursos institucionales.</p>
+  } @else {
   <h1 class="h3 mb-1">Nueva reserva</h1>
   <p class="text-muted">Completa los datos para solicitar un espacio.</p>
-
-  @if (errorMessage()) {
-    <div class="alert-error">{{ errorMessage() }}</div>
   }
 
-  <form [formGroup]="form" class="reservation-form">
-    
-        @if (canCreateForOthers()) {
+  @if (errorMessage()) {
+  <div class="alert-error">{{ errorMessage() }}</div>
+  }
+  <div class="form-card">
+    <form [formGroup]="form" class="reservation-form">
+
+      @if (canCreateForOthers()) {
       <div class="field">
         <label for="onBehalfOfUserId">¿Para quién es esta reserva?</label>
         <select id="onBehalfOfUserId" formControlName="onBehalfOfUserId">
           <option value="">Para mí</option>
           @for (candidate of candidates(); track candidate.id) {
-            <option [value]="candidate.id">
-              {{ candidate.name }} — {{ candidate.role }}
-            </option>
+          <option [value]="candidate.id">
+            {{ candidate.name }} — {{ candidate.role }}
+          </option>
           }
         </select>
       </div>
-    }
-    
-    <div class="field">
-      <label for="spaceId">Espacio (opcional si eliges algun recurso)</label>
-      <select id="spaceId" formControlName="spaceId">
-        <option value="" disabled>Sin Espacio - solo recursos</option>
-        @for (space of spaces(); track space.id) {
+      }
+
+      @if (!resourcesOnly()) {
+      <div class="field">
+        <label for="spaceId">Espacio (opcional si eliges algun recurso)</label>
+        <select id="spaceId" formControlName="spaceId">
+          <option value="" disabled>Sin Espacio - solo recursos</option>
+          @for (space of spaces(); track space.id) {
           <option [value]="space.id">
             {{ space.name }} — {{ spaceTypeLabels[space.type] }} (cap. {{ space.capacity }})
           </option>
-        }
-      </select>
-      @if (form.controls.spaceId.invalid && form.controls.spaceId.touched) {
+          }
+        </select>
+        @if (form.controls.spaceId.invalid && form.controls.spaceId.touched) {
         <small class="field-error">Selecciona un espacio.</small>
+        }
+      </div>
       }
-    </div>
 
-    <div class="field-row">
-      <div class="field">
-        <label for="date">Fecha *</label>
-        <input id="date" type="date" formControlName="date" />
+      <div class="field-row">
+        <div class="field">
+          <label for="date">Fecha *</label>
+          <input id="date" type="date" formControlName="date" />
+        </div>
+        <div class="field">
+          <label for="startTime">Hora inicio *</label>
+          <input id="startTime" type="time" formControlName="startTime" />
+        </div>
+        <div class="field">
+          <label for="endTime">Hora fin *</label>
+          <input id="endTime" type="time" formControlName="endTime" />
+        </div>
       </div>
-      <div class="field">
-        <label for="startTime">Hora inicio *</label>
-        <input id="startTime" type="time" formControlName="startTime" />
-      </div>
-      <div class="field">
-        <label for="endTime">Hora fin *</label>
-        <input id="endTime" type="time" formControlName="endTime" />
-      </div>
-    </div>
 
-    <div class="field">
-      <label for="reason">Motivo *</label>
-      <textarea
-        id="reason"
-        formControlName="reason"
-        placeholder="Ej. Exposición final de la asignatura..."
-      ></textarea>
-      @if (form.controls.reason.invalid && form.controls.reason.touched) {
+      <div class="field">
+        <label for="reason">Motivo *</label>
+        <textarea id="reason" formControlName="reason"
+          placeholder="Ej. Exposición final de la asignatura..."></textarea>
+        @if (form.controls.reason.invalid && form.controls.reason.touched) {
         <small class="field-error">Describe el motivo (mínimo 10 caracteres).</small>
+        }
+      </div>
+
+      @if (!resourcesOnly()) {
+      <!-- Checkbox nuevo: solo aplica en el modo normal (reservar espacio).
+           En modo "solo recursos" esta sección siempre está visible,
+           así que el checkbox no tiene sentido ahí. -->
+      <div class="field field-checkbox">
+        <label class="resource-check">
+          <input type="checkbox" [checked]="wantsResources()" (change)="wantsResources.set(!wantsResources())" />
+          ¿Desea reservar recursos también?
+        </label>
+      </div>
       }
-    </div>
 
-    <div class="field">
-      <label>Recursos institucionales (opcional)</label>
+      @if (showResourcesSection()) {
+      <div class="field">
+        <label>Recursos institucionales (opcional)</label>
 
-      @if (isLoadingOptions()) {
+        @if (isLoadingOptions()) {
         <p class="text-muted">Cargando recursos...</p>
-      } @else {
+        } @else {
         <div class="resource-list">
           @for (row of resourceRows(); track row.option.id) {
-            <div class="resource-row">
-              <label class="resource-check">
-                <input
-                  type="checkbox"
-                  [checked]="row.selected"
-                  (change)="toggleResource(row)"
-                />
-                {{ row.option.name }}
-                <span class="text-muted">({{ row.option.availableQuantity }} disp.)</span>
-              </label>
+          <div class="resource-row">
+            <label class="resource-check">
+              <input type="checkbox" [checked]="row.selected" (change)="toggleResource(row)" />
+              {{ row.option.name }}
+              <span class="text-muted">({{ row.option.availableQuantity }} disp.)</span>
+            </label>
 
-              @if (row.selected) {
-                <input
-                  type="number"
-                  min="1"
-                  [max]="row.option.availableQuantity"
-                  [value]="row.quantity"
-                  (input)="updateQuantity(row, $any($event.target).value)"
-                />
-              }
-            </div>
+            @if (row.selected) {
+            <input type="number" min="1" [max]="row.option.availableQuantity" [value]="row.quantity"
+              (input)="updateQuantity(row, $any($event.target).value)" />
+            }
+          </div>
           }
         </div>
+        }
+      </div>
       }
-    </div>
 
-    <div class="form-actions">
-      <button type="button" class="btn-ghost" (click)="save(false)" [disabled]="isSubmitting()">
-        Guardar Borrador
-      </button>
-      <button type="button" class="btn-primary" (click)="save(true)" [disabled]="isSubmitting()">
-        Enviar Solicitud
-      </button>
-    </div>
-  </form>
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" (click)="save(false)" [disabled]="isSubmitting()">
+          Guardar Borrador
+        </button>
+        <button type="button" class="btn-primary" (click)="save(true)" [disabled]="isSubmitting()">
+          Enviar Solicitud
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

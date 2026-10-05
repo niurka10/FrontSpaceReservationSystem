@@ -35,6 +35,12 @@ export const RESERVATIONS_ROUTES: Routes = [
         (m) => m.PendingVicerrectorComponent)
   },
   {
+    path: 'pending-assets',
+    loadComponent: () =>
+      import('./pages/pending-assets/pending-assets').then(
+        (m) => m.PendingAssetsComponent)
+  },
+  {
     path: 'calendar',
     loadComponent: () =>
       import('./calendar/calendar.component').then(

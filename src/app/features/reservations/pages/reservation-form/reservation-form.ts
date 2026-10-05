@@ -112,7 +112,7 @@ export class ReservationFormComponent implements OnInit {
           reason: detail.reason,
         });
 
-        if(!detail.spaceId){
+        if (!detail.spaceId) {
           this.resourcesOnly.set(true);
         }
 
@@ -201,16 +201,26 @@ export class ReservationFormComponent implements OnInit {
 
 
   private loadCandidates(): void {
-    if (!this.authService.hasRole('Coordinator')) return; // TODO: Vicerrector/Bienes/Admin, otro chat
+    if (!this.canCreateForOthers()) return;
 
     this.userService.ensureMeLoaded().subscribe((me) => {
-      if (!me.careerId) return;
+      // Coordinator: solo Student/Teacher de SU carrera (regla del backend).
+      if (this.authService.hasRole('Coordinator')) {
+        if (!me.careerId) return;
 
-      forkJoin([
-        this.userService.search('Student', me.careerId),
-        this.userService.search('Teacher', me.careerId),
-      ]).subscribe(([students, teachers]) => {
-        this.candidates.set([...students, ...teachers]);
+        forkJoin([
+          this.userService.search('Student', me.careerId),
+          this.userService.search('Teacher', me.careerId),
+        ]).subscribe(([students, teachers]) => {
+          this.candidates.set([...students, ...teachers]);
+        });
+        return;
+      }
+
+      // Vicerrector, Bienes y Admin: sin restricción de a quién. Se excluye
+      // al propio usuario porque "Para mí" ya es la primera opción del select.
+      this.userService.search().subscribe((users) => {
+        this.candidates.set(users.filter((u) => u.id !== me.id));
       });
     });
   }

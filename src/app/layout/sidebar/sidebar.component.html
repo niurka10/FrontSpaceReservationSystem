@@ -110,7 +110,18 @@
     </a>
     }
 
-
+    <!-- ASIGNACIONES (BIENES) -->
+    <!-- Mismo patrón que Autorizaciones: canSee() consulta nav-items.ts,
+         donde este path solo es visible para Bienes/Admin. -->
+    @if (canSee('/reservations/pending-assets')) {
+    <a routerLink="/reservations/pending-assets" routerLinkActive="active" class="navitem main-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+      <span>Asignaciones</span>
+    </a>
+    }
     <!-- =========================
          ADMINISTRACIÓN
          ========================= -->

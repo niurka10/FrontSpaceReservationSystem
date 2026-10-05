@@ -32,19 +32,19 @@ export const NAV_ITEMS: NavItem[] = [
     {
         label: 'Mis reservas',
         path: '/reservations',
-        roles: ['Student', 'Teacher','Coordinator'],
+        roles: ALL_ROLES,
     },
 
     {
       label: 'Reservar recursos',
       path: '/reservations/new-resources',
-      roles: ['Student', 'Teacher','Coordinator'],
+      roles: ALL_ROLES,
     },
 
     {
         label: 'Agregar Reservas',
         path: '/reservations/new',
-        roles: ['Student', 'Teacher','Coordinator']
+        roles: ALL_ROLES,
     },
 
     {
@@ -63,11 +63,11 @@ export const NAV_ITEMS: NavItem[] = [
       roles: ['Vicerrector', 'Admin'],
     },
 
-    // {
-    //   label: 'Pendientes (Bienes)',
-    //   path: '/reservations/pending-assets',
-    //   roles: ['Bienes', 'Admin'],
-    // },
+    {
+      label: 'Asignaciones (Bienes)',
+      path: '/reservations/pending-assets',
+      roles: ['Bienes', 'Admin'],
+    },
 
     {
         label: 'Administración',

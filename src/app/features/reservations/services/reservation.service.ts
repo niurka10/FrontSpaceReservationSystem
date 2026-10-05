@@ -41,15 +41,23 @@ export class ReservationService {
         return this.http.get<Reservation[]>(`${API_BASE}/vicerrector`)
     }
 
+    listForAssets(): Observable<Reservation[]> {
+        return this.http.get<Reservation[]>(`${API_BASE}/assets`)
+    }
+
     approve(id: string, justification: string): Observable<Reservation> {
         return this.http.post<Reservation>(`${API_BASE}/${id}/approve`, { justification })
+    }
+
+    assign(id: string, justification: string, spaceId: string | null): Observable<Reservation> {
+        return this.http.post<Reservation>(`${API_BASE}/${id}/assign`, { justification, spaceId })
     }
 
     cancel(id: string, justification: string): Observable<Reservation> {
         return this.http.post<Reservation>(`${API_BASE}/${id}/cancel`, { justification })
     }
 
-    edit(id: string, request: CreateReservationRequest) : Observable<Reservation>{
+    edit(id: string, request: CreateReservationRequest): Observable<Reservation> {
         return this.http.put<Reservation>(`${API_BASE}/${id}`, request)
     }
 }

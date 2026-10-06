@@ -8,182 +8,169 @@
         @if (canManageResources()) {
         <button type="button" class="btn btn-primary btn-new" (click)="create()">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+                <path d="M12 5v14M5 12h14" stroke-linecap="round" />
             </svg>
             Nuevo recurso
         </button>
         }
     </div>
 
-    @if (error()) { <div class="alert alert-danger">{{ error() }}</div>
+    @if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
     }
 
-    @if (loading()) { <div class="text-center py-5">
+    @if (loading()) {
+    <div class="text-center py-5">
         <div class="spinner-border" role="status"></div>
         <p class="mt-2">Cargando recursos...</p>
     </div>
     } @else {
 
-    <!-- Recursos activos -->
-    <div class="mb-4 resource-section">
-        <div class="section-header">
-            <span class="status-dot status-dot-active"></span>
-            <h5 class="mb-0">Recursos activos</h5>
-            <span class="count-pill">{{ activeResources.length }}</span>
+    <!-- Tarjetas -->
+    <div class="res-tabs">
+        <button type="button" class="res-tab" [class.active]="activeTab() === 'active'" (click)="setTab('active')">
+            <span class="res-tab-icon res-icon-active">✓</span>
+            <span class="res-tab-info">
+                <span class="res-tab-title">Activos</span>
+                <span class="res-tab-desc">Disponibles para reservar</span>
+            </span>
+            <span class="res-tab-count res-count-active">{{ activeResources.length }}</span>
+        </button>
+
+        <button type="button" class="res-tab" [class.active]="activeTab() === 'inactive'"
+            (click)="setTab('inactive')">
+            <span class="res-tab-icon res-icon-inactive">⏸</span>
+            <span class="res-tab-info">
+                <span class="res-tab-title">Desactivados</span>
+                <span class="res-tab-desc">No disponibles</span>
+            </span>
+            <span class="res-tab-count res-count-inactive">{{ inactiveResources.length }}</span>
+        </button>
+
+        <button type="button" class="res-tab" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+            <span class="res-tab-icon res-icon-all">≡</span>
+            <span class="res-tab-info">
+                <span class="res-tab-title">Todos</span>
+                <span class="res-tab-desc">Total de recursos</span>
+            </span>
+            <span class="res-tab-count res-count-all">{{ resources().length }}</span>
+        </button>
+    </div>
+
+    <!-- Buscador -->
+    <div class="res-toolbar">
+        <input type="search" class="form-control res-search" placeholder="Buscar por nombre o descripción..."
+            [value]="search()" (input)="search.set($any($event.target).value)">
+    </div>
+
+    <!-- Contenido -->
+    @if (filteredResources().length === 0) {
+    <div class="empty-card">
+        <div class="empty-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="7" width="18" height="13" rx="2" />
+                <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" stroke-linecap="round" />
+            </svg>
         </div>
-
-        <div class="card shadow-sm">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Cantidad</th>
-                                <th>Estado</th>
-                                @if(canManageResources()) {
-                                <th class="text-end">Acciones</th>
-                                }
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @for (resource of activeResources; track resource.id) {
-                            <tr>
-                                <td>
-                                    <div class="name-cell">
-                                        <span class="name-icon name-icon-active">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="3" width="18" height="18" rx="3"/>
-                                                <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-                                            </svg>
-                                        </span>
-                                        <strong>{{ resource.name }}</strong>
-                                    </div>
-                                </td>
-                                <td class="text-muted">{{ resource.description || 'Sin descripción' }}</td>
-                                <td><span class="qty-pill">{{ resource.availableQuantity }}</span></td>
-
-                                <td>
-                                    <span class="badge status-badge status-badge-active">
-                                        <span class="status-dot status-dot-sm"></span>
-                                        Activo
-                                    </span>
-                                </td>
-
-                                @if(canManageResources()) {
-                                <td class="text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-primary me-2"
-                                        (click)="edit(resource.id)">
-                                        Editar
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-outline-danger"
-                                        (click)="deactivate(resource.id)">
-                                        Desactivar
-                                    </button>
-                                </td>
-                                }
-                            </tr>
-                            } @empty {
-                            <tr class="empty-row">
-                                <td colspan="5">
-                                    <div class="empty-state">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                            <rect x="3" y="7" width="18" height="13" rx="2"/>
-                                            <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" stroke-linecap="round"/>
-                                        </svg>
-                                        <p class="mb-0">No existen recursos activos.</p>
-                                    </div>
-                                </td>
-                            </tr>
+        <h6>
+            @if (search().trim()) { Sin resultados }
+            @else if (activeTab() === 'active') { No hay recursos activos }
+            @else if (activeTab() === 'inactive') { No hay recursos desactivados }
+            @else { Aún no hay recursos }
+        </h6>
+        <p>
+            @if (search().trim()) { Prueba con otro nombre o limpia la búsqueda. }
+            @else { Los recursos aparecerán aquí cuando existan. }
+        </p>
+    </div>
+    } @else {
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Cantidad</th>
+                            <th>Estado</th>
+                            @if (canManageResources()) {
+                            <th class="text-end">Acciones</th>
                             }
-                        </tbody>
-                    </table>
-                </div>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @for (resource of filteredResources(); track resource.id) {
+                        <tr>
+                            <td>
+                                <div class="name-cell">
+                                    <span class="name-icon" [class.name-icon-active]="resource.status"
+                                        [class.name-icon-inactive]="!resource.status">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="3" />
+                                            @if (resource.status) {
+                                            <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round" />
+                                            }
+                                        </svg>
+                                    </span>
+                                    <strong>{{ resource.name }}</strong>
+                                </div>
+                            </td>
+
+                            <td class="text-muted">{{ resource.description || 'Sin descripción' }}</td>
+
+                            <td>
+                                <span class="qty-pill" [class.qty-pill-muted]="!resource.status"
+                                    [class.qty-pill-low]="resource.status && isLowStock(resource)">
+                                    {{ resource.availableQuantity }}
+                                </span>
+                                @if (resource.status && isLowStock(resource)) {
+                                <div class="low-stock">Poco stock</div>
+                                }
+                            </td>
+
+                            <td>
+                                @if (resource.status) {
+                                <span class="badge status-badge status-badge-active">
+                                    <span class="status-dot status-dot-sm status-dot-active"></span>
+                                    Activo
+                                </span>
+                                } @else {
+                                <span class="badge status-badge status-badge-inactive">
+                                    <span class="status-dot status-dot-sm status-dot-inactive"></span>
+                                    Inactivo
+                                </span>
+                                }
+                            </td>
+
+                            @if (canManageResources()) {
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-primary me-2"
+                                    (click)="edit(resource.id)">
+                                    Editar
+                                </button>
+
+                                @if (resource.status) {
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    (click)="deactivate(resource.id)">
+                                    Desactivar
+                                </button>
+                                } @else {
+                                <button type="button" class="btn btn-sm btn-outline-success"
+                                    (click)="activate(resource.id)">
+                                    Activar
+                                </button>
+                                }
+                            </td>
+                            }
+                        </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <!-- Recursos desactivados -->
-    <div class="resource-section resource-section-inactive">
-        <div class="section-header">
-            <span class="status-dot status-dot-inactive"></span>
-            <h5 class="mb-0">Recursos desactivados</h5>
-            <span class="count-pill count-pill-muted">{{ inactiveResources.length }}</span>
-        </div>
-
-        <div class="card shadow-sm">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Cantidad</th>
-                                <th>Estado</th>
-                                @if (canManageResources()) {
-                                <th class="text-end">Acciones</th>
-                                }
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @for (resource of inactiveResources; track resource.id) {
-                            <tr>
-                                <td>
-                                    <div class="name-cell">
-                                        <span class="name-icon name-icon-inactive">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <rect x="3" y="3" width="18" height="18" rx="3"/>
-                                            </svg>
-                                        </span>
-                                        <strong>{{ resource.name }}</strong>
-                                    </div>
-                                </td>
-                                <td class="text-muted">{{ resource.description || 'Sin descripción' }}</td>
-                                <td><span class="qty-pill qty-pill-muted">{{ resource.availableQuantity }}</span></td>
-
-                                <td>
-                                    <span class="badge status-badge status-badge-inactive">
-                                        <span class="status-dot status-dot-sm status-dot-inactive"></span>
-                                        Inactivo
-                                    </span>
-                                </td>
-
-                                @if(canManageResources()) {
-                                <td class="text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-primary me-2"
-                                        (click)="edit(resource.id)">
-                                        Editar
-                                    </button>
-
-                                    <button type="button" class="btn btn-sm btn-outline-success"
-                                        (click)="activate(resource.id)">
-                                        Activar
-                                    </button>
-                                </td>
-                                }
-                            </tr>
-                            } @empty {
-                            <tr class="empty-row">
-                                <td colspan="5">
-                                    <div class="empty-state">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                            <path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                        <p class="mb-0">No existen recursos desactivados.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    }
     }
 </div>

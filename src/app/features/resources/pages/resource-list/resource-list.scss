@@ -18,32 +18,6 @@
   }
 }
 
-/* Encabezado de cada sección */
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-
-  h5 {
-    font-weight: 600;
-  }
-}
-
-.count-pill {
-  background: #eef2ff;
-  color: #4f46e5;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 999px;
-}
-
-.count-pill-muted {
-  background: #f1f3f5;
-  color: #868e96;
-}
-
 /* Puntos de estado */
 .status-dot {
   width: 9px;
@@ -68,13 +42,103 @@
   margin-right: 5px;
 }
 
-/* Sección de inactivos, un poco más "apagada" */
-.resource-section-inactive {
-  opacity: 0.92;
+/* Tarjetas */
+.res-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
 
-  .section-header h5 {
-    color: #6c757d;
+.res-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  min-height: 88px;
+  background: #fff;
+  border: 1px solid #e1e5ec;
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(16, 29, 56, 0.04);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    border-radius: 10px 10px 0 0;
+    background: transparent;
   }
+
+  &:hover {
+    border-color: #cbd3e1;
+    transform: translateY(-1px);
+  }
+
+  &.active {
+    border-color: #3457e8;
+    box-shadow: 0 5px 16px rgba(52, 87, 232, 0.1);
+  }
+
+  &.active::before {
+    background: #3457e8;
+  }
+}
+
+.res-tab-icon {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.res-icon-active { background: #e8f6ef; color: #198754; }
+.res-icon-inactive { background: #f1f3f5; color: #868e96; }
+.res-icon-all { background: #eef2ff; color: #3457e8; }
+
+.res-tab-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.res-tab-title { color: #101d38; font-size: 0.95rem; font-weight: 600; }
+.res-tab-desc { color: #7a8496; font-size: 0.78rem; margin-top: 3px; }
+
+.res-tab-count {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 9px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.res-count-active { background: #e8f6ef; color: #198754; }
+.res-count-inactive { background: #f1f3f5; color: #868e96; }
+.res-count-all { background: #eef2ff; color: #3457e8; }
+
+/* Buscador */
+.res-toolbar { margin-bottom: 16px; }
+
+.res-search {
+  max-width: 340px;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 0.9rem;
 }
 
 /* Tarjeta y tabla */
@@ -94,7 +158,6 @@
   white-space: nowrap;
   font-weight: 600;
   font-size: 0.8rem;
-  text-transform: none;
   color: #6c757d;
   padding: 12px 16px;
   border-bottom: 1px solid #eef0f2;
@@ -138,15 +201,8 @@
   }
 }
 
-.name-icon-active {
-  background: #ebfbee;
-  color: #2f9e44;
-}
-
-.name-icon-inactive {
-  background: #f1f3f5;
-  color: #adb5bd;
-}
+.name-icon-active { background: #ebfbee; color: #2f9e44; }
+.name-icon-inactive { background: #f1f3f5; color: #adb5bd; }
 
 /* Descripción */
 .table td:nth-child(2) {
@@ -155,7 +211,7 @@
   white-space: nowrap;
 }
 
-/* Cantidad como pill */
+/* Cantidad */
 .qty-pill {
   display: inline-block;
   min-width: 32px;
@@ -166,9 +222,9 @@
   font-size: 0.85rem;
 }
 
-.qty-pill-muted {
-  color: #868e96;
-}
+.qty-pill-muted { color: #868e96; }
+.qty-pill-low { background: #fff4db; color: #9a6700; }
+.low-stock { font-size: 0.7rem; color: #9a6700; margin-top: 3px; }
 
 /* Estado */
 .status-badge {
@@ -180,15 +236,8 @@
   border-radius: 999px;
 }
 
-.status-badge-active {
-  background: #ebfbee;
-  color: #2f9e44;
-}
-
-.status-badge-inactive {
-  background: #f1f3f5;
-  color: #868e96;
-}
+.status-badge-active { background: #ebfbee; color: #2f9e44; }
+.status-badge-inactive { background: #f1f3f5; color: #868e96; }
 
 /* Botones */
 .table .btn {
@@ -203,44 +252,41 @@
 }
 
 /* Estado vacío */
-.empty-row td {
-  padding: 0;
-}
-
-.empty-state {
+.empty-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 40px 20px;
-  color: #adb5bd;
+  text-align: center;
+  padding: 48px 20px;
+  background: #fff;
+  border: 1px dashed #cbd3e1;
+  border-radius: 12px;
 
-  svg {
-    width: 36px;
-    height: 36px;
-  }
-
-  p {
-    font-size: 0.9rem;
-  }
+  h6 { color: #101d38; font-weight: 600; margin: 14px 0 4px; }
+  p { color: #7a8496; font-size: 0.88rem; margin: 0; }
 }
 
-/* En pantallas pequeñas */
+.empty-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #3457e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg { width: 26px; height: 26px; }
+}
+
+/* Pantallas pequeñas */
+@media (max-width: 900px) {
+  .res-tabs { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
-  .table {
-    table-layout: auto;
-  }
-
-  .table th,
-  .table td {
-    padding: 10px 12px;
-  }
-
-  .table td:nth-child(2) {
-    max-width: 220px;
-  }
-
-  .name-cell {
-    gap: 6px;
-  }
+  .table { table-layout: auto; }
+  .table th, .table td { padding: 10px 12px; }
+  .table td:nth-child(2) { max-width: 220px; }
+  .name-cell { gap: 6px; }
 }

@@ -32,6 +32,7 @@
         <div class="card-body">
             <form [formGroup]="resourceForm" (ngSubmit)="save()">
 
+                <!-- Nombre -->
                 <div class="mb-4 form-field">
                     <label for="name" class="form-label">
                         Nombre <span class="required">*</span>
@@ -45,7 +46,11 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs">
                                 <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/>
                             </svg>
+                            @if (resourceForm.controls.name.hasError('required') || resourceForm.controls.name.hasError('blank')) {
                             El nombre es obligatorio.
+                            } @else if (resourceForm.controls.name.hasError('minlength')) {
+                            Debe tener al menos 3 caracteres.
+                            }
                         </span>
                         } @else {
                         <span></span>
@@ -54,6 +59,7 @@
                     </div>
                 </div>
 
+                <!-- Descripción -->
                 <div class="mb-4 form-field">
                     <label for="description" class="form-label">Descripción</label>
                     <textarea id="description" rows="4" class="form-control" formControlName="description"
@@ -64,9 +70,12 @@
                     </div>
                 </div>
 
+                <!-- Cantidad -->
                 <div class="mb-4 form-field form-field-narrow">
-                    <label for="availableQuantity" class="form-label">Cantidad disponible</label>
-                    <input id="availableQuantity" type="number" min="0" class="form-control"
+                    <label for="availableQuantity" class="form-label">
+                        Cantidad disponible <span class="required">*</span>
+                    </label>
+                    <input id="availableQuantity" type="number" min="0" max="9999" step="1" class="form-control"
                         [class.is-invalid]="resourceForm.controls.availableQuantity.touched && resourceForm.controls.availableQuantity.invalid"
                         formControlName="availableQuantity">
                     @if (resourceForm.controls.availableQuantity.touched &&
@@ -76,7 +85,15 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs">
                                 <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/>
                             </svg>
-                            La cantidad debe ser igual o mayor a 0.
+                            @if (resourceForm.controls.availableQuantity.hasError('required')) {
+                            La cantidad es obligatoria.
+                            } @else if (resourceForm.controls.availableQuantity.hasError('pattern')) {
+                            Debe ser un número entero, sin decimales.
+                            } @else if (resourceForm.controls.availableQuantity.hasError('min')) {
+                            La cantidad no puede ser negativa.
+                            } @else if (resourceForm.controls.availableQuantity.hasError('max')) {
+                            La cantidad máxima es 9999.
+                            }
                         </span>
                     </div>
                     }

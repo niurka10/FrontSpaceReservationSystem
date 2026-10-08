@@ -24,9 +24,9 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone: string;
-  requestedRole?: RegisterRoleCode; // solo Student o Teacher se auto-registran
-  facultyId?: string | null;
-  careerId?: | string | null;
+  identificationNumber: string;
+  requestedRole: number;
+  careerId?: string;
 }
 
 // Forma real que llega del backend en /api/auth/login y /api/auth/register.

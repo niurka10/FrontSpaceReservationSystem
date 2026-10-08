@@ -46,27 +46,42 @@
         }
       </div>
 
-      <!-- Teléfono + Rol -->
+      <!-- Cédula + Teléfono -->
       <div class="row">
         <div class="field">
-          <label for="phone">Teléfono</label>
-          <input id="phone" type="tel" formControlName="phone" placeholder="0991234567" inputmode="numeric"
-            maxlength="10" />
-          @if (form.get('phone')?.touched && form.get('phone')?.invalid) {
-          <span class="field-error">Entre 7 y 10 dígitos.</span>
+          <label for="identificationNumber">Cédula</label>
+          <input id="identificationNumber" type="text" formControlName="identificationNumber" placeholder="1723456789"
+            inputmode="numeric" maxlength="10" (input)="onIdentificationInput($event)" />
+
+          @if (form.get('identificationNumber')?.touched && form.get('identificationNumber')?.invalid) {
+          <span class="field-error">
+            La cédula debe tener exactamente 10 dígitos.
+          </span>
           }
         </div>
 
         <div class="field">
-          <label for="requestedRole">Rol</label>
-          <select id="requestedRole" formControlName="requestedRole">
-            @for (role of roleOptions; track role.value) {
-            <option [value]="role.value">{{ role.label }}</option>
-            }
-          </select>
+          <label for="phone">Teléfono</label>
+          <input id="phone" type="tel" formControlName="phone" placeholder="0991234567" inputmode="numeric"
+            maxlength="10" (input)="onPhoneInput($event)" />
+
+          @if (form.get('phone')?.touched && form.get('phone')?.invalid) {
+          <span class="field-error">
+            El teléfono debe tener exactamente 10 dígitos.
+          </span>
+          }
         </div>
       </div>
 
+      <!-- Rol -->
+      <div class="field">
+        <label for="requestedRole">Rol</label>
+        <select id="requestedRole" formControlName="requestedRole">
+          @for (role of roleOptions; track role.value) {
+          <option [value]="role.value">{{ role.label }}</option>
+          }
+        </select>
+      </div>
       <!-- Contraseña -->
       <div class="field">
         <label for="password">Contraseña</label>

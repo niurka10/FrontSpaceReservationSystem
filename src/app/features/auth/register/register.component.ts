@@ -35,14 +35,15 @@ export class RegisterComponent {
     { label: 'Docente', value: RegisterRoleCode.Teacher },
   ];
 
-  readonly emailDomain = '@unibe.com';
+  readonly emailDomain = '@unibe.edu.ec';
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150),
     Validators.pattern(/^[\p{L}\s'.-]+$/u)]],
     emailUser: ['', [Validators.required, Validators.pattern(/^[a-z0-9.]+$/)]],
     password: ['', [Validators.required, Validators.minLength(8),
     Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]],
-    phone: ['', [Validators.required, Validators.pattern(/^\d{7,10}$/)]],
+    phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+    identificationNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
     requestedRole: [RegisterRoleCode.Student, [Validators.required]],
     facultyId: ['', [Validators.required]],
     careerId: [{ value: '', disabled: true }, [Validators.required]],
@@ -58,7 +59,7 @@ export class RegisterComponent {
   onEmailInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     const clean = input.value
-      .split('@')[0]                  
+      .split('@')[0]
       .toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // quita tildes
       .replace(/[^a-z0-9.]/g, '');      // deja solo letras, números y punto
@@ -66,6 +67,30 @@ export class RegisterComponent {
       input.value = clean;
       this.form.controls.emailUser.setValue(clean);
     }
+  }
+
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    const clean = input.value.replace(/\D/g, '').slice(0, 10);
+
+    if (clean !== input.value) {
+      input.value = clean;
+    }
+
+    this.form.controls.phone.setValue(clean, { emitEvent: false });
+  }
+
+  onIdentificationInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    const clean = input.value.replace(/\D/g, '').slice(0, 10);
+
+    if (clean !== input.value) {
+      input.value = clean;
+    }
+
+    this.form.controls.identificationNumber.setValue(clean, { emitEvent: false });
   }
 
   ngOnInit(): void {
@@ -133,9 +158,9 @@ export class RegisterComponent {
         email: (raw.emailUser! + this.emailDomain).toLowerCase(),
         password: raw.password!,
         phone: raw.phone!,
+        identificationNumber: raw.identificationNumber!,
         requestedRole: Number(raw.requestedRole),
-        // facultyId: raw.facultyId,
-        careerId: raw.careerId
+        careerId: raw.careerId ?? undefined
       })
       .subscribe({
         next: () => this.router.navigate(['/reservations']),

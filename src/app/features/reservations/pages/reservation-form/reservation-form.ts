@@ -16,6 +16,13 @@ interface ResourceRow {
   quantity: number;
 }
 
+const MAX_DURATION_MINUTES = 120;
+
+function toMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
 @Component({
   selector: 'app-reservation-form',
   standalone: true,
@@ -62,6 +69,16 @@ export class ReservationFormComponent implements OnInit {
     return !hasSpace && !hasResources;
   }
 
+  scheduleError(): string | null {
+    const { startTime, endTime } = this.form.getRawValue();
+    if (!startTime || !endTime) return null;
+
+    const duration = toMinutes(endTime) - toMinutes(startTime);
+
+    if (duration <= 0) return 'La hora fin debe ser mayor que la hora inicio.';
+    if (duration > MAX_DURATION_MINUTES) return 'La reserva no puede durar más de 2 horas.';
+    return null;
+  }
   constructor(
     private optionsService: OptionsService,
     private reservationsService: ReservationService,
@@ -149,7 +166,7 @@ export class ReservationFormComponent implements OnInit {
     const startTime = this.form.controls.startTime.value;
     const endTime = this.form.controls.endTime.value;
 
-    if (!date || !startTime || !endTime) {
+    if (!date || !startTime || !endTime || this.scheduleError()) {
       this.resourceAvailability.set([]);
       return;
     }
@@ -196,7 +213,9 @@ export class ReservationFormComponent implements OnInit {
       this.form.markAllAsTouched();
       return;
     }
-
+    if (this.scheduleError()) {
+      return;
+    }
     if (this.hasSelectionError()) {
       this.errorMessage.set('Selecciona un espacio, al menos un recurso, o ambos.');
       return;

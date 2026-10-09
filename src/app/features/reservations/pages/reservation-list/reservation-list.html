@@ -31,7 +31,7 @@
       <tbody>
         @for (r of reservations(); track r.id) {
         <tr>
-          <td>{{ r.date | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ r.date | slice:0:10 | date:'dd/MM/yyyy':'UTC' }}</td>
           <td>{{ r.startTime.slice(0, 5) }}–{{ r.endTime.slice(0, 5) }}</td>
           <td>{{ r.reason }}</td>
           <td>
@@ -73,7 +73,7 @@
       <div>
         <h2>Detalle de solicitud <span class="detail-code">{{ pseudoCode(detail.id) }}</span></h2>
         <p class="detail-subtitle">
-          {{ detail.spaceName ?? '—' }} · {{ detail.date | date: 'dd/MM/yyyy' }} ·
+          {{ detail.spaceName ?? '—' }} · {{ detail.date | slice:0:10 | date:'dd/MM/yyyy':'UTC' }} ·
           {{ detail.startTime }}–{{ detail.endTime }}
         </p>
       </div>

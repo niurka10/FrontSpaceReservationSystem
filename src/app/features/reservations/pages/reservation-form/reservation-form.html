@@ -62,6 +62,10 @@
         </div>
       </div>
 
+      @if (scheduleError()) {
+      <small class="field-error">{{ scheduleError() }}</small>
+      }
+
       <div class="field">
         <label for="reason">Motivo *</label>
         <textarea id="reason" formControlName="reason"
@@ -104,11 +108,8 @@
 
             @if (row.selected) {
             <!-- Limita la cantidad al disponible y actualiza la cantidad seleccionada. -->
-            <input type="number"
-              min="1"
-              [max]="getResourceAvailable(row.option.id, row.option.availableQuantity)"
-              [value]="row.quantity"
-              (input)="updateQuantity(row, $any($event.target).value)" />
+            <input type="number" min="1" [max]="getResourceAvailable(row.option.id, row.option.availableQuantity)"
+              [value]="row.quantity" (input)="updateQuantity(row, $any($event.target).value)" />
             }
           </div>
           }

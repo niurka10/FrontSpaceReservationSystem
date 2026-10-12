@@ -196,3 +196,8 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.field-row + .field-error {
+  display: block;
+  margin-top: -8px;
+}

@@ -8,38 +8,88 @@
   </div>
 
   @if (isLoading()) {
-  <p class="text-muted">Cargando...</p>
+  <div class="state-card">
+    <span class="mini-spinner"></span>
+    <p>Cargando tus reservas...</p>
+  </div>
   } @else if (errorMessage()) {
   <div class="alert-error">{{ errorMessage() }}</div>
   } @else if (reservations().length === 0) {
-  <div class="empty-state">
-    <p>Todavía no tienes reservas.</p>
-    <a routerLink="/reservations/new">Crea tu primera solicitud</a>
+  <div class="state-card">
+    <div class="state-icon"><i class="bi bi-calendar-plus"></i></div>
+    <h6>Todavía no tienes reservas</h6>
+    <p>Cuando crees una solicitud, aparecerá aquí con su estado.</p>
+    <a routerLink="/reservations/new" class="btn-primary">Crear mi primera solicitud</a>
   </div>
   } @else {
+
+  <!-- Resumen -->
+  <div class="summary">
+    <div class="summary-card">
+      <span class="summary-icon summary-icon--pending"><i class="bi bi-hourglass-split"></i></span>
+      <div>
+        <span class="summary-number">{{ reservations().filter(r => r.currentStatus.startsWith('Pending')).length }}</span>
+        <span class="summary-label">En revisión</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="summary-icon summary-icon--approved"><i class="bi bi-check-circle-fill"></i></span>
+      <div>
+        <span class="summary-number">{{ reservations().filter(r => r.currentStatus === 'Approved').length }}</span>
+        <span class="summary-label">Aprobadas</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="summary-icon summary-icon--draft"><i class="bi bi-pencil-square"></i></span>
+      <div>
+        <span class="summary-number">{{ reservations().filter(r => r.currentStatus === 'Draft').length }}</span>
+        <span class="summary-label">Borradores</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <span class="summary-icon summary-icon--closed"><i class="bi bi-x-circle-fill"></i></span>
+      <div>
+        <span class="summary-number">{{ reservations().filter(r => r.currentStatus === 'Rejected' || r.currentStatus === 'Cancelled').length }}</span>
+        <span class="summary-label">Cerradas</span>
+      </div>
+    </div>
+  </div>
+
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th>Fecha</th>
-          <th>Hora</th>
+          <th class="col-num">#</th>
+          <th class="col-date">Fecha</th>
+          <th class="col-time">Hora</th>
           <th>Motivo</th>
-          <th>Estado</th>
-          <th></th>
+          <th class="col-status">Estado</th>
+          <th class="col-actions">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (r of reservations(); track r.id) {
-        <tr>
-          <td>{{ r.date | date: 'dd/MM/yyyy' }}</td>
-          <td>{{ r.startTime.slice(0, 5) }}–{{ r.endTime.slice(0, 5) }}</td>
-          <td>{{ r.reason }}</td>
+        @for (r of reservations(); track r.id; let i = $index) {
+        <tr class="row-clickable" (click)="openDetail(r.id)" title="Clic para ver el detalle">
+          <td class="col-num"><span class="num-badge">{{ i + 1 }}</span></td>
+          <td class="col-date">
+            <i class="bi bi-calendar3 cell-icon"></i>
+            {{ r.date | slice:0:10 | date:'dd/MM/yyyy':'UTC' }}
+          </td>
+          <td class="col-time">
+            <i class="bi bi-clock cell-icon"></i>
+            {{ r.startTime.slice(0, 5) }}–{{ r.endTime.slice(0, 5) }}
+          </td>
           <td>
+            <div class="reason-text">{{ r.reason }}</div>
+            <div class="reason-code">{{ pseudoCode(r.id) }}</div>
+          </td>
+          <td class="col-status">
             <span class="status-badge" [attr.data-status]="r.currentStatus">
+              <span class="status-dot"></span>
               {{ statusLabels[r.currentStatus] }}
             </span>
           </td>
-          <td>
+          <td class="col-actions" (click)="$event.stopPropagation()">
             <button class="icon-btn icon-btn--view" title="Ver detalle" (click)="openDetail(r.id)"><i
                 class="bi bi-eye-fill"></i></button>
             @if (r.currentStatus === 'Draft') {
@@ -48,13 +98,13 @@
             </button>
             }
             @if (r.currentStatus === 'Draft') {
-            <button class="icon-btn icon-btn--edit" title="Editar Solicitud"
+            <button class="icon-btn icon-btn--edit" title="Editar solicitud"
               [routerLink]="['/reservations', r.id, 'edit']"><i class="bi bi-pencil-fill"></i>
             </button>
-            
             }
             @if (['Draft', 'PendingCoordinator', 'PendingVicerrector', 'PendingAssets'].includes(r.currentStatus)) {
-            <button class="icon-btn icon-btn--reject" title="Cancelar solicitud" (click)="openCancel(r.id)">✕</button>
+            <button class="icon-btn icon-btn--reject" title="Cancelar solicitud" (click)="openCancel(r.id)"><i
+                class="bi bi-x-lg"></i></button>
             }
           </td>
         </tr>
@@ -73,7 +123,7 @@
       <div>
         <h2>Detalle de solicitud <span class="detail-code">{{ pseudoCode(detail.id) }}</span></h2>
         <p class="detail-subtitle">
-          {{ detail.spaceName ?? '—' }} · {{ detail.date | date: 'dd/MM/yyyy' }} ·
+          {{ detail.spaceName ?? '—' }} · {{ detail.date | slice:0:10 | date:'dd/MM/yyyy':'UTC' }} ·
           {{ detail.startTime }}–{{ detail.endTime }}
         </p>
       </div>

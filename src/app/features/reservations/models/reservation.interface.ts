@@ -122,3 +122,12 @@ export interface CreateReservationRequest {
   resources?: ReservationResourceRequest[];
   onBehalfOfUserId?: string | null;
 }
+
+// Representa la disponibilidad real de un recurso para la fecha y horario consultados.
+export interface ResourceAvailability {
+  resourceId: string;
+  name: string;
+  total: number;
+  reserved: number;
+  available: number;
+}

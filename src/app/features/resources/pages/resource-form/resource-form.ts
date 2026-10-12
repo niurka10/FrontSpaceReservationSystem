@@ -1,9 +1,20 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ResourceService } from '../../services/resource.service';
 import { CreateResourceRequest, UpdateResourceRequest } from '../../models/resource.interface';
+
+// Rechaza textos formados solo por espacios
+function notBlank(control: AbstractControl): ValidationErrors | null {
+  return (control.value ?? '').trim() ? null : { blank: true };
+}
 
 @Component({
   selector: 'app-resource-form',
@@ -25,9 +36,14 @@ export class ResourceForm implements OnInit {
   resourceId = '';
 
   resourceForm = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.maxLength(150)]],
+    name: ['', [Validators.required, notBlank, Validators.minLength(3), Validators.maxLength(150)]],
     description: ['', [Validators.maxLength(500)]],
-    availableQuantity: [1, [Validators.required, Validators.min(0)]]
+    availableQuantity: [1, [
+      Validators.required,
+      Validators.min(0),
+      Validators.max(9999),
+      Validators.pattern(/^\d+$/)
+    ]]
   });
 
   ngOnInit(): void {
@@ -69,12 +85,14 @@ export class ResourceForm implements OnInit {
     this.error.set(null);
     const form = this.resourceForm.getRawValue();
 
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim() || null,
+      availableQuantity: form.availableQuantity
+    };
+
     if (this.isEdit()) {
-      const request: UpdateResourceRequest = {
-        name: form.name,
-        description: form.description || null,
-        availableQuantity: form.availableQuantity
-      };
+      const request: UpdateResourceRequest = payload;
       this.resourceService.update(this.resourceId, request).subscribe({
         next: () => this.router.navigate(['/resources']),
         error: (err) => {
@@ -84,11 +102,7 @@ export class ResourceForm implements OnInit {
         }
       });
     } else {
-      const request: CreateResourceRequest = {
-        name: form.name,
-        description: form.description || null,
-        availableQuantity: form.availableQuantity
-      };
+      const request: CreateResourceRequest = payload;
       this.resourceService.create(request).subscribe({
         next: () => this.router.navigate(['/resources']),
         error: (err) => {

@@ -47,15 +47,18 @@
       <div class="field-row">
         <div class="field">
           <label for="date">Fecha *</label>
-          <input id="date" type="date" formControlName="date" />
+          <!-- Al cambiar la fecha, consulta la disponibilidad real de recursos -->
+          <input id="date" type="date" formControlName="date" (change)="checkResourceAvailability()" />
         </div>
         <div class="field">
           <label for="startTime">Hora inicio *</label>
-          <input id="startTime" type="time" formControlName="startTime" />
+          <!-- Al cambiar la hora de inicio, actualiza la disponibilidad -->
+          <input id="startTime" type="time" formControlName="startTime" (change)="checkResourceAvailability()" />
         </div>
         <div class="field">
           <label for="endTime">Hora fin *</label>
-          <input id="endTime" type="time" formControlName="endTime" />
+          <!-- Al cambiar la hora de fin, actualiza la disponibilidad. -->
+          <input id="endTime" type="time" formControlName="endTime" (change)="checkResourceAvailability()" />
         </div>
       </div>
 
@@ -93,11 +96,18 @@
             <label class="resource-check">
               <input type="checkbox" [checked]="row.selected" (change)="toggleResource(row)" />
               {{ row.option.name }}
-              <span class="text-muted">({{ row.option.availableQuantity }} disp.)</span>
+              <!-- Muestra la cantidad realmente disponible para ese horario -->
+              <span class="text-muted">
+                ({{ getResourceAvailable(row.option.id, row.option.availableQuantity) }} disp.)
+              </span>
             </label>
 
             @if (row.selected) {
-            <input type="number" min="1" [max]="row.option.availableQuantity" [value]="row.quantity"
+            <!-- Limita la cantidad al disponible y actualiza la cantidad seleccionada. -->
+            <input type="number"
+              min="1"
+              [max]="getResourceAvailable(row.option.id, row.option.availableQuantity)"
+              [value]="row.quantity"
               (input)="updateQuantity(row, $any($event.target).value)" />
             }
           </div>

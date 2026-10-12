@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { CreateReservationRequest, Reservation, ReservationDetail } from "../models/reservation.interface";
+import { CreateReservationRequest, Reservation, ReservationDetail, ResourceAvailability } from "../models/reservation.interface";
 import { Observable } from "rxjs";
 
 const API_BASE = '/api/reservations';
@@ -19,6 +19,12 @@ export class ReservationService {
 
     listMine(): Observable<Reservation[]> {
         return this.http.get<Reservation[]>(`${API_BASE}/mine`)
+    }
+    // Consulta la cantidad disponible de cada recurso según fecha y horario
+    getResourceAvailability(date: string, startTime: string, endTime: string): Observable<ResourceAvailability[]>{
+        return this.http.get<ResourceAvailability[]>(
+            `${API_BASE}/resource-availability?date=${date}&startTime=${startTime}&endTime=${endTime}`
+    );
     }
 
     submit(id: string, justification: string): Observable<Reservation> {

@@ -2,7 +2,7 @@ import { Component, computed, inject, OnInit, signal } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { ActivatedRoute, Route, Router, RouterLink, RouterModule } from "@angular/router";
 import { CommonModule } from "@angular/common";
-import { ResourceOption, SPACE_TYPE_LABELS, SpaceOption, CreateReservationRequest } from "../../models/reservation.interface";
+import { ResourceOption, SPACE_TYPE_LABELS, SpaceOption, CreateReservationRequest, ResourceAvailability } from "../../models/reservation.interface";
 import { OptionsService } from "../../services/options.service";
 import { ReservationService } from "../../services/reservation.service";
 import { UserSummaryResponse } from "../../../users/models/user-summary.model";
@@ -31,6 +31,8 @@ export class ReservationFormComponent implements OnInit {
 
   readonly spaces = signal<SpaceOption[]>([]);
   readonly resourceRows = signal<ResourceRow[]>([]);
+  // Guarda la disponibilidad real de cada recurso para el horario seleccionado.
+  readonly resourceAvailability = signal<ResourceAvailability[]>([]);
   readonly isLoadingOptions = signal(false);
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -141,6 +143,54 @@ export class ReservationFormComponent implements OnInit {
     );
   }
 
+  // Consulta al backend la disponibilidad de recursos para la fecha y horario elegidos.
+  checkResourceAvailability(): void {
+    const date = this.form.controls.date.value;
+    const startTime = this.form.controls.startTime.value;
+    const endTime = this.form.controls.endTime.value;
+
+    if (!date || !startTime || !endTime) {
+      this.resourceAvailability.set([]);
+      return;
+    }
+
+    this.reservationsService
+      .getResourceAvailability(date, `${startTime}:00`, `${endTime}:00`)
+      .subscribe({
+        next: (availability) => {
+          this.resourceAvailability.set(availability);
+        },
+        error: () => {
+          this.resourceAvailability.set([]);
+        },
+      });
+  }
+
+  // Obtiene la cantidad disponible del recurso según el horario seleccionado
+  getResourceAvailable(resourceId: string, fallback: number): number {
+    return this.resourceAvailability()
+      .find((r) => r.resourceId === resourceId)
+      ?.available ?? fallback;
+  }
+
+  private translateReservationError(message: string): string {
+    const translations: Record<string, string> = {
+      'The space is already reserved for that time slot.':
+        'El espacio seleccionado ya está reservado para ese horario.',
+
+      'The space is inactive and cannot be reserved.':
+        'El espacio seleccionado está inactivo y no puede reservarse.',
+
+      'The resource is inactive and cannot be reserved.':
+        'El recurso seleccionado está inactivo y no puede reservarse.',
+
+      'The reservation must include at least one Space or Resource.':
+        'Debes seleccionar al menos un espacio o un recurso.',
+    };
+
+    return translations[message] ?? message;
+  }
+
   save(shouldSubmit: boolean): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -184,21 +234,32 @@ export class ReservationFormComponent implements OnInit {
           next: () => this.router.navigate(['/reservations']),
           error: (err) => {
             this.isSubmitting.set(false);
+
+            const backendMessage = err?.error?.description;
+
             this.errorMessage.set(
-              err?.error?.description ?? 'La reserva se guardó como borrador, pero no se envió. Intenta enviar desde Mis Solicitudes'
+              backendMessage
+                ? this.translateReservationError(backendMessage)
+                : 'La reserva se guardó como borrador, pero no se envió. Intenta enviar desde Mis Solicitudes.'
             );
           },
         });
       },
       error: (err) => {
         this.isSubmitting.set(false);
+
+        const backendMessage = err?.error?.description;
+
         this.errorMessage.set(
-          err?.error?.description ?? (this.isEditMode() ? 'No se pudo guardar la edición.' : 'No se pudo crear la reserva. Verifica los datos')
+          backendMessage
+            ? this.translateReservationError(backendMessage)
+            : (this.isEditMode()
+              ? 'No se pudo guardar la edición.'
+              : 'No se pudo crear la reserva. Verifica los datos.')
         );
       },
     });
   }
-
 
   private loadCandidates(): void {
     if (!this.canCreateForOthers()) return;

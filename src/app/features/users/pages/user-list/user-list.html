@@ -1,0 +1,227 @@
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 class="h3 mb-1">Usuarios</h1>
+      <p class="text-muted">Administra las cuentas, sus roles y su carrera</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="openCreate()">+ Nuevo usuario</button>
+  </div>
+
+  <!-- Filtros: el [formGroup] es el mismo que escucha el componente con
+       valueChanges, así que cualquier cambio aquí recarga la tabla solo. -->
+  <form [formGroup]="filters" class="filters">
+    <input
+      type="search"
+      formControlName="search"
+      placeholder="Buscar por nombre o correo..."
+    />
+
+    <select formControlName="role">
+      <option value="">Todos los roles</option>
+      @for (r of roleOptions; track r.value) {
+        <option [value]="r.value">{{ r.label }}</option>
+      }
+    </select>
+
+    <select formControlName="careerId">
+      <option value="">Todas las carreras</option>
+      @for (c of careers(); track c.id) {
+        <option [value]="c.id">{{ c.name }}</option>
+      }
+    </select>
+  </form>
+
+  @if (isLoading()) {
+    <p class="text-muted">Cargando...</p>
+  } @else if (errorMessage()) {
+    <div class="alert-error">{{ errorMessage() }}</div>
+  } @else if (users().length === 0) {
+    <div class="empty-state">
+      <p>No hay usuarios que coincidan con los filtros.</p>
+    </div>
+  } @else {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Rol</th>
+            <th>Carrera</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of users(); track u.id) {
+            <tr [class.row-inactive]="!u.isActive">
+              <td>
+                <div class="user-name">{{ u.name }}</div>
+                @if (isMe(u)) {
+                  <div class="user-me">Tú</div>
+                }
+              </td>
+              <td>{{ u.email }}</td>
+              <td>{{ u.phone || '—' }}</td>
+              <td>{{ roleLabels[u.role] ?? u.role }}</td>
+              <td>{{ u.careerName ?? '—' }}</td>
+              <td>
+                <span class="status-badge" [attr.data-active]="u.isActive">
+                  {{ u.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button class="icon-btn icon-btn--edit" title="Editar" (click)="openEdit(u)">✎</button>
+                 <button
+                  class="icon-btn"
+                  [class.icon-btn--deactivate]="u.isActive"
+                  [class.icon-btn--activate]="!u.isActive"
+                  [title]="isMe(u) ? 'No puedes desactivar tu propia cuenta' : (u.isActive ? 'Desactivar' : 'Activar')"
+                  [disabled]="isMe(u)"
+                  (click)="openStatusChange(u)"
+                >{{ u.isActive ? '✕' : '✓' }}</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- MODAL: crear / editar usuario -->
+@if (modal(); as m) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h2>{{ m.mode === 'create' ? 'Nuevo usuario' : 'Editar usuario' }}</h2>
+
+      @if (modalError()) {
+        <div class="alert-error">{{ modalError() }}</div>
+      }
+
+      <form [formGroup]="userForm" class="user-form">
+        <div class="field">
+          <label for="name">Nombre *</label>
+          <input id="name" type="text" formControlName="name" />
+          @if (userForm.controls.name.invalid && userForm.controls.name.touched) {
+            <small class="field-error">Ingresa un nombre válido (mínimo 3 letras).</small>
+          }
+        </div>
+
+        <!-- Correo y contraseña solo existen al crear: el correo es la
+             identidad de login y no se edita; la contraseña no se toca aquí. -->
+        @if (m.mode === 'create') {
+          <div class="field">
+            <label for="emailUser">Correo institucional *</label>
+            <div class="email-group">
+              <input id="emailUser" type="text" formControlName="emailUser"
+                     (input)="onEmailInput($event)" placeholder="nombre.apellido" />
+              <span class="email-domain">{{ emailDomain }}</span>
+            </div>
+            @if (userForm.controls.emailUser.invalid && userForm.controls.emailUser.touched) {
+              <small class="field-error">Solo minúsculas, números y punto.</small>
+            }
+          </div>
+
+          <div class="field">
+            <label for="password">Contraseña *</label>
+            <input id="password" type="password" formControlName="password" />
+            @if (userForm.controls.password.invalid && userForm.controls.password.touched) {
+              <small class="field-error">Mínimo 8 caracteres, con letras y números.</small>
+            }
+          </div>
+        }
+
+        <div class="field">
+          <label for="phone">Teléfono *</label>
+          <input id="phone" type="text" formControlName="phone" />
+          @if (userForm.controls.phone.invalid && userForm.controls.phone.touched) {
+            <small class="field-error">Entre 7 y 10 dígitos, solo números.</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="role">Rol *</label>
+          <select id="role" formControlName="role" (change)="onRoleChange()">
+            @for (r of roleOptions; track r.value) {
+              <option [value]="r.value">{{ r.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="facultyId">Facultad</label>
+            <select id="facultyId" formControlName="facultyId" (change)="onFacultyChange($event)">
+              <option value="">Selecciona...</option>
+              @for (f of faculties(); track f.id) {
+                <option [value]="f.id">{{ f.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="careerId">Carrera</label>
+            <select id="careerId" formControlName="careerId">
+              <option value="">Selecciona...</option>
+              @for (c of careersOfFaculty(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <small class="text-muted">
+          La carrera es obligatoria para Estudiante, Docente y Coordinador.
+        </small>
+        @if (userForm.controls.careerId.invalid && userForm.controls.careerId.touched) {
+          <small class="field-error">Selecciona facultad y carrera para este rol.</small>
+        }
+      </form>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeModal()" [disabled]="isSaving()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-primary" (click)="save()" [disabled]="isSaving()">
+          {{ isSaving() ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+<!-- MODAL: confirmar activar / desactivar -->
+@if (statusTarget(); as target) {
+  <div class="modal-backdrop" (click)="closeStatusChange()">
+    <div class="modal-card modal-card--small" (click)="$event.stopPropagation()">
+      <h2>{{ target.isActive ? 'Desactivar usuario' : 'Activar usuario' }}</h2>
+
+      @if (statusError()) {
+        <div class="alert-error">{{ statusError() }}</div>
+      }
+
+      <p class="confirm-text">
+        @if (target.isActive) {
+          <strong>{{ target.name }}</strong> no podrá volver a iniciar sesión.
+          Sus reservas se conservan y puedes reactivar la cuenta cuando quieras.
+        } @else {
+          <strong>{{ target.name }}</strong> podrá volver a iniciar sesión.
+        }
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="closeStatusChange()" [disabled]="isChangingStatus()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          [class]="target.isActive ? 'btn-danger' : 'btn-primary'"
+          (click)="confirmStatusChange()"
+          [disabled]="isChangingStatus()"
+        >
+          {{ isChangingStatus() ? 'Guardando...' : (target.isActive ? 'Desactivar' : 'Activar') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

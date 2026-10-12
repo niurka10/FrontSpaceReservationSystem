@@ -1,0 +1,316 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.alert-error {
+  background: #fdeaea;
+  color: #c22b2b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c7690;
+}
+
+/* ===== Botones ===== */
+.btn-primary,
+.btn-cancel {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #3457e8;
+  color: #fff;
+}
+
+.btn-cancel {
+  background: #eef0f5;
+  color: #4a5266;
+}
+
+.btn-primary:disabled,
+.btn-cancel:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ===== Filtros ===== */
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filters input,
+.filters select {
+  border: 1px solid #d7dceb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+}
+
+// El buscador se estira; los selects mantienen su ancho natural.
+.filters input {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* ===== Tabla ===== */
+.table-wrap {
+  background: #fff;
+  border: 1px solid #e4e8f2;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  text-align: left;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6c7690;
+  padding: 10px 14px;
+  border-bottom: 1.5px solid #e4e8f2;
+}
+
+tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e4e8f2;
+  vertical-align: middle;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+// Cuenta desactivada: la fila se ve atenuada, pero la celda de acciones
+// queda al 100% para que sus botones no parezcan deshabilitados.
+.row-inactive td:not(.actions-cell) {
+  opacity: 0.55;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #1c2233;
+}
+
+.user-me {
+  font-size: 11px;
+  color: #3457e8;
+  font-weight: 700;
+}
+
+.actions-cell {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.icon-btn--edit {
+  background: #eef2ff;
+  color: #3457e8;
+  border-color: #d6e0ff;
+}
+
+/* ===== Badge Activo / Inactivo ===== */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-badge[data-active='true'] {
+  background: #e6f7ee;
+  color: #158a4c;
+}
+
+.status-badge[data-active='false'] {
+  background: #eef0f5;
+  color: #8892a6;
+}
+
+/* ===== Modal crear / editar ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 24, 38, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  width: 520px;
+  max-width: 92vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-card h2 {
+  font-size: 16px;
+  margin: 0 0 4px;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a5266;
+}
+
+.field input,
+.field select {
+  border: 1px solid #d7dceb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+}
+
+.field input:disabled,
+.field select:disabled {
+  background: #f4f6fb;
+  color: #8892a6;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.field-error {
+  color: #c22b2b;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+// Correo: el input se estira y el dominio fijo queda pegado a la derecha.
+.email-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.email-group input {
+  flex: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.email-domain {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: #eef0f5;
+  color: #4a5266;
+  font-size: 13px;
+  border: 1px solid #d7dceb;
+  border-left: none;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* ===== Activar / desactivar ===== */
+.icon-btn--deactivate {
+  background: #fdeaea;
+  color: #c22b2b;
+  border-color: #f4c2c2;
+}
+
+.icon-btn--activate {
+  background: #e6f7ee;
+  color: #158a4c;
+  border-color: #b9e6cd;
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #c22b2b;
+  color: #fff;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.modal-card--small {
+  width: 400px;
+}
+
+.confirm-text {
+  font-size: 13px;
+  color: #4a5266;
+  margin: 0;
+}

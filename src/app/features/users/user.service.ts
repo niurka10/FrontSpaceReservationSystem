@@ -1,13 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { UserSummaryResponse } from './models/user-summary.model';
+import { CreateUserRequest, EditUserRequest, UserListItem, UserSummaryResponse } from './models/user-summary.model';
 
 const API_BASE = '/api/users';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Cache de "quién soy" (incluye mi careerId) — se llena una vez por sesión.
   private readonly _me = signal<UserSummaryResponse | null>(null);
@@ -34,5 +34,30 @@ export class UserService {
     if (cached) return new Observable((sub) => { sub.next(cached); sub.complete(); });
 
     return this.getMe().pipe(tap((me) => this._me.set(me)));
+  }
+
+  // Listado de administración (solo Admin). Los tres filtros son opcionales;
+  // el backend incluye usuarios desactivados a propósito.
+  listForAdmin(role?: number, careerId?: string, search?: string): Observable<UserListItem[]> {
+    let params = new HttpParams();
+    if (role) params = params.set('role', role);
+    if (careerId) params = params.set('careerId', careerId);
+    if (search?.trim()) params = params.set('search', search.trim());
+
+    return this.http.get<UserListItem[]>(`${API_BASE}/manage`, { params });
+  }
+
+  // POST /api/users responde 201 con { id }.
+  create(request: CreateUserRequest): Observable<{ id: string }> {
+    return this.http.post<{ id: string }>(API_BASE, request);
+  }
+
+  update(id: string, request: EditUserRequest): Observable<UserSummaryResponse> {
+    return this.http.put<UserSummaryResponse>(`${API_BASE}/${id}`, request);
+  }
+
+  // PATCH /api/users/{id}/status responde 204 (sin body), por eso void.
+  setStatus(id: string, isActive: boolean): Observable<void> {
+    return this.http.patch<void>(`${API_BASE}/${id}/status`, { isActive });
   }
 }

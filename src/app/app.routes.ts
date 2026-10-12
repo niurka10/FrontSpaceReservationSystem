@@ -67,11 +67,10 @@ export const routes: Routes = [
       },
 
       // Sin dueño asignado todavía 
-      {
+            {
         path: 'users',
-        data: { title: 'Users' },
         loadComponent: () =>
-          import('./shared/coming-soon/coming-soon.component').then((m) => m.ComingSoonComponent),
+          import('./features/users/pages/user-list/user-list').then((m) => m.UserListComponent),
       },
       {
         path: 'reports',
@@ -79,6 +78,7 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./shared/coming-soon/coming-soon.component').then((m) => m.ComingSoonComponent),
       },
+  
     ],
   },
 

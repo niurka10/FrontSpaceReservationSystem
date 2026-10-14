@@ -1,131 +1,193 @@
 <div class="page">
-  @if (resourcesOnly()) {
-  <h1 class="h3 mb-1">Reservar recursos</h1>
-  <p class="text-muted">Completa los datos para solicitar recursos institucionales.</p>
-  } @else {
-  <h1 class="h3 mb-1">Nueva reserva</h1>
-  <p class="text-muted">Completa los datos para solicitar un espacio.</p>
-  }
+  <header class="page-head">
+    @if (resourcesOnly()) {
+    <h1>Reservar recursos</h1>
+    <p>Completa los datos para solicitar recursos institucionales.</p>
+    } @else {
+    <h1>Nueva reserva</h1>
+    <p>Completa los datos para solicitar un espacio.</p>
+    }
+  </header>
 
   @if (errorMessage()) {
-  <div class="alert-error">{{ errorMessage() }}</div>
+  <div class="alert-error" role="alert">
+    <span>{{ errorMessage() }}</span>
+    <button type="button" class="alert-close" aria-label="Cerrar mensaje" (click)="errorMessage.set(null)">×</button>
+  </div>
   }
-  <div class="form-card">
-    <form [formGroup]="form" class="reservation-form">
 
-      @if (canCreateForOthers()) {
-      <div class="field">
-        <label for="onBehalfOfUserId">¿Para quién es esta reserva?</label>
-        <select id="onBehalfOfUserId" formControlName="onBehalfOfUserId">
-          <option value="">Para mí</option>
-          @for (candidate of candidates(); track candidate.id) {
-          <option [value]="candidate.id">
-            {{ candidate.name }} — {{ candidate.role }}
-          </option>
-          }
-        </select>
-      </div>
-      }
+  <div class="layout">
+    <div class="form-card">
+      <form [formGroup]="form" class="reservation-form">
 
-      @if (!resourcesOnly()) {
-      <div class="field">
-        <label for="spaceId">Espacio (opcional si eliges algun recurso)</label>
-        <select id="spaceId" formControlName="spaceId">
-          <option value="" disabled>Sin Espacio - solo recursos</option>
-          @for (space of spaces(); track space.id) {
-          <option [value]="space.id">
-            {{ space.name }} — {{ spaceTypeLabels[space.type] }} (cap. {{ space.capacity }})
-          </option>
-          }
-        </select>
-        @if (form.controls.spaceId.invalid && form.controls.spaceId.touched) {
-        <small class="field-error">Selecciona un espacio.</small>
+        @if (canCreateForOthers()) {
+        <div class="field">
+          <label for="onBehalfOfUserId">¿Para quién es esta reserva?</label>
+          <select id="onBehalfOfUserId" formControlName="onBehalfOfUserId">
+            <option value="">Para mí</option>
+            @for (candidate of candidates(); track candidate.id) {
+            <option [value]="candidate.id">{{ candidate.name }} — {{ candidate.role }}</option>
+            }
+          </select>
+        </div>
         }
-      </div>
-      }
 
-      <div class="field-row">
+        @if (!resourcesOnly()) {
         <div class="field">
-          <label for="date">Fecha *</label>
-          <!-- Al cambiar la fecha, consulta la disponibilidad real de recursos -->
-          <input id="date" type="date" formControlName="date" (change)="checkResourceAvailability()" />
+          <label for="spaceId">Espacio (opcional si eliges algún recurso)</label>
+          <select id="spaceId" formControlName="spaceId">
+            <option value="">Sin espacio, solo recursos</option>
+            @for (space of spaces(); track space.id) {
+            <option [value]="space.id">
+              {{ space.name }} — {{ spaceTypeLabels[space.type] }} (cap. {{ space.capacity }})
+            </option>
+            }
+          </select>
+          @if (form.controls.spaceId.invalid && form.controls.spaceId.touched) {
+          <small class="field-error">Selecciona un espacio.</small>
+          }
         </div>
-        <div class="field">
-          <label for="startTime">Hora inicio *</label>
-          <!-- Al cambiar la hora de inicio, actualiza la disponibilidad -->
-          <input id="startTime" type="time" formControlName="startTime" (change)="checkResourceAvailability()" />
-        </div>
-        <div class="field">
-          <label for="endTime">Hora fin *</label>
-          <!-- Al cambiar la hora de fin, actualiza la disponibilidad. -->
-          <input id="endTime" type="time" formControlName="endTime" (change)="checkResourceAvailability()" />
-        </div>
-      </div>
-
-      @if (scheduleError()) {
-      <small class="field-error">{{ scheduleError() }}</small>
-      }
-
-      <div class="field">
-        <label for="reason">Motivo *</label>
-        <textarea id="reason" formControlName="reason"
-          placeholder="Ej. Exposición final de la asignatura..."></textarea>
-        @if (form.controls.reason.invalid && form.controls.reason.touched) {
-        <small class="field-error">Describe el motivo (mínimo 10 caracteres).</small>
         }
-      </div>
 
-      @if (!resourcesOnly()) {
-      <!-- Checkbox nuevo: solo aplica en el modo normal (reservar espacio).
-           En modo "solo recursos" esta sección siempre está visible,
-           así que el checkbox no tiene sentido ahí. -->
-      <div class="field field-checkbox">
-        <label class="resource-check">
-          <input type="checkbox" [checked]="wantsResources()" (change)="wantsResources.set(!wantsResources())" />
-          ¿Desea reservar recursos también?
-        </label>
-      </div>
-      }
+        <div class="field-row">
+          <div class="field">
+            <label for="date">Fecha *</label>
+            <input id="date" type="date" formControlName="date" [min]="minDate" (change)="checkResourceAvailability()" />
+          </div>
+          <div class="field">
+            <label for="startTime">Hora inicio *</label>
+            <input id="startTime" type="time" formControlName="startTime" [class.invalid]="!!scheduleError()"
+              (change)="checkResourceAvailability()" />
+          </div>
+          <div class="field">
+            <label for="endTime">Hora fin *</label>
+            <input id="endTime" type="time" formControlName="endTime" [class.invalid]="!!scheduleError()"
+              (change)="checkResourceAvailability()" />
+          </div>
+        </div>
 
-      @if (showResourcesSection()) {
-      <div class="field">
-        <label>Recursos institucionales (opcional)</label>
+        @if (scheduleError()) {
+        <small class="field-error">{{ scheduleError() }}</small>
+        }
 
-        @if (isLoadingOptions()) {
-        <p class="text-muted">Cargando recursos...</p>
-        } @else {
-        <div class="resource-list">
-          @for (row of resourceRows(); track row.option.id) {
-          <div class="resource-row">
-            <label class="resource-check">
-              <input type="checkbox" [checked]="row.selected" (change)="toggleResource(row)" />
-              {{ row.option.name }}
-              <!-- Muestra la cantidad realmente disponible para ese horario -->
-              <span class="text-muted">
-                ({{ getResourceAvailable(row.option.id, row.option.availableQuantity) }} disp.)
-              </span>
-            </label>
+        <div class="field">
+          <label for="reason">Motivo *</label>
+          <textarea id="reason" formControlName="reason" rows="2"
+            placeholder="Ej. Exposición final de la asignatura..."></textarea>
+          @if (form.controls.reason.invalid && form.controls.reason.touched) {
+          <small class="field-error">Describe el motivo (mínimo 10 caracteres).</small>
+          }
+        </div>
 
-            @if (row.selected) {
-            <!-- Limita la cantidad al disponible y actualiza la cantidad seleccionada. -->
-            <input type="number" min="1" [max]="getResourceAvailable(row.option.id, row.option.availableQuantity)"
-              [value]="row.quantity" (input)="updateQuantity(row, $any($event.target).value)" />
+        <div class="resources-block">
+          @if (!resourcesOnly()) {
+          <label class="switch">
+            <input type="checkbox" [checked]="wantsResources()" (change)="wantsResources.set(!wantsResources())" />
+            <span class="track"><span class="thumb"></span></span>
+            <span>¿Desea reservar recursos también?</span>
+          </label>
+          } @else {
+          <span class="block-title">Recursos institucionales</span>
+          }
+
+          @if (showResourcesSection()) {
+          @if (isLoadingOptions()) {
+          <p class="text-muted">Cargando recursos...</p>
+          } @else {
+          <div class="resource-grid">
+            @for (row of resourceRows(); track row.option.id) {
+            <div class="resource-card" [class.selected]="row.selected"
+              [class.disabled]="!row.selected && getResourceAvailable(row.option.id, row.option.availableQuantity) <= 0">
+
+              <label class="resource-main">
+                <input type="checkbox" class="sr-check" [checked]="row.selected"
+                  [disabled]="!row.selected && getResourceAvailable(row.option.id, row.option.availableQuantity) <= 0"
+                  (change)="toggleResource(row)" />
+                <span class="tick"></span>
+                <span class="resource-info">
+                  <span class="resource-name">{{ row.option.name }}</span>
+                  <span class="stock"
+                    [class.low]="getResourceAvailable(row.option.id, row.option.availableQuantity) > 0 && getResourceAvailable(row.option.id, row.option.availableQuantity) <= 2"
+                    [class.none]="getResourceAvailable(row.option.id, row.option.availableQuantity) <= 0">
+                    {{ getResourceAvailable(row.option.id, row.option.availableQuantity) <= 0 ? 'Agotado' :
+                      getResourceAvailable(row.option.id, row.option.availableQuantity) <=2 ? '¡Quedan ' +
+                      getResourceAvailable(row.option.id, row.option.availableQuantity) + '!' :
+                      getResourceAvailable(row.option.id, row.option.availableQuantity) + ' disp.' }} </span>
+                  </span>
+              </label>
+
+              @if (row.selected) {
+              <div class="stepper">
+                <button type="button" aria-label="Disminuir" [disabled]="row.quantity <= 1"
+                  (click)="updateQuantity(row, '' + (row.quantity - 1))">−</button>
+                <input type="number" min="1" [max]="getResourceAvailable(row.option.id, row.option.availableQuantity)"
+                  [value]="row.quantity" (input)="updateQuantity(row, $any($event.target).value)" />
+                <button type="button" aria-label="Aumentar"
+                  [disabled]="row.quantity >= getResourceAvailable(row.option.id, row.option.availableQuantity)"
+                  (click)="updateQuantity(row, '' + (row.quantity + 1))">+</button>
+              </div>
+              }
+            </div>
             }
           </div>
           }
+          }
         </div>
-        }
-      </div>
-      }
 
-      <div class="form-actions">
-        <button type="button" class="btn-ghost" (click)="save(false)" [disabled]="isSubmitting()">
-          Guardar Borrador
-        </button>
-        <button type="button" class="btn-primary" (click)="save(true)" [disabled]="isSubmitting()">
-          Enviar Solicitud
-        </button>
+        <div class="form-actions">
+          <button type="button" class="btn-ghost" (click)="save(false)" [disabled]="isSubmitting()">
+            @if (isSubmitting()) { <span class="spinner dark"></span> }
+            Guardar Borrador
+          </button>
+          <button type="button" class="btn-primary" (click)="save(true)" [disabled]="isSubmitting()">
+            @if (isSubmitting()) { <span class="spinner"></span> }
+            Enviar Solicitud
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <aside class="summary" aria-label="Resumen de la reserva">
+      <div class="summary-head">
+        <h2>Resumen de tu Reserva</h2>
       </div>
-    </form>
+
+      <div class="summary-body">
+        <dl class="summary-data">
+          @if (!resourcesOnly()) {
+          <dt>Espacio</dt>
+          <dd>
+            @if (!form.controls.spaceId.value) { Sin espacio }
+            @for (space of spaces(); track space.id) {
+            @if (space.id === form.controls.spaceId.value) { {{ space.name }} }
+            }
+          </dd>
+          }
+          <dt>Fecha</dt>
+          <dd>{{ form.controls.date.value ? (form.controls.date.value | date:'dd/MM/yyyy') : '—' }}</dd>
+          <dt>Horario</dt>
+          <dd>
+            @if (form.controls.startTime.value && form.controls.endTime.value) {
+            {{ form.controls.startTime.value }} – {{ form.controls.endTime.value }}
+            } @else { — }
+          </dd>
+        </dl>
+
+        <div class="summary-resources">
+          <span class="summary-title">Recursos</span>
+          <ul class="res-list">
+            @for (row of resourceRows(); track row.option.id) {
+            @if (row.selected) {
+            <li>
+              <span class="res-name">{{ row.option.name }} <strong>({{ row.quantity }})</strong></span>
+              <button type="button" [attr.aria-label]="'Quitar ' + row.option.name"
+                (click)="toggleResource(row)">×</button>
+            </li>
+            }
+            }
+          </ul>
+        </div>
+      </div>
+    </aside>
   </div>
 </div>

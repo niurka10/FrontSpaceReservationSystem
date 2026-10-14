@@ -10,39 +10,124 @@
     Ves las solicitudes de docentes y estudiantes de tu carrera.
   </div>
 
-  <div class="tabs">
-    @for (tab of tabs; track tab.value) {
-    <button class="tab" [class.active]="activeTab() === tab.value" (click)="selectTab(tab.value)">
-      {{ tab.label }}
-    </button>
-    }
+  <!-- Tarjetas: cada una filtra por estado -->
+  <div class="summary">
+    <div class="summary-card" role="button" tabindex="0" [class.active]="statusFilter() === 'PendingCoordinator'"
+      [title]="statusFilter() === 'PendingCoordinator' ? 'Clic para ver todas' : 'Clic para filtrar'"
+      (click)="setStatusCard('PendingCoordinator')" (keydown.enter)="setStatusCard('PendingCoordinator')">
+      <span class="summary-icon summary-icon--pending"><i class="bi bi-hourglass-split"></i></span>
+      <div>
+        <span class="summary-number">{{ counts().pending }}</span>
+        <span class="summary-label">Por gestionar</span>
+      </div>
+    </div>
+
+    <div class="summary-card" role="button" tabindex="0" [class.active]="statusFilter() === 'PendingVicerrector'"
+      [title]="statusFilter() === 'PendingVicerrector' ? 'Clic para ver todas' : 'Clic para filtrar'"
+      (click)="setStatusCard('PendingVicerrector')" (keydown.enter)="setStatusCard('PendingVicerrector')">
+      <span class="summary-icon summary-icon--draft"><i class="bi bi-send-check-fill"></i></span>
+      <div>
+        <span class="summary-number">{{ counts().vicerrector }}</span>
+        <span class="summary-label">En Vicerrectorado</span>
+      </div>
+    </div>
+
+    <div class="summary-card" role="button" tabindex="0" [class.active]="statusFilter() === 'PendingAssets'"
+      [title]="statusFilter() === 'PendingAssets' ? 'Clic para ver todas' : 'Clic para filtrar'"
+      (click)="setStatusCard('PendingAssets')" (keydown.enter)="setStatusCard('PendingAssets')">
+      <span class="summary-icon summary-icon--assets"><i class="bi bi-box-seam-fill"></i></span>
+      <div>
+        <span class="summary-number">{{ counts().assets }}</span>
+        <span class="summary-label">Por asignar</span>
+      </div>
+    </div>
+
+    <div class="summary-card" role="button" tabindex="0" [class.active]="statusFilter() === 'Approved'"
+      [title]="statusFilter() === 'Approved' ? 'Clic para ver todas' : 'Clic para filtrar'"
+      (click)="setStatusCard('Approved')" (keydown.enter)="setStatusCard('Approved')">
+      <span class="summary-icon summary-icon--approved"><i class="bi bi-check-circle-fill"></i></span>
+      <div>
+        <span class="summary-number">{{ counts().approved }}</span>
+        <span class="summary-label">Aprobadas</span>
+      </div>
+    </div>
+
+    <div class="summary-card" role="button" tabindex="0" [class.active]="statusFilter() === 'Rejected'"
+      [title]="statusFilter() === 'Rejected' ? 'Clic para ver todas' : 'Clic para filtrar'"
+      (click)="setStatusCard('Rejected')" (keydown.enter)="setStatusCard('Rejected')">
+      <span class="summary-icon summary-icon--closed"><i class="bi bi-x-circle-fill"></i></span>
+      <div>
+        <span class="summary-number">{{ counts().rejected }}</span>
+        <span class="summary-label">Rechazadas</span>
+      </div>
+    </div>
   </div>
 
   @if (isLoading()) {
   <p class="text-muted">Cargando...</p>
   } @else if (errorMessage()) {
   <div class="alert-error">{{ errorMessage() }}</div>
-  } @else if (filteredReservations().length === 0) {
-  <div class="empty-state">
-    <p>No hay solicitudes en esta categoría.</p>
-  </div>
   } @else {
+
+  @if (hasActiveFilters()) {
+  <div class="filter-info">
+    <span>{{ filteredReservations().length }} de {{ reservations().length }} solicitudes</span>
+    <button type="button" class="filter-clear" (click)="clearFilters()">Limpiar filtros</button>
+  </div>
+  }
+
+  <!-- La tabla hace scroll: encabezados y filtros quedan fijos arriba -->
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
-          <th>Código</th>
+        <tr class="head-row">
+          <th class="col-num">#</th>
           <th>Solicitante</th>
           <th>Espacio</th>
           <th>Fecha</th>
+          <th>Horario</th>
+          <th>Motivo</th>
           <th>Estado</th>
           <th></th>
         </tr>
+
+        <!-- Un filtro por columna -->
+        <tr class="filter-row">
+          <th></th>
+          <th>
+            <input type="search" placeholder="Buscar…" [value]="requesterFilter()"
+              (input)="requesterFilter.set($any($event.target).value)" />
+          </th>
+          <th>
+            <select (change)="spaceFilter.set($any($event.target).value)">
+              <option value="all" [selected]="spaceFilter() === 'all'">Todos</option>
+              <option value="__none__" [selected]="spaceFilter() === '__none__'">Sin espacio</option>
+              @for (s of spaceOptions(); track s) {
+              <option [value]="s" [selected]="spaceFilter() === s">{{ s }}</option>
+              }
+            </select>
+          </th>
+          <th>
+            <input type="date" [value]="dateFilter()" (change)="dateFilter.set($any($event.target).value)" />
+          </th>
+          <th></th>
+          <th></th>
+          <th>
+            <select (change)="statusFilter.set($any($event.target).value)">
+              <option value="all" [selected]="statusFilter() === 'all'">Todos</option>
+              @for (o of statusOptions(); track o.value) {
+              <option [value]="o.value" [selected]="statusFilter() === o.value">{{ o.label }}</option>
+              }
+            </select>
+          </th>
+          <th></th>
+        </tr>
       </thead>
+
       <tbody>
-        @for (r of filteredReservations(); track r.id) {
+        @for (r of filteredReservations(); track r.id; let i = $index) {
         <tr>
-          <td class="code-cell">{{ pseudoCode(r.id) }}</td>
+          <td class="col-num"><span class="num-badge">{{ i + 1 }}</span></td>
           <td>
             <div class="requester-name">{{ r.requesterName ?? r.userId }}</div>
             @if (requesterLabel(r)) {
@@ -50,7 +135,9 @@
             }
           </td>
           <td>{{ r.spaceName ?? '—' }}</td>
-          <td>{{ r.date | date: 'dd-MMM' }}</td>
+          <td class="nowrap">{{ r.date | slice:0:10 | date: 'dd/MM/yyyy':'UTC' }}</td>
+          <td class="nowrap">{{ r.startTime.slice(0, 5) }}–{{ r.endTime.slice(0, 5) }}</td>
+          <td><div class="reason-cell" [title]="r.reason">{{ r.reason }}</div></td>
           <td>
             <span class="status-badge" [attr.data-status]="r.currentStatus">
               {{ statusLabels[r.currentStatus] }}
@@ -65,6 +152,10 @@
             <button class="icon-btn icon-btn--reject" title="Rechazar" (click)="openAction(r.id, 'reject')">✕</button>
             }
           </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="8" class="empty-cell">No hay solicitudes con estos filtros.</td>
         </tr>
         }
       </tbody>
@@ -104,9 +195,9 @@
 
       <div class="detail-header">
         <div>
-          <h2>Detalle de solicitud <span class="detail-code">{{ pseudoCode(detail.id) }}</span></h2>
+          <h2>Detalle de solicitud</h2>
           <p class="detail-subtitle">
-            {{ detail.spaceName ?? '—' }} · {{ detail.date | date: 'dd/MM/yyyy' }} ·
+            {{ detail.spaceName ?? '—' }} · {{ detail.date | slice:0:10 | date: 'dd/MM/yyyy':'UTC' }} ·
             {{ detail.startTime }}–{{ detail.endTime }}
           </p>
         </div>

@@ -573,3 +573,58 @@ tbody tr:last-child td {
   background: #e8a8a8;
   cursor: not-allowed;
 }
+
+// ---- filtro por tarjetas ----
+.summary-card {
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s, background 0.15s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 87, 232, 0.12);
+  }
+
+  &.active {
+    border-color: #3457e8;
+    background: #f1f4ff;
+    box-shadow: 0 0 0 3px rgba(52, 87, 232, 0.15);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(52, 87, 232, 0.35);
+    outline-offset: 2px;
+  }
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 14px;
+  background: #eef2ff;
+  border: 1px solid #d6defc;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1c2233;
+}
+
+.filter-clear {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #3457e8;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { text-decoration: underline; }
+}
+
+.empty-cell {
+  text-align: center;
+  padding: 28px 12px;
+  color: #6c7690;
+  font-size: 14px;
+}

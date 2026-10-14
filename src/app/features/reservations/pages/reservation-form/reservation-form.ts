@@ -52,6 +52,17 @@ export class ReservationFormComponent implements OnInit {
 
   readonly resourcesOnly = signal(false);
   readonly wantsResources = signal(false);
+
+  readonly minDate = this.getTodayDate();
+  private getTodayDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
   readonly showResourcesSection = computed(() => this.resourcesOnly() || this.wantsResources());
 
   readonly form = this.fb.group({
@@ -126,7 +137,7 @@ export class ReservationFormComponent implements OnInit {
         this.form.patchValue({
           spaceId: detail.spaceId ?? '',
           date: detail.date.slice(0, 10),
-          startTime: detail.startTime.slice(0, 5), // "18:00:00" -> "18:00"
+          startTime: detail.startTime.slice(0, 5),
           endTime: detail.endTime.slice(0, 5),
           reason: detail.reason,
         });
@@ -137,13 +148,27 @@ export class ReservationFormComponent implements OnInit {
 
         this.resourceRows.update((rows) =>
           rows.map((row) => {
-            const match = detail.resources.find((r) => r.resourceName === row.option.name);
-            return match ? { ...row, selected: true, quantity: match.quantity } : row;
+            const match = detail.resources.find(
+              (r) => r.resourceName === row.option.name
+            );
+
+            return match
+              ? { ...row, selected: true, quantity: match.quantity }
+              : { ...row, selected: false, quantity: 1 };
           })
         );
+
+        // Si el borrador tiene recursos, mostrar la sección automáticamente.
+        const hasResources = detail.resources.length > 0;
+        this.wantsResources.set(hasResources);
+
+        // Actualizar la disponibilidad para la fecha y horario cargados.
+        this.checkResourceAvailability();
       },
-      error: () => this.errorMessage.set('no se pudo cargar la reserva a editar.'),
-    })
+      error: () =>
+        this.errorMessage.set('No se pudo cargar la reserva a editar.'),
+
+    });
   }
 
 
@@ -209,6 +234,12 @@ export class ReservationFormComponent implements OnInit {
   }
 
   save(shouldSubmit: boolean): void {
+    const selectedDate = this.form.controls.date.value;
+
+    if (selectedDate && selectedDate < this.minDate) {
+      this.errorMessage.set('No puedes reservar en una fecha que ya pasó.');
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

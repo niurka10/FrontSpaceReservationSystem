@@ -1,15 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { Component, computed, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, RESERVATION_STEP_BY_STATUS, ReservationDetail, ReservationStatus } from "../../models/reservation.interface";
+import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, RESERVATION_STEP_BY_STATUS, ReservationDetail } from "../../models/reservation.interface";
 import { ReservationService } from "../../services/reservation.service";
-
-type TabValue = 'Todas' | ReservationStatus;
-
-interface Tab {
-    value: TabValue;
-    label: string;
-}
 
 interface ActionState {
     reservationId: string;
@@ -37,27 +30,73 @@ export class PendingCoordinatorComponent implements OnInit {
     readonly selectedDetail = signal<ReservationDetail | null>(null);
     readonly isLoadingDetail = signal(false);
 
-    readonly tabs: Tab[] = [
-        { value: 'Todas', label: 'Todas' },
-        { value: 'PendingCoordinator', label: 'Pendientes de gestión' },
-        { value: 'PendingVicerrector', label: 'Pendientes de autorización (Vicerrectorado)' },
-        { value: 'PendingAssets', label: 'Autorizadas · pendientes de asignación' },
-        { value: 'Approved', label: 'Aprobadas' },
-        { value: 'Rejected', label: 'Rechazadas' }
-    ];
-
-    readonly activeTab = signal<TabValue>('Todas');
     readonly reservations = signal<Reservation[]>([]);
     readonly isLoading = signal(true);
     readonly errorMessage = signal<string | null>(null);
     readonly action = signal<ActionState | null>(null);
 
+    // ---------- Filtros (uno por columna) ----------
+    readonly statusFilter = signal<string>('all');   // lo comparten las tarjetas y el filtro de la columna Estado
+    readonly requesterFilter = signal('');
+    readonly spaceFilter = signal<string>('all');    // 'all' | '__none__' | nombre del espacio
+    readonly dateFilter = signal('');                // yyyy-MM-dd
+
+    // Los números de las tarjetas cuentan sobre todas las reservas, no sobre las filtradas.
+    readonly counts = computed(() => {
+        const rows = this.reservations();
+        const count = (s: string) => rows.filter((r) => r.currentStatus === s).length;
+        return {
+            pending: count('PendingCoordinator'),
+            vicerrector: count('PendingVicerrector'),
+            assets: count('PendingAssets'),
+            approved: count('Approved'),
+            rejected: count('Rejected'),
+        };
+    });
+
+    // Opciones de los desplegables: solo lo que realmente existe en tus datos.
+    readonly spaceOptions = computed(() => {
+        const names = this.reservations()
+            .map((r) => r.spaceName)
+            .filter((n): n is string => !!n);
+        return [...new Set(names)].sort();
+    });
+
+    readonly statusOptions = computed(() => {
+        const statuses = [...new Set(this.reservations().map((r) => r.currentStatus))];
+        return statuses.map((s) => ({ value: s as string, label: this.statusLabels[s] }));
+    });
 
     readonly filteredReservations = computed(() => {
-        const tab = this.activeTab();
-        const all = this.reservations();
-        return tab === 'Todas' ? all : all.filter(r => r.currentStatus === tab);
+        const status = this.statusFilter();
+        const requester = this.requesterFilter().trim().toLowerCase();
+        const space = this.spaceFilter();
+        const date = this.dateFilter();
+
+        return this.reservations().filter((r) => {
+            if (status !== 'all' && r.currentStatus !== status) return false;
+
+            if (requester) {
+                const text = `${r.requesterName ?? ''} ${this.requesterLabel(r)}`.toLowerCase();
+                if (!text.includes(requester)) return false;
+            }
+
+            if (space === '__none__' && r.spaceName) return false;
+            if (space !== 'all' && space !== '__none__' && r.spaceName !== space) return false;
+
+            if (date && r.date.slice(0, 10) !== date) return false;
+
+            return true;
+        });
     });
+
+    readonly hasActiveFilters = computed(
+        () =>
+            this.statusFilter() !== 'all' ||
+            this.requesterFilter().trim() !== '' ||
+            this.spaceFilter() !== 'all' ||
+            this.dateFilter() !== ''
+    );
 
     constructor(private reservationService: ReservationService) { }
 
@@ -82,9 +121,16 @@ export class PendingCoordinatorComponent implements OnInit {
         });
     }
 
+    // Clic en una tarjeta activa = vuelve a mostrar todas.
+    setStatusCard(value: string): void {
+        this.statusFilter.update((current) => (current === value ? 'all' : value));
+    }
 
-    selectTab(tab: TabValue): void {
-        this.activeTab.set(tab);
+    clearFilters(): void {
+        this.statusFilter.set('all');
+        this.requesterFilter.set('');
+        this.spaceFilter.set('all');
+        this.dateFilter.set('');
     }
 
     requesterLabel(r: Reservation): string {

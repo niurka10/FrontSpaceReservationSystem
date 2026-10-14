@@ -25,32 +25,36 @@
 
   <!-- Resumen -->
   <div class="summary">
-    <div class="summary-card">
+    <div class="summary-card" role="button" tabindex="0" [class.active]="filter() === 'pending'"
+      (click)="setFilter('pending')" (keydown.enter)="setFilter('pending')">
       <span class="summary-icon summary-icon--pending"><i class="bi bi-hourglass-split"></i></span>
       <div>
-        <span class="summary-number">{{ reservations().filter(r => r.currentStatus.startsWith('Pending')).length }}</span>
+        <span class="summary-number">{{ counts().pending }}</span>
         <span class="summary-label">En revisión</span>
       </div>
     </div>
-    <div class="summary-card">
+    <div class="summary-card" role="button" tabindex="0" [class.active]="filter() === 'approved'"
+      (click)="setFilter('approved')" (keydown.enter)="setFilter('approved')">
       <span class="summary-icon summary-icon--approved"><i class="bi bi-check-circle-fill"></i></span>
       <div>
-        <span class="summary-number">{{ reservations().filter(r => r.currentStatus === 'Approved').length }}</span>
+        <span class="summary-number">{{ counts().approved }}</span>
         <span class="summary-label">Aprobadas</span>
       </div>
     </div>
-    <div class="summary-card">
+    <div class="summary-card" role="button" tabindex="0" [class.active]="filter() === 'draft'"
+      (click)="setFilter('draft')" (keydown.enter)="setFilter('draft')">
       <span class="summary-icon summary-icon--draft"><i class="bi bi-pencil-square"></i></span>
       <div>
-        <span class="summary-number">{{ reservations().filter(r => r.currentStatus === 'Draft').length }}</span>
+        <span class="summary-number">{{ counts().draft }}</span>
         <span class="summary-label">Borradores</span>
       </div>
     </div>
-    <div class="summary-card">
+    <div class="summary-card" role="button" tabindex="0" [class.active]="filter() === 'closed'"
+      (click)="setFilter('closed')" (keydown.enter)="setFilter('closed')">
       <span class="summary-icon summary-icon--closed"><i class="bi bi-x-circle-fill"></i></span>
       <div>
-        <span class="summary-number">{{ reservations().filter(r => r.currentStatus === 'Rejected' || r.currentStatus === 'Cancelled').length }}</span>
-        <span class="summary-label">Cerradas</span>
+        <span class="summary-number">{{ counts().closed }}</span>
+        <span class="summary-label">Canceladas</span>
       </div>
     </div>
   </div>
@@ -68,7 +72,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (r of reservations(); track r.id; let i = $index) {
+        @for (r of filtered(); track r.id; let i = $index) {
         <tr class="row-clickable" (click)="openDetail(r.id)" title="Clic para ver el detalle">
           <td class="col-num"><span class="num-badge">{{ i + 1 }}</span></td>
           <td class="col-date">
@@ -107,6 +111,12 @@
                 class="bi bi-x-lg"></i></button>
             }
           </td>
+        </tr>
+        }
+
+        @if (filtered().length === 0) {
+        <tr>
+          <td colspan="6" class="empty-cell">No tienes solicitudes en esta categoría.</td>
         </tr>
         }
       </tbody>
@@ -197,20 +207,14 @@
 <div class="modal-backdrop" (click)="closeCancel()">
   <div class="modal-card" (click)="$event.stopPropagation()">
     <h2>Cancelar solicitud</h2>
-
-    <label>
-      Motivo
-      <span class="required-mark">*</span>
-    </label>
-    <textarea [(ngModel)]="current.justification" rows="3" placeholder="¿Por qué cancelas esta solicitud?"></textarea>
+    <p class="text-muted">¿Seguro que quieres cancelar esta solicitud? Esta acción no se puede deshacer.</p>
 
     <div class="modal-actions">
       <button class="btn-cancel" (click)="closeCancel()" [disabled]="current.isSaving">
         Volver
       </button>
-      <button class="btn-reject" (click)="confirmCancel()"
-        [disabled]="current.isSaving || !current.justification.trim()">
-        {{ current.isSaving ? 'Cancelando...' : 'Confirmar cancelación' }}
+      <button class="btn-reject" (click)="confirmCancel()" [disabled]="current.isSaving">
+        {{ current.isSaving ? 'Cancelando...' : 'Sí, cancelar' }}
       </button>
     </div>
   </div>

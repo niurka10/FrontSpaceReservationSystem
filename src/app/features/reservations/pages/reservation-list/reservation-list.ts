@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { RESERVATION_STEP_BY_STATUS, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, Reservation, ReservationDetail } from '../../models/reservation.interface';
 import { ReservationService } from '../../services/reservation.service';
@@ -7,6 +7,18 @@ import { FormsModule } from '@angular/forms';
 
 function pseudoCode(id: string): string {
   return `RSV-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+}
+
+type StatusFilter = 'all' | 'pending' | 'approved' | 'draft' | 'closed';
+
+function matchesFilter(r: Reservation, f: StatusFilter): boolean {
+  switch (f) {
+    case 'pending':  return r.currentStatus.startsWith('Pending');
+    case 'approved': return r.currentStatus === 'Approved';
+    case 'draft':    return r.currentStatus === 'Draft';
+    case 'closed':   return r.currentStatus === 'Rejected' || r.currentStatus === 'Cancelled';
+    default:         return true;
+  }
 }
 
 @Component({
@@ -28,6 +40,35 @@ export class ReservationListComponent implements OnInit {
   readonly selectedDetail = signal<ReservationDetail | null>(null);
   readonly isLoadingDetail = signal(false);
   readonly cancelling = signal<{ id: string; justification: string; isSaving: boolean } | null>(null);
+
+    readonly filterLabels: Record<StatusFilter, string> = {
+    all: 'Todas',
+    pending: 'En revisión',
+    approved: 'Aprobadas',
+    draft: 'Borradores',
+    closed: 'Cerradas',
+  };
+
+  readonly filter = signal<StatusFilter>('all');
+
+  readonly counts = computed(() => {
+    const rows = this.reservations();
+    return {
+      pending: rows.filter((r) => matchesFilter(r, 'pending')).length,
+      approved: rows.filter((r) => matchesFilter(r, 'approved')).length,
+      draft: rows.filter((r) => matchesFilter(r, 'draft')).length,
+      closed: rows.filter((r) => matchesFilter(r, 'closed')).length,
+    };
+  });
+
+  readonly filtered = computed(() =>
+    this.reservations().filter((r) => matchesFilter(r, this.filter()))
+  );
+
+  // Si haces clic en la tarjeta que ya está activa, vuelve a mostrar todas.
+  setFilter(value: StatusFilter): void {
+    this.filter.update((current) => (current === value ? 'all' : value));
+  }
 
   constructor(private reservationsService: ReservationService) { }
 
@@ -80,7 +121,7 @@ export class ReservationListComponent implements OnInit {
   }
 
   openCancel(id: string): void {
-    this.cancelling.set({ id, justification: '', isSaving: false });
+    this.cancelling.set({ id, justification: 'Cancelada por el solicitante', isSaving: false });
   }
 
   closeCancel(): void {

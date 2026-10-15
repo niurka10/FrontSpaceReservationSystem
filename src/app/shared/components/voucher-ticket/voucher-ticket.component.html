@@ -1,0 +1,74 @@
+<div class="ticket-stage">
+
+    <!-- "Impresora" -->
+    <div class="printer">
+      <div class="printer-top">
+        <div class="printer-logo"></div>
+        <span class="printer-badge">UNIB·E</span>
+      </div>
+  
+      <div class="printer-screen">
+        <div>
+          <div class="printer-title">Comprobante de reserva</div>
+          <div class="printer-sub">{{ data().spaceName ?? 'Solo recursos' }}</div>
+        </div>
+        <div class="printer-date">{{ data().date | date: 'dd/MM/yyyy' : 'UTC' }}</div>
+  
+        <div class="printer-status">
+          @if (isPrinting()) {
+            <span class="spinner"></span> Imprimiendo tu comprobante...
+          } @else {
+            ✓ Comprobante listo
+          }
+        </div>
+      </div>
+  
+      <div class="printer-slot"></div>
+    </div>
+  
+    <!-- Ventana de papel: overflow hidden esconde el ticket mientras está
+         "dentro" de la impresora, y lo deja ver conforme baja. -->
+    <div class="paper-window">
+      @for (k of [runKey()]; track k) {
+        <div class="receipt" (animationend)="onPrinted()">
+          <div class="receipt-mark">UNIB·E</div>
+          <div class="receipt-title">COMPROBANTE DE RESERVA</div>
+          <div class="receipt-code">{{ code() }}</div>
+  
+          <div class="dash"></div>
+  
+          <div class="row"><span>Solicitante</span><span>{{ data().requesterName ?? '—' }}</span></div>
+          <div class="row"><span>Espacio</span><span>{{ data().spaceName ?? 'Solo recursos' }}</span></div>
+          <div class="row"><span>Fecha</span><span>{{ data().date | date: 'dd/MM/yyyy' : 'UTC' }}</span></div>
+          <div class="row">
+            <span>Horario</span>
+            <span>{{ data().startTime.slice(0, 5) }} – {{ data().endTime.slice(0, 5) }}</span>
+          </div>
+          <div class="row"><span>Motivo</span><span>{{ data().reason }}</span></div>
+  
+          @if (data().resources.length > 0) {
+            <div class="dash"></div>
+            <div class="section-label">Recursos</div>
+            @for (res of data().resources; track res.resourceName) {
+              <div class="row"><span>{{ res.resourceName }}</span><span>x{{ res.quantity }}</span></div>
+            }
+          }
+  
+          <div class="dash"></div>
+          <div class="row row--total"><span>ESTADO</span><span>{{ statusLabels[data().currentStatus] }}</span></div>
+          <div class="dash"></div>
+  
+          <div class="barcode"></div>
+          <div class="barcode-code">{{ code() }}</div>
+  
+          @if (issuedAt(); as issued) {
+            <div class="issued">Emitido el {{ issued | date: 'dd/MM/yyyy HH:mm' }}</div>
+          }
+        </div>
+      }
+    </div>
+  
+    @if (isSample()) {
+      <button type="button" class="replay" (click)="replay()">↻ Repetir animación</button>
+    }
+  </div>

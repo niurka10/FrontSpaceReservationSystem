@@ -83,6 +83,7 @@ export interface ReservationHistoryEntry {
 export interface ReservationDetail extends Reservation {
   resources: ReservationResourceItem[];
   history: ReservationHistoryEntry[];
+  voucherGeneratedAt?: string | null;
 }
 
 export interface ReservationResourceRequest {

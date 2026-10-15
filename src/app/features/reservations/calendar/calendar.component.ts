@@ -73,13 +73,18 @@ export class CalendarComponent implements OnInit {
     readonly headerHeight = 44;
 
     blocksForDay(day: Date) {
+        // Comparamos por texto "yyyy-MM-dd" en vez de por Date: el backend manda
+        // la fecha como medianoche UTC, y new Date() la corre un día atrás en Ecuador (UTC-5).
+        const dayKey = this.toDayKey(day);
         return this.reservations()
-            .filter((r) => this.isSameDay(new Date(r.date), day))
+            .filter((r) => r.date.slice(0, 10) === dayKey)
             .map((r) => ({ reservation: r, ...this.blockPosition(r) }));
     }
 
-    private isSameDay(a: Date, b: Date): boolean {
-        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    private toDayKey(d: Date): string {
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${d.getFullYear()}-${m}-${day}`;
     }
 
     // La "matemática" del calendario: convierte "14:00:00" en 14.0, "14:30:00" en

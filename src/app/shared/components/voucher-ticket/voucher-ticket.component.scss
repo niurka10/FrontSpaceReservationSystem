@@ -1,0 +1,242 @@
+.ticket-stage {
+    background: #e8ecf4;
+    border-radius: 16px;
+    padding: 24px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  
+  /* ===== Impresora ===== */
+  .printer {
+    width: 100%;
+    background: #2b2f3a;
+    border-radius: 20px;
+    padding: 14px 14px 0;
+    color: #fff;
+    position: relative;
+    // Por encima del papel: así el ticket parece salir desde debajo de la impresora.
+    z-index: 2;
+    box-shadow: 0 10px 24px -8px rgba(16, 29, 56, 0.45);
+  }
+  
+  .printer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .printer-logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: #3d4352;
+  }
+  
+  .printer-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: #3d4352;
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+  
+  .printer-screen {
+    background: #1f232d;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: center;
+  }
+  
+  .printer-title {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  
+  .printer-sub {
+    font-size: 12px;
+    color: #a9b0c3;
+  }
+  
+  .printer-date {
+    font-weight: 800;
+    font-size: 15px;
+  }
+  
+  .printer-status {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #d6dbea;
+  }
+  
+  .spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #a9b0c3;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  // La ranura por donde sale el papel.
+  .printer-slot {
+    height: 12px;
+    margin: 14px 6px 0;
+    background: #14171e;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  /* ===== Papel ===== */
+  .paper-window {
+    width: 86%;
+    // margen negativo: el papel arranca por debajo de la ranura (la impresora
+    // lo tapa con su z-index). overflow hidden esconde el ticket mientras está arriba.
+    margin-top: -8px;
+    padding: 0 4px 16px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .receipt {
+    background: #fff;
+    color: #1c2233;
+    font-family: 'Courier New', ui-monospace, monospace;
+    padding: 22px 18px 24px;
+    position: relative;
+    // drop-shadow (no box-shadow) para que la sombra siga también el borde dentado.
+    filter: drop-shadow(0 6px 8px rgba(16, 29, 56, 0.18));
+    // Estado inicial: escondido arriba. Los 10px extra esconden también los dientes.
+    transform: translateY(calc(-100% - 10px));
+    animation: print 6s cubic-bezier(0.3, 0.7, 0.3, 1) forwards;
+  }
+  
+  @keyframes print {
+    from { transform: translateY(calc(-100% - 10px)); }
+    to   { transform: translateY(0); }
+  }
+  
+  // Borde inferior dentado: un triángulo SVG blanco repetido en horizontal.
+  .receipt::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -7px;
+    height: 8px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M0 0 L6 8 L12 0 Z' fill='white'/%3E%3C/svg%3E")
+      repeat-x;
+  }
+  
+  .receipt-mark {
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 1px;
+    font-size: 15px;
+  }
+  
+  .receipt-title {
+    text-align: center;
+    font-size: 11px;
+    color: #6c7690;
+    margin-top: 2px;
+  }
+  
+  .receipt-code {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 6px;
+  }
+  
+  .dash {
+    border-top: 1px dashed #b9c0d4;
+    margin: 10px 0;
+  }
+  
+  .section-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c7690;
+    margin-bottom: 2px;
+  }
+  
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    padding: 2px 0;
+  }
+  
+  .row span:first-child {
+    color: #6c7690;
+  }
+  
+  .row span:last-child {
+    text-align: right;
+    font-weight: 700;
+    max-width: 62%;
+  }
+  
+  .row--total span:first-child {
+    color: #1c2233;
+    font-weight: 700;
+  }
+  
+  .row--total span:last-child {
+    font-size: 13px;
+  }
+  
+  // Código de barras decorativo, dibujado solo con CSS (período de 12px).
+  .barcode {
+    height: 44px;
+    margin: 6px 0 4px;
+    background: repeating-linear-gradient(
+      90deg,
+      #1c2233 0 2px, transparent 2px 4px,
+      #1c2233 4px 5px, transparent 5px 8px,
+      #1c2233 8px 11px, transparent 11px 12px
+    );
+  }
+  
+  .barcode-code {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #6c7690;
+  }
+  
+  .issued {
+    text-align: center;
+    font-size: 10.5px;
+    color: #8892a6;
+    margin-top: 10px;
+  }
+  
+  .replay {
+    margin-top: 14px;
+    border: 1px solid #d7dceb;
+    background: #fff;
+    color: #3457e8;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }

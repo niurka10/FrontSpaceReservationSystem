@@ -1,0 +1,26 @@
+<div class="voucher-backdrop" (click)="closed.emit()">
+    <div class="voucher-dialog" (click)="$event.stopPropagation()">
+  
+      @if (errorMessage()) {
+        <div class="alert-error">{{ errorMessage() }}</div>
+      }
+  
+      @if (detail(); as d) {
+        <app-voucher-ticket [reservation]="d" [generatedAt]="d.voucherGeneratedAt ?? null" />
+  
+        <div class="voucher-actions">
+          <button type="button" class="btn-cancel" (click)="closed.emit()">Cerrar</button>
+          <button type="button" class="btn-primary" (click)="download()" [disabled]="isDownloading()">
+            {{ isDownloading() ? 'Descargando...' : 'Descargar PDF' }}
+          </button>
+        </div>
+      } @else if (isLoading()) {
+        <p class="voucher-loading">Cargando comprobante...</p>
+      } @else {
+        <div class="voucher-actions">
+          <button type="button" class="btn-cancel" (click)="closed.emit()">Cerrar</button>
+        </div>
+      }
+  
+    </div>
+  </div>

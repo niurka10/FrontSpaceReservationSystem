@@ -1,0 +1,70 @@
+// z-index 1200: la campana de notificaciones del shell usa 1100 y, con un
+// valor menor, se vería por encima del fondo oscuro del modal.
+.voucher-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 38, 0.55);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 1200;
+    padding: 24px 16px;
+    // El ticket es alto: si no cabe en pantalla, scrollea el fondo, no el ticket.
+    overflow-y: auto;
+  }
+  
+  .voucher-dialog {
+    width: 100%;
+    max-width: 480px;
+    margin: auto 0;
+  }
+  
+  .voucher-loading {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    color: #6c7690;
+  }
+  
+  .alert-error {
+    background: #fdeaea;
+    color: #c22b2b;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  
+  .voucher-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  
+  .btn-primary,
+  .btn-cancel {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  
+  .btn-primary {
+    background: #3457e8;
+    color: #fff;
+  }
+  
+  .btn-cancel {
+    background: #fff;
+    color: #4a5266;
+  }
+  
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }

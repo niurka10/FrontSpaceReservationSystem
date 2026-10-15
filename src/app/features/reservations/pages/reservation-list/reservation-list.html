@@ -110,6 +110,10 @@
             <button class="icon-btn icon-btn--reject" title="Cancelar solicitud" (click)="openCancel(r.id)"><i
                 class="bi bi-x-lg"></i></button>
             }
+            @if (r.currentStatus === 'Approved') {
+              <button class="icon-btn icon-btn--voucher" title="Ver voucher" (click)="openVoucher(r.id)"><i
+                  class="bi bi-receipt"></i></button>
+              }
           </td>
         </tr>
         }
@@ -220,3 +224,6 @@
   </div>
 </div>
 }
+@if (voucherId(); as id) {
+  <app-voucher-modal [reservationId]="id" (closed)="closeVoucher()" />
+  }

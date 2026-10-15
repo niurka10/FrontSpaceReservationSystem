@@ -22,3 +22,14 @@
   position: relative;
   z-index: 1100;
 }
+
+app-slidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  flex-shrink: 0;     // evita que el flex lo comprima si el contenido es ancho
+  overflow-y: auto;   // si la pantalla es baja, el menú scrollea por dentro
+  // Sin esto, el flex lo estira a la altura de TODO el contenido y un
+  // elemento tan alto como su contenedor no tiene espacio para "pegarse".
+  align-self: flex-start;
+}

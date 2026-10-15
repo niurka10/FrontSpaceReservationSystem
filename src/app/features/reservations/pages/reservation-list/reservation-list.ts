@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { RESERVATION_STEP_BY_STATUS, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, Reservation, ReservationDetail } from '../../models/reservation.interface';
 import { ReservationService } from '../../services/reservation.service';
 import { FormsModule } from '@angular/forms';
+import { VoucherModalComponent } from '../../../../shared/components/voucher-modal/voucher-modal.component';
 
 function pseudoCode(id: string): string {
   return `RSV-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
@@ -13,18 +14,18 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'draft' | 'closed';
 
 function matchesFilter(r: Reservation, f: StatusFilter): boolean {
   switch (f) {
-    case 'pending':  return r.currentStatus.startsWith('Pending');
+    case 'pending': return r.currentStatus.startsWith('Pending');
     case 'approved': return r.currentStatus === 'Approved';
-    case 'draft':    return r.currentStatus === 'Draft';
-    case 'closed':   return r.currentStatus === 'Rejected' || r.currentStatus === 'Cancelled';
-    default:         return true;
+    case 'draft': return r.currentStatus === 'Draft';
+    case 'closed': return r.currentStatus === 'Rejected' || r.currentStatus === 'Cancelled';
+    default: return true;
   }
 }
 
 @Component({
   selector: 'app-reservation-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, VoucherModalComponent],
   templateUrl: './reservation-list.html',
   styleUrl: './reservation-list.scss',
 })
@@ -40,8 +41,10 @@ export class ReservationListComponent implements OnInit {
   readonly selectedDetail = signal<ReservationDetail | null>(null);
   readonly isLoadingDetail = signal(false);
   readonly cancelling = signal<{ id: string; justification: string; isSaving: boolean } | null>(null);
+  // Id de la reserva cuyo voucher se está viendo. null = modal cerrado.
+  readonly voucherId = signal<string | null>(null);
 
-    readonly filterLabels: Record<StatusFilter, string> = {
+  readonly filterLabels: Record<StatusFilter, string> = {
     all: 'Todas',
     pending: 'En revisión',
     approved: 'Aprobadas',
@@ -144,5 +147,13 @@ export class ReservationListComponent implements OnInit {
         this.cancelling.update((c) => (c ? { ...c, isSaving: false } : c));
       },
     });
+  }
+
+  openVoucher(id: string): void {
+    this.voucherId.set(id);
+  }
+
+  closeVoucher(): void {
+    this.voucherId.set(null);
   }
 }

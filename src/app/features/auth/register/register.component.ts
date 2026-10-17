@@ -37,11 +37,10 @@ export class RegisterComponent {
 
   readonly emailDomain = '@unibe.edu.ec';
   readonly form = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150),
-    Validators.pattern(/^[\p{L}\s'.-]+$/u)]],
+    name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150), Validators.pattern(/^[\p{L}\s'.-]+$/u)]],
+    lastName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150), Validators.pattern(/^[\p{L}\s'.-]+$/u)]],
     emailUser: ['', [Validators.required, Validators.pattern(/^[a-z0-9.]+$/)]],
-    password: ['', [Validators.required, Validators.minLength(8),
-    Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]],
+    password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]],
     phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
     identificationNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
     requestedRole: [RegisterRoleCode.Student, [Validators.required]],
@@ -155,6 +154,7 @@ export class RegisterComponent {
     this.authService
       .register({
         name: raw.name!.trim(),
+        lastName: raw.lastName!.trim(),
         email: (raw.emailUser! + this.emailDomain).toLowerCase(),
         password: raw.password!,
         phone: raw.phone!,

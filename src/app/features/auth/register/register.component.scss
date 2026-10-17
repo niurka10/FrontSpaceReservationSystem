@@ -4,15 +4,18 @@ $accent-2: #5c7cf5;
 $accent-light: #eaf0ff;
 $text: #161f36;
 $muted: #6c7690;
-$border: #e4e8f2;
+$border: #e1e6f1;
 $danger: #c22b2b;
 $danger-bg: #fdeaea;
 $success: #1f9d55;
+$success-bg: #e8f6ee;
+$warning: #d98a00;
+$surface: #f7f9fd;
 
 .login-wrap {
   min-height: 100vh;
   display: flex;
-  padding: 16px;
+  padding: 20px 16px;
   background:
     radial-gradient(circle at 15% 20%, rgba(92, 124, 245, 0.18), transparent 45%),
     radial-gradient(circle at 85% 80%, rgba(52, 87, 232, 0.22), transparent 40%),
@@ -21,14 +24,15 @@ $success: #1f9d55;
 
 .login-card {
   width: 100%;
-  max-width: 460px;
+  max-width: 520px;
   margin: auto;
-  padding: 22px 26px;
-  background: #ffffff;
-  border-radius: 18px;
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 10, 0.5);
-  padding: 34px 32px;
+  padding: 26px 36px 22px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 10, 0.55);
   animation: cardIn 0.4s ease both;
+
+  @media (max-width: 480px) { padding: 24px 18px 20px; }
 }
 
 @keyframes cardIn {
@@ -36,25 +40,27 @@ $success: #1f9d55;
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ---------- Marca ---------- */
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   justify-content: center;
-  padding: 0 0 12px 0;
+  gap: 10px;
+  padding-bottom: 10px;
 
   .mark {
-    width: 26px;
-    height: 26px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
     background: linear-gradient(135deg, $accent-2, $accent);
     position: relative;
     flex-shrink: 0;
+    box-shadow: 0 6px 14px -4px rgba(52, 87, 232, 0.6);
 
     &::before {
       content: "";
       position: absolute;
-      inset: 7px;
+      inset: 8px;
       border: 2px solid #fff;
       border-radius: 3px;
       transform: rotate(45deg);
@@ -64,94 +70,139 @@ $success: #1f9d55;
   .word {
     font-weight: 800;
     font-size: 15px;
-    letter-spacing: 0.3px;
     color: $text;
+    line-height: 1.15;
 
     small {
       display: block;
       font-weight: 500;
-      font-size: 9.5px;
-      letter-spacing: 1.2px;
+      font-size: 11px;
       color: $muted;
-      text-transform: uppercase;
       margin-top: 1px;
     }
   }
 }
 
 .login-title {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   text-align: center;
-  margin: 0 0 3px;
+  margin: 0 0 2px;
   color: $text;
+  letter-spacing: -0.2px;
 }
 
 .login-desc {
-  font-size: 12.5px;
+  font-size: 13px;
   color: $muted;
   text-align: center;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
 }
 
+/* ---------- Error del servidor ---------- */
 .login-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: $danger-bg;
   color: $danger;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 9px 11px;
-  border-radius: 8px;
+  padding: 10px 14px;
   margin-bottom: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(194, 43, 43, 0.18);
+  border-left: 4px solid $danger;
+  animation: shake 0.4s ease;
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: $danger;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+  }
+}
+
+@keyframes shake {
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+/* ---------- Secciones (texto simple) ---------- */
+.group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
 }
 
 .section-title {
-  font-size: 11px;
+  padding: 0;
+  margin: 0 0 8px;
+  font-size: 13.5px;
   font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: $accent;
-  margin: 14px 0 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid $border;
-
-  &:first-of-type { margin-top: 0; }
+  color: $text;
 }
 
+.group + .group { margin-top: 4px; }
+
+/* ---------- Layout ---------- */
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 0 12px;
 
   @media (max-width: 480px) { grid-template-columns: 1fr; }
 }
 
+/* ---------- Campos ---------- */
 .field {
-  margin-bottom: 9px;
+  margin-bottom: 10px;
+  min-width: 0;
 
   label {
     display: block;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 600;
     color: $text;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
 
-  // Estilos compartidos para Inputs y Selects
-  input, select {
+  .req {
+    color: $danger;
+    font-weight: 700;
+    margin-left: 1px;
+  }
+
+  .control { position: relative; }
+
+  input,
+  select {
     width: 100%;
-    padding: 7px 10px;
+    padding: 8px 12px;
     border: 1.5px solid $border;
-    border-radius: 8px;
-    font-size: 13.5px;
-    background: #fbfcfe;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    background: $surface;
     color: $text;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+
+    &::placeholder { color: #a6aec4; }
+
+    &:hover:not(:disabled):not(:focus) { border-color: #cdd4e6; }
 
     &:focus {
       outline: none;
       border-color: $accent-2;
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(92, 124, 245, 0.15);
+      box-shadow: 0 0 0 4px rgba(92, 124, 245, 0.16);
     }
 
     &:disabled {
@@ -161,41 +212,144 @@ $success: #1f9d55;
     }
   }
 
-  input.ng-invalid.ng-touched,
-  select.ng-invalid.ng-touched {
-    border-color: $danger;
-    background: #fffafa;
+  .control input { padding-right: 38px; }
+  .control:has(.counter) input { padding-right: 56px; }
+
+  /* ----- Estado: válido ----- */
+  &.is-valid {
+    input,
+    select { border-color: rgba(31, 157, 85, 0.55); background: #fbfefc; }
+
+    input:focus,
+    select:focus { box-shadow: 0 0 0 4px rgba(31, 157, 85, 0.14); border-color: $success; }
+
+    .status {
+      opacity: 1;
+      transform: scale(1);
+      background: $success;
+
+      &::before { content: "✓"; }
+    }
+
+    .counter { color: $success; }
+  }
+
+  /* ----- Estado: inválido ----- */
+  &.is-invalid {
+    input,
+    select { border-color: $danger; background: #fffafa; }
+
+    input:focus,
+    select:focus { box-shadow: 0 0 0 4px rgba(194, 43, 43, 0.13); border-color: $danger; }
+
+    .status {
+      opacity: 1;
+      transform: scale(1);
+      background: $danger;
+
+      &::before { content: "!"; }
+    }
+
+    .counter { color: $danger; }
   }
 }
 
-.field-error {
-  color: $danger;
-  font-size: 11.5px;
-  margin-top: 4px;
-  display: block;
+/* Icono circular de estado */
+.status {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
+  transition: opacity 0.18s, transform 0.18s;
 }
 
-// Campo con adorno a un lado (dominio del correo / botón mostrar contraseña)
-.input-group {
+/* Contador de dígitos */
+.counter {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #9aa3bb;
+  pointer-events: none;
+  transition: color 0.15s;
+}
+
+/* Select con flecha propia */
+.select-wrap {
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 38px;
+    cursor: pointer;
+    text-overflow: ellipsis;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    width: 7px;
+    height: 7px;
+    margin-top: -6px;
+    border-right: 2px solid $muted;
+    border-bottom: 2px solid $muted;
+    transform: rotate(45deg);
+    pointer-events: none;
+    transition: border-color 0.15s;
+  }
+
+  &:focus-within::after { border-color: $accent; }
+}
+
+/* Mensajes de error (sin punto) */
+.field-error {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.35;
+  color: $danger;
+  font-weight: 500;
+  animation: errorIn 0.2s ease both;
+}
+
+@keyframes errorIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Campo con adorno (dominio / mostrar contraseña) ---------- */
+.field .input-group {
   display: flex;
   align-items: stretch;
   border: 1.5px solid $border;
-  border-radius: 8px;
-
-  .suffix { font-size: 12.5px; padding: 0 10px; }
-  .toggle { font-size: 12px; padding: 0 12px; }
-
-  background: #fbfcfe;
+  border-radius: 10px;
+  background: $surface;
   overflow: hidden;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+
+  &:hover:not(:focus-within) { border-color: #cdd4e6; }
 
   &:focus-within {
     border-color: $accent-2;
     background: #fff;
-    box-shadow: 0 0 0 3px rgba(92, 124, 245, 0.15);
+    box-shadow: 0 0 0 4px rgba(92, 124, 245, 0.16);
   }
-
-  &:has(input.ng-invalid.ng-touched) { border-color: $danger; }
 
   input {
     flex: 1;
@@ -203,17 +357,16 @@ $success: #1f9d55;
     border: none;
     background: transparent;
     border-radius: 0;
+    padding-right: 12px;
 
-    &:focus {
-      box-shadow: none;
-      background: transparent;
-    }
+    &:focus,
+    &:hover { box-shadow: none; background: transparent; }
   }
 
   .suffix {
     display: flex;
     align-items: center;
-    padding: 0 12px;
+    padding: 0 14px;
     background: $accent-light;
     color: $accent;
     font-weight: 600;
@@ -228,85 +381,172 @@ $success: #1f9d55;
     border-left: 1.5px solid $border;
     background: $accent-light;
     color: $accent;
+    font-family: inherit;
     font-size: 12.5px;
     font-weight: 600;
+    min-width: 84px;
     padding: 0 14px;
     cursor: pointer;
+    transition: filter 0.15s;
 
     &:hover { filter: brightness(0.96); }
+    &:focus-visible { outline: 2px solid $accent; outline-offset: -2px; }
   }
 }
 
-// Requisitos de la contraseña
+.field.is-valid .input-group {
+  border-color: rgba(31, 157, 85, 0.55);
+  background: #fbfefc;
+
+  &:focus-within { border-color: $success; box-shadow: 0 0 0 4px rgba(31, 157, 85, 0.14); }
+}
+
+.field.is-invalid .input-group {
+  border-color: $danger;
+  background: #fffafa;
+
+  &:focus-within { border-color: $danger; box-shadow: 0 0 0 4px rgba(194, 43, 43, 0.13); }
+}
+
+/* ---------- Medidor de contraseña ---------- */
+.strength {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+
+  &__bars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    flex: 1;
+
+    span {
+      height: 4px;
+      border-radius: 99px;
+      background: $border;
+      transition: background 0.25s;
+    }
+  }
+
+  &__label {
+    min-width: 138px;
+    text-align: right;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: $muted;
+    transition: color 0.2s;
+  }
+
+  &[data-level="1"] {
+    .strength__bars span:nth-child(-n + 1) { background: $danger; }
+    .strength__label { color: $danger; }
+  }
+
+  &[data-level="2"] {
+    .strength__bars span:nth-child(-n + 2) { background: $warning; }
+    .strength__label { color: $warning; }
+  }
+
+  &[data-level="3"] {
+    .strength__bars span { background: $success; }
+    .strength__label { color: $success; }
+  }
+}
+
+/* ---------- Requisitos de contraseña (una sola línea) ---------- */
 .checklist {
   list-style: none;
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 12px;
+  gap: 6px;
 
   li {
-    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
     color: $muted;
-    padding-left: 15px;
-    position: relative;
-    transition: color 0.2s;
+    padding: 3px 10px 3px 7px;
+    border-radius: 99px;
+    background: $surface;
+    border: 1px solid $border;
+    transition: color 0.2s, background 0.2s, border-color 0.2s;
 
     &::before {
-      content: "○";
-      position: absolute;
-      left: 0;
+      content: "";
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: 1.5px solid #b9c1d6;
+      font-size: 8px;
+      font-weight: 800;
+      line-height: 9px;
+      text-align: center;
+      color: #fff;
+      transition: all 0.2s;
     }
 
     &.ok {
       color: $success;
+      background: $success-bg;
+      border-color: rgba(31, 157, 85, 0.3);
 
       &::before {
         content: "✓";
-        font-weight: 700;
+        background: $success;
+        border-color: $success;
       }
     }
   }
 }
 
+/* ---------- Botón ---------- */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 9px 16px;
-  border-radius: 9px;
+  gap: 8px;
+  padding: 11px 18px;
+  margin-top: 6px;
+  border-radius: 11px;
   border: none;
-  font-size: 14px;
-  font-weight: 600;
-  background: $accent;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  background: linear-gradient(135deg, $accent-2, $accent);
   color: #fff;
-  transition: filter 0.15s, transform 0.1s;
   cursor: pointer;
-  margin-top: 4px;
+  box-shadow: 0 10px 20px -8px rgba(52, 87, 232, 0.65);
+  transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
 
-  &:hover {
-    filter: brightness(1.08);
+  &:hover:not(:disabled) {
+    filter: brightness(1.07);
+    box-shadow: 0 14px 24px -8px rgba(52, 87, 232, 0.7);
   }
 
-  &:active {
-    transform: scale(0.98);
+  &:active:not(:disabled) { transform: scale(0.985); }
+
+  &:focus-visible {
+    outline: 3px solid rgba(92, 124, 245, 0.45);
+    outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.7;
+    box-shadow: none;
   }
 }
 
-.btn-block {
-  width: 100%;
-}
+.btn-block { width: 100%; }
 
 .spinner {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
   border-radius: 50%;
@@ -317,19 +557,30 @@ $success: #1f9d55;
   to { transform: rotate(360deg); }
 }
 
+/* ---------- Enlace a login ---------- */
 .register-link {
   text-align: center;
   font-size: 13px;
   color: $muted;
-  margin-top: 12px;
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid $border;
 
   a {
     color: $accent;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
 
-    &:hover {
-      text-decoration: underline;
-    }
+    &:hover { text-decoration: underline; }
+    &:focus-visible { outline: 2px solid $accent; outline-offset: 2px; border-radius: 3px; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }

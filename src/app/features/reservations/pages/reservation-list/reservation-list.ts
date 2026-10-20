@@ -5,6 +5,7 @@ import { RESERVATION_STEP_BY_STATUS, RESERVATION_HISTORY_ACTION_LABELS, RESERVAT
 import { ReservationService } from '../../services/reservation.service';
 import { FormsModule } from '@angular/forms';
 import { VoucherModalComponent } from '../../../../shared/components/voucher-modal/voucher-modal.component';
+import { apiErrorMessage } from '../../utils/api-error';
 
 function pseudoCode(id: string): string {
   return `RSV-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
@@ -40,6 +41,7 @@ export class ReservationListComponent implements OnInit {
   readonly sendingId = signal<string | null>(null);
   readonly selectedDetail = signal<ReservationDetail | null>(null);
   readonly isLoadingDetail = signal(false);
+  readonly detailError = signal<string | null>(null);
   readonly cancelling = signal<{ id: string; justification: string; isSaving: boolean } | null>(null);
   // Id de la reserva cuyo voucher se está viendo. null = modal cerrado.
   readonly voucherId = signal<string | null>(null);
@@ -99,22 +101,24 @@ export class ReservationListComponent implements OnInit {
         this.sendingId.set(null);
       },
       error: () => {
-        this.errorMessage.set('No se pudo enviat la solicitud. Intenta de nuevo.');
+        this.errorMessage.set('No se pudo enviar la solicitud. Intenta de nuevo.');
         this.sendingId.set(null);
       }
     })
   }
 
   openDetail(id: string): void {
+    this.detailError.set(null); // limpia un aviso anterior
     this.isLoadingDetail.set(true);
     this.reservationsService.getById(id).subscribe({
       next: (detail) => {
         this.selectedDetail.set(detail);
         this.isLoadingDetail.set(false);
       },
-      error: () => {
-        this.errorMessage.set('No se pudo cargar el detalle.');
-        this.isLoadingDetail.set(false)
+      error: (err) => {
+        // Muestra el `description` del backend; si no hay, el texto de respaldo.
+        this.detailError.set(apiErrorMessage(err, 'No se pudo cargar el detalle.'));
+        this.isLoadingDetail.set(false);
       },
     });
   }

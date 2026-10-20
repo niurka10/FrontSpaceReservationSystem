@@ -61,7 +61,20 @@
         <span class="summary-label">Rechazadas</span>
       </div>
     </div>
+    <div class="summary-card" role="button" tabindex="0" [class.active]="statusFilter() === 'Cancelled'"
+      [title]="statusFilter() === 'Cancelled' ? 'Clic para ver todas' : 'Clic para filtrar'"
+      (click)="setStatusCard('Cancelled')" (keydown.enter)="setStatusCard('Cancelled')">
+      <span class="summary-icon summary-icon--closed"><i class="bi bi-slash-circle-fill"></i></span>
+      <div>
+        <span class="summary-number">{{ counts().cancelled }}</span>
+        <span class="summary-label">Canceladas</span>
+      </div>
+    </div>
   </div>
+
+  @if (detailError(); as msg) {
+  <div class="alert-error">{{ msg }}</div>
+  }
 
   @if (isLoading()) {
   <p class="text-muted">Cargando...</p>
@@ -137,7 +150,9 @@
           <td>{{ r.spaceName ?? '—' }}</td>
           <td class="nowrap">{{ r.date | slice:0:10 | date: 'dd/MM/yyyy':'UTC' }}</td>
           <td class="nowrap">{{ r.startTime.slice(0, 5) }}–{{ r.endTime.slice(0, 5) }}</td>
-          <td><div class="reason-cell" [title]="r.reason">{{ r.reason }}</div></td>
+          <td>
+            <div class="reason-cell" [title]="r.reason">{{ r.reason }}</div>
+          </td>
           <td>
             <span class="status-badge" [attr.data-status]="r.currentStatus">
               {{ statusLabels[r.currentStatus] }}
@@ -190,92 +205,88 @@
 
 <!-- MODAL: detalle de solicitud, con el stepper de 4 pasos + historial -->
 @if (selectedDetail(); as detail) {
-  <div class="modal-backdrop" (click)="closeDetail()">
-    <div class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
+<div class="modal-backdrop" (click)="closeDetail()">
+  <div class="modal-card modal-card--wide" (click)="$event.stopPropagation()">
 
-      <div class="detail-header">
-        <div>
-          <h2>Detalle de solicitud</h2>
-          <p class="detail-subtitle">
-            {{ detail.spaceName ?? '—' }} · {{ detail.date | slice:0:10 | date: 'dd/MM/yyyy':'UTC' }} ·
-            {{ detail.startTime }}–{{ detail.endTime }}
-          </p>
-        </div>
-        <button class="close-btn" (click)="closeDetail()">✕</button>
+    <div class="detail-header">
+      <div>
+        <h2>Detalle de solicitud</h2>
+        <p class="detail-subtitle">
+          {{ detail.spaceName ?? '—' }} · {{ detail.date | slice:0:10 | date: 'dd/MM/yyyy':'UTC' }} ·
+          {{ detail.startTime }}–{{ detail.endTime }}
+        </p>
       </div>
-
-      <div class="stepper">
-        @for (step of [
-          { num: 1, label: 'Solicitud' },
-          { num: 2, label: 'Coordinador' },
-          { num: 3, label: 'Vicerrectorado' },
-          { num: 4, label: 'Asignación' }
-        ]; track step.num) {
-          <div
-            class="step"
-            [class.step--done]="step.num < stepByStatus[detail.currentStatus]"
-            [class.step--current]="step.num === stepByStatus[detail.currentStatus]"
-          >
-            <span class="step-circle">
-              @if (step.num < stepByStatus[detail.currentStatus]) { ✓ } @else { {{ step.num }} }
-            </span>
-            <span class="step-label">{{ step.label }}</span>
-          </div>
-        }
-      </div>
-
-      <div class="detail-grid">
-        <div class="detail-row">
-          <span class="detail-label">Solicitante</span>
-          <span class="detail-value">
-            {{ detail.requesterName ?? detail.userId }}
-            @if (requesterLabel(detail)) { ({{ requesterLabel(detail) }}) }
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Motivo</span>
-          <span class="detail-value">{{ detail.reason }}</span>
-        </div>
-        @if (detail.resources.length > 0) {
-          <div class="detail-row">
-            <span class="detail-label">Recursos solicitados</span>
-            <span class="detail-value">
-              @for (res of detail.resources; track res.resourceName) {
-                <div>{{ res.resourceName }} x{{ res.quantity }}</div>
-              }
-            </span>
-          </div>
-        }
-      </div>
-
-      <div class="history-section">
-        <h3>Historial de gestión</h3>
-
-        @if (detail.history.length === 0) {
-          <p class="text-muted">Sin movimientos registrados todavía.</p>
-        } @else {
-          <ul class="history-list">
-            @for (entry of detail.history; track entry.changeDate) {
-              <li>
-                <div class="history-action">
-                  {{ historyActionLabels[entry.newStatus] }}
-                  — {{ entry.changedByName }}
-                  @if (entry.changedByRole) { ({{ entry.changedByRole }}) }
-                </div>
-                <div class="history-date">{{ entry.changeDate | date: 'dd/MM/yyyy HH:mm' }}</div>
-                @if (entry.justification) {
-                  <div class="history-justification">"{{ entry.justification }}"</div>
-                }
-              </li>
-            }
-          </ul>
-        }
-      </div>
-
-      <div class="modal-actions">
-        <button class="btn-cancel" (click)="closeDetail()">Cerrar</button>
-      </div>
-
+      <button class="close-btn" (click)="closeDetail()">✕</button>
     </div>
+
+    <div class="stepper">
+      @for (step of [
+      { num: 1, label: 'Solicitud' },
+      { num: 2, label: 'Coordinador' },
+      { num: 3, label: 'Vicerrectorado' },
+      { num: 4, label: 'Asignación' }
+      ]; track step.num) {
+      <div class="step" [class.step--done]="step.num < stepByStatus[detail.currentStatus]"
+        [class.step--current]="step.num === stepByStatus[detail.currentStatus]">
+        <span class="step-circle">
+          @if (step.num < stepByStatus[detail.currentStatus]) { ✓ } @else { {{ step.num }} } </span>
+            <span class="step-label">{{ step.label }}</span>
+      </div>
+      }
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-row">
+        <span class="detail-label">Solicitante</span>
+        <span class="detail-value">
+          {{ detail.requesterName ?? detail.userId }}
+          @if (requesterLabel(detail)) { ({{ requesterLabel(detail) }}) }
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Motivo</span>
+        <span class="detail-value">{{ detail.reason }}</span>
+      </div>
+      @if (detail.resources.length > 0) {
+      <div class="detail-row">
+        <span class="detail-label">Recursos solicitados</span>
+        <span class="detail-value">
+          @for (res of detail.resources; track res.resourceName) {
+          <div>{{ res.resourceName }} x{{ res.quantity }}</div>
+          }
+        </span>
+      </div>
+      }
+    </div>
+
+    <div class="history-section">
+      <h3>Historial de gestión</h3>
+
+      @if (detail.history.length === 0) {
+      <p class="text-muted">Sin movimientos registrados todavía.</p>
+      } @else {
+      <ul class="history-list">
+        @for (entry of detail.history; track entry.changeDate) {
+        <li>
+          <div class="history-action">
+            {{ historyActionLabels[entry.newStatus] }}
+            — {{ entry.changedByName }}
+            @if (entry.changedByRole) { ({{ entry.changedByRole }}) }
+          </div>
+          <div class="history-date">{{ entry.changeDate | date: 'dd/MM/yyyy HH:mm' }}</div>
+          @if (entry.justification) {
+          <div class="history-justification">"{{ entry.justification }}"</div>
+          }
+        </li>
+        }
+      </ul>
+      }
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeDetail()">Cerrar</button>
+    </div>
+
   </div>
+</div>
 }

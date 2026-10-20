@@ -3,6 +3,7 @@ import { Component, computed, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, RESERVATION_STEP_BY_STATUS, ReservationDetail } from "../../models/reservation.interface";
 import { ReservationService } from "../../services/reservation.service";
+import { apiErrorMessage } from "../../utils/api-error";
 
 interface ActionState {
     reservationId: string;
@@ -32,6 +33,7 @@ export class PendingCoordinatorComponent implements OnInit {
 
     readonly reservations = signal<Reservation[]>([]);
     readonly isLoading = signal(true);
+    readonly detailError = signal<string | null>(null);
     readonly errorMessage = signal<string | null>(null);
     readonly action = signal<ActionState | null>(null);
 
@@ -51,6 +53,7 @@ export class PendingCoordinatorComponent implements OnInit {
             assets: count('PendingAssets'),
             approved: count('Approved'),
             rejected: count('Rejected'),
+            cancelled: count('Cancelled'),
         };
     });
 
@@ -123,6 +126,7 @@ export class PendingCoordinatorComponent implements OnInit {
 
     // Clic en una tarjeta activa = vuelve a mostrar todas.
     setStatusCard(value: string): void {
+        this.detailError.set(null);
         this.statusFilter.update((current) => (current === value ? 'all' : value));
     }
 
@@ -173,14 +177,18 @@ export class PendingCoordinatorComponent implements OnInit {
     }
 
     openDetail(reservationId: string): void {
+        this.detailError.set(null); // limpia un aviso anterior
         this.isLoadingDetail.set(true);
         this.reservationService.getById(reservationId).subscribe({
             next: (detail) => {
                 this.selectedDetail.set(detail);
                 this.isLoadingDetail.set(false);
             },
-            error: () => {
-                this.errorMessage.set('No se pudo cargar el detalle de la solicitud.');
+            error: (err) => {
+                // Muestra el `description` del backend; si no hay, el texto de respaldo.
+                this.detailError.set(
+                    apiErrorMessage(err, 'No se pudo cargar el detalle de la solicitud.')
+                );
                 this.isLoadingDetail.set(false);
             },
         });

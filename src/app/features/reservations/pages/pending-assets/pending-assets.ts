@@ -4,6 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, RESERVATION_STEP_BY_STATUS, ReservationDetail, ReservationStatus, SpaceOption } from "../../models/reservation.interface";
 import { OptionsService } from "../../services/options.service";
 import { ReservationService } from "../../services/reservation.service";
+import { apiErrorMessage } from "../../utils/api-error";
 
 type TabId = 'Pendientes' | 'Asignadas' | 'Todas';
 
@@ -58,6 +59,7 @@ export class PendingAssetsComponent implements OnInit {
 
     readonly selectedDetail = signal<ReservationDetail | null>(null);
     readonly isLoadingDetail = signal(false);
+    readonly detailError = signal<string | null>(null);
 
     readonly filteredReservations = computed(() => {
         const tab = this.tabs.find((t) => t.id === this.activeTab())!;
@@ -91,6 +93,7 @@ export class PendingAssetsComponent implements OnInit {
     }
 
     selectTab(tab: TabId): void {
+        this.detailError.set(null);
         this.activeTab.set(tab);
     }
 
@@ -176,14 +179,18 @@ export class PendingAssetsComponent implements OnInit {
     // ---------- modal de detalle (ojito) ----------
 
     openDetail(reservationId: string): void {
+        this.detailError.set(null); // limpia un aviso anterior
         this.isLoadingDetail.set(true);
         this.reservationService.getById(reservationId).subscribe({
             next: (detail) => {
                 this.selectedDetail.set(detail);
                 this.isLoadingDetail.set(false);
             },
-            error: () => {
-                this.errorMessage.set('No se pudo cargar el detalle de la solicitud.');
+            error: (err) => {
+                // Muestra el `description` del backend; si no hay, el texto de respaldo.
+                this.detailError.set(
+                    apiErrorMessage(err, 'No se pudo cargar el detalle de la solicitud.')
+                );
                 this.isLoadingDetail.set(false);
             },
         });

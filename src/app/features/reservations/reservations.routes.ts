@@ -54,11 +54,4 @@ export const RESERVATIONS_ROUTES: Routes = [
         (m) => m.ReservationFormComponent
       ),
   },
-  {
-    path: 'voucher-demo',
-    loadComponent: () =>
-      import('../../shared/components/voucher-ticket/voucher-ticket.component').then(
-        (m) => m.VoucherTicketComponent
-      ),
-  },
 ];

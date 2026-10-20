@@ -63,7 +63,7 @@ export class UserListComponent {
     // ---------- estado del modal crear / editar ----------
 
     readonly faculties = signal<Faculty[]>([]);
-    readonly emailDomain = '@unibe.com';
+    readonly emailDomain = '@unibe.edu.ec';
 
     // null = modal cerrado. "mode" distingue crear de editar, igual que el
     // isEditMode de reservation-form; userId solo existe al editar.
@@ -86,10 +86,13 @@ export class UserListComponent {
     readonly userForm = this.fb.group({
         name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150),
         Validators.pattern(/^[\p{L}\s'.-]+$/u)]],
+        lastName: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(150),
+        Validators.pattern(/^[\p{L}\s'.-]+$/u)]],
         emailUser: ['', [Validators.required, Validators.pattern(/^[a-z0-9.]+$/)]],
         password: ['', [Validators.required, Validators.minLength(8),
         Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/)]],
-        phone: ['', [Validators.required, Validators.pattern(/^\d{7,10}$/)]],
+        phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+        identificationNumber: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
         role: [1, [Validators.required]],
         facultyId: [''],
         careerId: [{ value: '', disabled: true }],
@@ -185,7 +188,9 @@ export class UserListComponent {
 
         this.userForm.patchValue({
             name: user.name,
+            lastName: user.lastName,
             phone: user.phone,
+            identificationNumber: user.identificationNumber ?? '',
             role: this.roleCodeByName[user.role],
             facultyId,
             careerId: user.careerId ?? '',
@@ -264,9 +269,11 @@ export class UserListComponent {
                 ? this.userService
                     .create({
                         name: raw.name!.trim(),
+                        lastName: raw.lastName!.trim(),
                         email: (raw.emailUser! + this.emailDomain).toLowerCase(),
                         password: raw.password!,
                         phone: raw.phone!,
+                        identificationNumber: raw.identificationNumber!,
                         requestedRole: Number(raw.role),
                         careerId,
                     })
@@ -274,7 +281,9 @@ export class UserListComponent {
                 : this.userService
                     .update(current.userId!, {
                         name: raw.name!.trim(),
+                        lastName: raw.lastName!.trim(),
                         phone: raw.phone!,
+                        identificationNumber: raw.identificationNumber!,
                         role: Number(raw.role),
                         careerId,
                     })

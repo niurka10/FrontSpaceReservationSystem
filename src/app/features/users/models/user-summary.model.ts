@@ -10,8 +10,10 @@ export interface UserSummaryResponse {
 export interface UserListItem {
   id: string;
   name: string;
+  lastName: string;
   email: string;
   phone: string;
+  identificationNumber: string | null;
   role: string;
   careerId: string | null;
   careerName: string | null;
@@ -22,7 +24,9 @@ export interface UserListItem {
 //body put
 export interface EditUserRequest {
   name: string;
+  lastName: string;
   phone: string;
+  identificationNumber: string;
   role: number;
   careerId: string | null;
 }
@@ -30,9 +34,11 @@ export interface EditUserRequest {
 //body post
 export interface CreateUserRequest {
   name: string;
+  lastName: string;
   email: string;
   password: string;
   phone: string;
+  identificationNumber: string;
   requestedRole: number;
   careerId: string | null;
 }

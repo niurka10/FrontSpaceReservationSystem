@@ -5,26 +5,7 @@ import {
   ReservationDetail,
 } from '../../../features/reservations/models/reservation.interface';
 
-// DATOS DE EJEMPLO: solo para ver el efecto en este paso, cuando el input
-// "reservation" llega vacío. En el paso 2 se borran.
-const SAMPLE: ReservationDetail = {
-  id: '1cd8773e-e52b-45c2-80ea-1e7d68b0c834',
-  date: '2026-10-07T00:00:00Z',
-  startTime: '12:00:00',
-  endTime: '13:00:00',
-  reason: 'Prueba 3 recursos solo 1 cada uno',
-  currentStatus: 'Approved',
-  userId: '00000000-0000-0000-0000-000000000000',
-  spaceId: null,
-  requesterName: 'Ariana Sarahi',
-  requesterRole: 'Student',
-  resources: [
-    { resourceName: 'Proyector', quantity: 1 },
-    { resourceName: 'Parlante', quantity: 1 },
-    { resourceName: 'Extensión eléctrica', quantity: 1 },
-  ],
-  history: [],
-};
+
 
 @Component({
   selector: 'app-voucher-ticket',
@@ -38,16 +19,15 @@ export class VoucherTicketComponent {
 
   // input() es la forma moderna de @Input con signals. Si no llega nada,
   // el componente se dibuja con SAMPLE.
-  readonly reservation = input<ReservationDetail | null>(null);
+  readonly reservation = input.required<ReservationDetail>();
   // Momento en que se generó el voucher (GenerationDate del backend).
   // Es un instante exacto, por eso se muestra en hora local (sin ': UTC').
   readonly generatedAt = input<string | null>(null);
 
+  readonly data = computed(() => this.reservation());
+  readonly issuedAt = computed(() => this.generatedAt());
+
   readonly isSample = computed(() => this.reservation() === null);
-  readonly data = computed(() => this.reservation() ?? SAMPLE);
-  readonly issuedAt = computed(() =>
-    this.isSample() ? new Date().toISOString() : this.generatedAt()
-  );
 
   // Mismo código "RSV-XXXXXXXX" que ya ves en las tablas.
   readonly code = computed(

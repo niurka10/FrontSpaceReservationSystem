@@ -3,6 +3,7 @@ import { Component, computed, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ReservationStatus, RESERVATION_STATUS_LABELS, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STEP_BY_STATUS, Reservation, ReservationDetail } from "../../models/reservation.interface";
 import { ReservationService } from "../../services/reservation.service";
+import { apiErrorMessage } from "../../utils/api-error";
 
 
 // A diferencia de pending-coordinator.ts (donde cada tab es UN status exacto:
@@ -59,6 +60,7 @@ export class PendingVicerrectorComponent implements OnInit {
   readonly activeTab = signal<TabId>('Pendientes');
   readonly reservations = signal<Reservation[]>([]);
   readonly isLoading = signal(true);
+  readonly detailError = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
 
   // ------- estado del modal de acción (aprobar / rechazar) -------
@@ -100,6 +102,7 @@ export class PendingVicerrectorComponent implements OnInit {
   }
 
   selectTab(tab: TabId): void {
+    this.detailError.set(null); // limpia un aviso anterior
     this.activeTab.set(tab);
   }
 
@@ -149,14 +152,18 @@ export class PendingVicerrectorComponent implements OnInit {
   // ---------- modal de detalle (ícono de "ojo") ----------
 
   openDetail(reservationId: string): void {
+    this.detailError.set(null); // limpia un aviso anterior
     this.isLoadingDetail.set(true);
     this.reservationService.getById(reservationId).subscribe({
       next: (detail) => {
         this.selectedDetail.set(detail);
         this.isLoadingDetail.set(false);
       },
-      error: () => {
-        this.errorMessage.set('No se pudo cargar el detalle de la solicitud.');
+      error: (err) => {
+        // 403/404 traen { code, description }; si no, texto de respaldo.
+        this.detailError.set(
+          apiErrorMessage(err, 'No se pudo cargar el detalle de la solicitud.')
+        );
         this.isLoadingDetail.set(false);
       },
     });

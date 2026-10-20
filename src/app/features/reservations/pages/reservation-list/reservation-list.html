@@ -7,6 +7,10 @@
     <a routerLink="/reservations/new" class="btn-primary">+ Nueva reserva</a>
   </div>
 
+  @if (detailError(); as msg) {
+  <div class="alert-error">{{ msg }}</div>
+  }
+
   @if (isLoading()) {
   <div class="state-card">
     <span class="mini-spinner"></span>
@@ -111,9 +115,9 @@
                 class="bi bi-x-lg"></i></button>
             }
             @if (r.currentStatus === 'Approved') {
-              <button class="icon-btn icon-btn--voucher" title="Ver voucher" (click)="openVoucher(r.id)"><i
-                  class="bi bi-receipt"></i></button>
-              }
+            <button class="icon-btn icon-btn--voucher" title="Ver voucher" (click)="openVoucher(r.id)"><i
+                class="bi bi-receipt"></i></button>
+            }
           </td>
         </tr>
         }
@@ -225,5 +229,5 @@
 </div>
 }
 @if (voucherId(); as id) {
-  <app-voucher-modal [reservationId]="id" (closed)="closeVoucher()" />
-  }
+<app-voucher-modal [reservationId]="id" (closed)="closeVoucher()" />
+}

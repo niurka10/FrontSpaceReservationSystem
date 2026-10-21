@@ -15,3 +15,20 @@ export function apiErrorMessage(err: unknown, fallback: string): string {
   }
   return fallback;
 }
+
+// Igual que apiErrorMessage, pero para peticiones con responseType 'blob':
+// ahí el cuerpo del error llega como Blob, así que primero lo leemos como texto
+// y lo convertimos a JSON para sacar el `description`.
+export async function apiErrorMessageFromBlob(err: unknown, fallback: string): Promise<string> {
+  if (err instanceof HttpErrorResponse && err.error instanceof Blob) {
+    try {
+      const body = JSON.parse(await err.error.text());
+      if (typeof body?.description === 'string' && body.description.trim()) {
+        return body.description;
+      }
+    } catch {
+      // El cuerpo no era JSON (vacío o texto): seguimos con el respaldo.
+    }
+  }
+  return apiErrorMessage(err, fallback);
+}

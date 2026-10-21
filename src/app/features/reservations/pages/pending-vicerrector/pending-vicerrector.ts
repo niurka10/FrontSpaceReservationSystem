@@ -4,6 +4,8 @@ import { FormsModule } from "@angular/forms";
 import { ReservationStatus, RESERVATION_STATUS_LABELS, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STEP_BY_STATUS, Reservation, ReservationDetail } from "../../models/reservation.interface";
 import { ReservationService } from "../../services/reservation.service";
 import { apiErrorMessage } from "../../utils/api-error";
+import { mergeReservation } from "../../utils/merge-reservation";
+import { ReservationDetailModalComponent } from "../reservation-detail-modal/reservation-detail-modal.component";
 
 
 // A diferencia de pending-coordinator.ts (donde cada tab es UN status exacto:
@@ -36,7 +38,7 @@ function pseudoCode(id: string): string {
 @Component({
   selector: 'app-pending-vicerrector',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReservationDetailModalComponent],
   templateUrl: './pending-vicerrector.html',
   styleUrls: ['./pending-vicerrector.scss'],
 })
@@ -45,8 +47,6 @@ export class PendingVicerrectorComponent implements OnInit {
   // tener que escribir un método por cada lookup (Angular permite llamar
   // funciones/propiedades públicas de la clase directo desde el HTML).
   readonly statusLabels = RESERVATION_STATUS_LABELS;
-  readonly historyActionLabels = RESERVATION_HISTORY_ACTION_LABELS;
-  readonly stepByStatus = RESERVATION_STEP_BY_STATUS;
   readonly pseudoCode = pseudoCode;
 
   readonly tabs: Tab[] = [
@@ -138,7 +138,7 @@ export class PendingVicerrectorComponent implements OnInit {
         // reemplazamos en el array la reserva que cambió, sin tener que
         // recargar toda la lista de nuevo contra el backend
         this.reservations.update((rows) =>
-          rows.map((r) => (r.id === updated.id ? updated : r))
+          rows.map((r) => (r.id === updated.id ? mergeReservation(r, updated) : r))
         );
         this.action.set(null);
       },

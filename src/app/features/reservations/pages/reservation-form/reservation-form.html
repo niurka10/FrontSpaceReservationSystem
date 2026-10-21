@@ -34,7 +34,7 @@
 
         @if (!resourcesOnly()) {
         <div class="field">
-          <label for="spaceId">Espacio (opcional si eliges algún recurso)</label>
+          <label for="spaceId">Espacio *</label>
           <select id="spaceId" formControlName="spaceId">
             <option value="">Sin espacio, solo recursos</option>
             @for (space of spaces(); track space.id) {

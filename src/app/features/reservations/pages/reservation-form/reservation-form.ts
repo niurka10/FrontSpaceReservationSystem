@@ -90,6 +90,19 @@ export class ReservationFormComponent implements OnInit {
     if (duration > MAX_DURATION_MINUTES) return 'La reserva no puede durar más de 2 horas.';
     return null;
   }
+
+  // "Reservar espacios" exige espacio; "Reservar recursos" (resourcesOnly) no.
+  // Se vuelve a aplicar al cargar un borrador, porque loadExisting() puede
+  // cambiar resourcesOnly según si ese borrador tenía espacio o no.
+  private applySpaceRequirement(): void {
+    const ctrl = this.form.controls.spaceId;
+    if (this.resourcesOnly()) {
+      ctrl.clearValidators();
+    } else {
+      ctrl.setValidators([Validators.required]);
+    }
+    ctrl.updateValueAndValidity({ emitEvent: false });
+  }
   constructor(
     private optionsService: OptionsService,
     private reservationsService: ReservationService,
@@ -103,6 +116,7 @@ export class ReservationFormComponent implements OnInit {
     this.editingId = this.route.snapshot.paramMap.get('id');
     this.isEditMode.set(!!this.editingId);
     this.resourcesOnly.set(this.route.snapshot.data['resourcesOnly'] === true);
+    this.applySpaceRequirement();
     this.loadCandidates();
 
     this.isLoadingOptions.set(true);
@@ -145,6 +159,7 @@ export class ReservationFormComponent implements OnInit {
         if (!detail.spaceId) {
           this.resourcesOnly.set(true);
         }
+        this.applySpaceRequirement();
 
         this.resourceRows.update((rows) =>
           rows.map((row) => {

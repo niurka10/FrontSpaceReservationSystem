@@ -5,6 +5,7 @@ import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABE
 import { OptionsService } from "../../services/options.service";
 import { ReservationService } from "../../services/reservation.service";
 import { apiErrorMessage } from "../../utils/api-error";
+import { ReservationDetailModalComponent } from "../reservation-detail-modal/reservation-detail-modal.component";
 
 type TabId = 'Pendientes' | 'Asignadas' | 'Todas';
 
@@ -33,15 +34,13 @@ function pseudoCode(id: string): string {
 @Component({
     selector: 'app-pending-assets',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, ReservationDetailModalComponent],
     templateUrl: './pending-assets.html',
     styleUrls: ['./pending-assets.scss'],
 })
 
 export class PendingAssetsComponent implements OnInit {
     readonly statusLabels = RESERVATION_STATUS_LABELS;
-    readonly historyActionLabels = RESERVATION_HISTORY_ACTION_LABELS;
-    readonly stepByStatus = RESERVATION_STEP_BY_STATUS;
     readonly pseudoCode = pseudoCode;
 
     readonly tabs: Tab[] = [
@@ -165,9 +164,9 @@ export class PendingAssetsComponent implements OnInit {
                 : this.reservationService.reject(id, current.justification);
 
         call.subscribe({
-            next: (updated) => {
-                this.reservations.update((rows) => rows.map((r) => (r.id === updated.id ? updated : r)));
+            next: () => {
                 this.action.set(null);
+                this.load();
             },
             error: () => {
                 this.errorMessage.set('No se pudo procesar la solicitud. Intenta de nuevo.');

@@ -63,6 +63,10 @@ export class ReservationService {
         return this.http.post<Reservation>(`${API_BASE}/${id}/cancel`, { justification })
     }
 
+    delete(id: string): Observable<void> {
+        return this.http.delete<void>(`${API_BASE}/${id}`)
+    }
+
     edit(id: string, request: CreateReservationRequest): Observable<Reservation> {
         return this.http.put<Reservation>(`${API_BASE}/${id}`, request)
     }

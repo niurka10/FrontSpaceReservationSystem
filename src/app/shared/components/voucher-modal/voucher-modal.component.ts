@@ -4,6 +4,7 @@ import { ReservationDetail } from '../../../features/reservations/models/reserva
 import { ReservationService } from '../../../features/reservations/services/reservation.service';
 import { VoucherService } from '../../../features/reservations/services/voucher.service';
 import { VoucherTicketComponent } from '../voucher-ticket/voucher-ticket.component';
+import { apiErrorMessage, apiErrorMessageFromBlob } from '../../../features/reservations/utils/api-error';
 
 @Component({
   selector: 'app-voucher-modal',
@@ -33,8 +34,9 @@ export class VoucherModalComponent implements OnInit {
         this.detail.set(detail);
         this.isLoading.set(false);
       },
-      error: () => {
-        this.errorMessage.set('No se pudo cargar el comprobante.');
+      error: (err) => {
+        // 403/404 del detalle traen { code, description } en JSON normal.
+        this.errorMessage.set(apiErrorMessage(err, 'No se pudo cargar el comprobante.'));
         this.isLoading.set(false);
       },
     });
@@ -53,10 +55,10 @@ export class VoucherModalComponent implements OnInit {
         this.voucherService.save(blob, `comprobante-${code}.pdf`);
         this.isDownloading.set(false);
       },
-      // Con responseType 'blob', el cuerpo del error llega como Blob y no se
-      // puede leer como JSON, así que aquí va un mensaje fijo.
-      error: () => {
-        this.errorMessage.set('No se pudo descargar el PDF.');
+      error: async (err) => {
+        this.errorMessage.set(
+          await apiErrorMessageFromBlob(err, 'No se pudo descargar el PDF.')
+        );
         this.isDownloading.set(false);
       },
     });

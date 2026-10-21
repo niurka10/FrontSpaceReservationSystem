@@ -4,6 +4,8 @@ import { FormsModule } from "@angular/forms";
 import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, RESERVATION_STEP_BY_STATUS, ReservationDetail } from "../../models/reservation.interface";
 import { ReservationService } from "../../services/reservation.service";
 import { apiErrorMessage } from "../../utils/api-error";
+import { mergeReservation } from "../../utils/merge-reservation";
+import { ReservationDetailModalComponent } from "../reservation-detail-modal/reservation-detail-modal.component";
 
 interface ActionState {
     reservationId: string;
@@ -19,14 +21,12 @@ function pseudoCode(id: string): string {
 @Component({
     selector: 'app-pending-coordinator',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, ReservationDetailModalComponent],
     templateUrl: './pending-coordinator.html',
     styleUrls: ['./pending-coordinator.scss']
 })
 export class PendingCoordinatorComponent implements OnInit {
     readonly statusLabels = RESERVATION_STATUS_LABELS;
-    readonly historyActionLabels = RESERVATION_HISTORY_ACTION_LABELS;
-    readonly stepByStatus = RESERVATION_STEP_BY_STATUS;
     readonly pseudoCode = pseudoCode;
     readonly selectedDetail = signal<ReservationDetail | null>(null);
     readonly isLoadingDetail = signal(false);
@@ -165,7 +165,12 @@ export class PendingCoordinatorComponent implements OnInit {
         call.subscribe({
             next: (updated) => {
                 this.reservations.update((rows) =>
-                    rows.map((r) => (r.id === updated.id ? updated : r))
+                    // /career ya no devuelve borradores. Si el rechazo del Coordinador
+                    // dejó la reserva en Draft, la quitamos de la lista local para que
+                    // coincida con lo que mostraría una recarga. Si no, reemplazamos la fila.
+                    updated.currentStatus === 'Draft'
+                        ? rows.filter((r) => r.id !== updated.id)
+                        : rows.map((r) => (r.id === updated.id ? mergeReservation(r, updated) : r))
                 );
                 this.action.set(null);
             },

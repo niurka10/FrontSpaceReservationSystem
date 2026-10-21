@@ -26,7 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
     {
         label: 'Calendario',
         path: '/reservations/calendar',
-        roles: ['Student','Teacher','Coordinator']
+        roles: ['Student', 'Teacher', 'Coordinator']
     },
 
     {
@@ -36,9 +36,9 @@ export const NAV_ITEMS: NavItem[] = [
     },
 
     {
-      label: 'Reservar recursos',
-      path: '/reservations/new-resources',
-      roles: ALL_ROLES,
+        label: 'Reservar recursos',
+        path: '/reservations/new-resources',
+        roles: ALL_ROLES,
     },
 
     {
@@ -55,18 +55,18 @@ export const NAV_ITEMS: NavItem[] = [
     {
         label: 'notificaciones',
         path: '/alerts',
-        roles: ['Admin','Student','Teacher'],
+        roles: ['Admin', 'Student', 'Teacher'],
     },
     {
-      label: 'Autorizaciones',
-      path: '/reservations/pending-vicerrector',
-      roles: ['Vicerrector', 'Admin'],
+        label: 'Autorizaciones',
+        path: '/reservations/pending-vicerrector',
+        roles: ['Vicerrector', 'Admin'],
     },
 
     {
-      label: 'Asignaciones (Bienes)',
-      path: '/reservations/pending-assets',
-      roles: ['Bienes', 'Admin'],
+        label: 'Asignaciones (Bienes)',
+        path: '/reservations/pending-assets',
+        roles: ['Bienes', 'Admin'],
     },
 
     {

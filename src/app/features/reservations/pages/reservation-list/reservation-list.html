@@ -11,6 +11,10 @@
   <div class="alert-error">{{ msg }}</div>
   }
 
+  @if (actionError(); as msg) {
+  <div class="alert-error">{{ msg }}</div>
+  }
+
   @if (isLoading()) {
   <div class="state-card">
     <span class="mini-spinner"></span>
@@ -76,9 +80,9 @@
         </tr>
       </thead>
       <tbody>
-        @for (r of filtered(); track r.id; let i = $index) {
+        @for (r of paged(); track r.id; let i = $index) {
         <tr class="row-clickable" (click)="openDetail(r.id)" title="Clic para ver el detalle">
-          <td class="col-num"><span class="num-badge">{{ i + 1 }}</span></td>
+          <td class="col-num"><span class="num-badge">{{ firstIndex() + i + 1 }}</span></td>
           <td class="col-date">
             <i class="bi bi-calendar3 cell-icon"></i>
             {{ r.date | slice:0:10 | date:'dd/MM/yyyy':'UTC' }}
@@ -110,7 +114,12 @@
               [routerLink]="['/reservations', r.id, 'edit']"><i class="bi bi-pencil-fill"></i>
             </button>
             }
-            @if (['Draft', 'PendingCoordinator', 'PendingVicerrector', 'PendingAssets'].includes(r.currentStatus)) {
+            @if (r.currentStatus === 'Draft' && r.canDelete) {
+            <button class="icon-btn icon-btn--reject" title="Eliminar borrador" (click)="openDelete(r.id)"><i
+                class="bi bi-trash-fill"></i></button>
+            }
+            @if ((r.currentStatus === 'Draft' && !r.canDelete)
+            || ['PendingCoordinator', 'PendingVicerrector', 'PendingAssets'].includes(r.currentStatus)) {
             <button class="icon-btn icon-btn--reject" title="Cancelar solicitud" (click)="openCancel(r.id)"><i
                 class="bi bi-x-lg"></i></button>
             }
@@ -130,85 +139,24 @@
       </tbody>
     </table>
   </div>
+  @if (totalPages() > 1) {
+  <div class="pager">
+    <span class="pager-info">Mostrando {{ range().from }}–{{ range().to }} de {{ range().total }}</span>
+    <div class="pager-controls">
+      <button type="button" class="pager-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">‹
+        Anterior</button>
+      <span class="pager-page">Página {{ currentPage() }} de {{ totalPages() }}</span>
+      <button type="button" class="pager-btn" (click)="goToPage(currentPage() + 1)"
+        [disabled]="currentPage() === totalPages()">Siguiente ›</button>
+    </div>
+  </div>
+  }
   }
 </div>
 
 @if (selectedDetail(); as detail) {
-<div class="modal-backdrop" (click)="closeDetail()">
-  <div class="modal-card--wide" (click)="$event.stopPropagation()">
-
-    <div class="detail-header">
-      <div>
-        <h2>Detalle de solicitud <span class="detail-code">{{ pseudoCode(detail.id) }}</span></h2>
-        <p class="detail-subtitle">
-          {{ detail.spaceName ?? '—' }} · {{ detail.date | slice:0:10 | date:'dd/MM/yyyy':'UTC' }} ·
-          {{ detail.startTime }}–{{ detail.endTime }}
-        </p>
-      </div>
-      <button class="close-btn" (click)="closeDetail()">✕</button>
-    </div>
-
-    <div class="stepper">
-      @for (step of [
-      { num: 1, label: 'Solicitud' },
-      { num: 2, label: 'Coordinador' },
-      { num: 3, label: 'Vicerrectorado' },
-      { num: 4, label: 'Asignación' }
-      ]; track step.num) {
-      <div class="step" [class.step--done]="step.num < stepByStatus[detail.currentStatus]"
-        [class.step--current]="step.num === stepByStatus[detail.currentStatus]">
-        <span class="step-circle">
-          @if (step.num < stepByStatus[detail.currentStatus]) { ✓ } @else { {{ step.num }} } </span>
-            <span class="step-label">{{ step.label }}</span>
-      </div>
-      }
-    </div>
-
-    <div class="detail-grid">
-      <div class="detail-row">
-        <span class="detail-label">Motivo</span>
-        <span class="detail-value">{{ detail.reason }}</span>
-      </div>
-      @if (detail.resources.length > 0) {
-      <div class="detail-row">
-        <span class="detail-label">Recursos solicitados</span>
-        <span class="detail-value">
-          @for (res of detail.resources; track res.resourceName) {
-          <div>{{ res.resourceName }} x{{ res.quantity }}</div>
-          }
-        </span>
-      </div>
-      }
-    </div>
-
-    <div class="history-section">
-      <h3>Historial de gestión</h3>
-      @if (detail.history.length === 0) {
-      <p class="text-muted">Sin movimientos registrados todavía.</p>
-      } @else {
-      <ul class="history-list">
-        @for (entry of detail.history; track entry.changeDate) {
-        <li>
-          <div class="history-action">
-            {{ historyActionLabels[entry.newStatus] }} — {{ entry.changedByName }}
-            @if (entry.changedByRole) { ({{ entry.changedByRole }}) }
-          </div>
-          <div class="history-date">{{ entry.changeDate | date: 'dd/MM/yyyy HH:mm' }}</div>
-          @if (entry.justification) {
-          <div class="history-justification">"{{ entry.justification }}"</div>
-          }
-        </li>
-        }
-      </ul>
-      }
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" (click)="closeDetail()">Cerrar</button>
-    </div>
-  </div>
-</div>
-}
+  <app-reservation-detail-modal [detail]="detail" (closed)="closeDetail()" />
+  }
 
 
 @if (cancelling(); as current) {
@@ -223,6 +171,23 @@
       </button>
       <button class="btn-reject" (click)="confirmCancel()" [disabled]="current.isSaving">
         {{ current.isSaving ? 'Cancelando...' : 'Sí, cancelar' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+@if (deleting(); as current) {
+<div class="modal-backdrop" (click)="closeDelete()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <h2>Eliminar borrador</h2>
+    <p class="text-muted">Se eliminará este borrador de forma definitiva. Esta acción no se puede deshacer.</p>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeDelete()" [disabled]="current.isSaving">
+        Volver
+      </button>
+      <button class="btn-reject" (click)="confirmDelete()" [disabled]="current.isSaving">
+        {{ current.isSaving ? 'Eliminando...' : 'Sí, eliminar' }}
       </button>
     </div>
   </div>

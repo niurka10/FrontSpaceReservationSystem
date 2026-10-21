@@ -1,0 +1,138 @@
+<div class="rd-backdrop" (click)="closed.emit()">
+    <div class="rd-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+  
+      <!-- 1. CABECERA -->
+      <header class="rd-header">
+        <div>
+          <div class="rd-title-row">
+            <span class="rd-code">{{ code() }}</span>
+            <span class="rd-badge" [attr.data-status]="detail().currentStatus">
+              {{ statusLabels[detail().currentStatus] }}
+            </span>
+          </div>
+          <p class="rd-sub">
+            <i class="bi bi-geo-alt"></i> {{ detail().spaceName ?? 'Sin espacio' }}
+            <span class="rd-sep">·</span>
+            <i class="bi bi-calendar3"></i> {{ detail().date.slice(0, 10) | date: 'dd/MM/yyyy':'UTC' }}
+            <span class="rd-sep">·</span>
+            <i class="bi bi-clock"></i> {{ detail().startTime.slice(0, 5) }}–{{ detail().endTime.slice(0, 5) }}
+          </p>
+        </div>
+        <button type="button" class="rd-close" aria-label="Cerrar" (click)="closed.emit()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </header>
+  
+      <!-- 2. PROGRESO (o aviso si está cerrada / devuelta) -->
+      @if (notice(); as n) {
+        <div class="rd-notice" [attr.data-status]="n.kind">
+          <i class="bi rd-notice-icon"
+             [class.bi-x-octagon-fill]="n.kind === 'Rejected'"
+             [class.bi-slash-circle-fill]="n.kind === 'Cancelled'"
+             [class.bi-arrow-counterclockwise]="n.kind === 'Draft'"></i>
+          <div>
+            <strong>{{ actionLabels[n.kind] }}</strong>
+            <div class="rd-notice-by">
+              {{ n.entry.changedByName }}
+              @if (n.entry.changedByRole) { ({{ n.entry.changedByRole }}) }
+              · {{ n.entry.changeDate | date: 'dd/MM/yyyy HH:mm' }}
+            </div>
+            @if (n.entry.justification) {
+              <div class="rd-notice-reason">{{ n.entry.justification }}</div>
+            }
+          </div>
+        </div>
+      } @else if (!isClosed()) {
+        <div class="rd-progress">
+          <div class="rd-track"><div class="rd-fill" [style.width.%]="fillPercent()"></div></div>
+          @for (s of steps(); track s.num) {
+            <div class="rd-step" [class.rd-step--done]="s.done" [class.rd-step--current]="s.current">
+              <span class="rd-circle">
+                @if (s.done) { <i class="bi bi-check-lg"></i> } @else { {{ s.num }} }
+              </span>
+              <span class="rd-step-label">{{ s.label }}</span>
+            </div>
+          }
+        </div>
+      }
+  
+      <!-- 3. DATOS: solo se dibuja lo que existe -->
+      <section class="rd-info">
+        @if (detail().requesterName) {
+          <div class="rd-info-card">
+            <span class="rd-label">Solicitante</span>
+            <span class="rd-value">
+              {{ detail().requesterName }}
+              @if (requesterLabel(detail().requesterRole)) {
+                <small>{{ requesterLabel(detail().requesterRole) }}</small>
+              }
+            </span>
+          </div>
+        }
+        @if (detail().careerName) {
+          <div class="rd-info-card">
+            <span class="rd-label">Carrera</span>
+            <span class="rd-value">{{ detail().careerName }}</span>
+          </div>
+        }
+      </section>
+  
+      <section class="rd-block">
+        <span class="rd-label">Motivo</span>
+        <p class="rd-reason">{{ detail().reason }}</p>
+      </section>
+  
+      @if (detail().resources.length > 0) {
+        <section class="rd-block">
+          <span class="rd-label">Recursos solicitados</span>
+          <div class="rd-chips">
+            @for (res of detail().resources; track res.resourceName) {
+              <span class="rd-chip">{{ res.resourceName }} <b>×{{ res.quantity }}</b></span>
+            }
+          </div>
+        </section>
+      }
+  
+      <!-- 4. HISTORIAL: línea de tiempo, lo más reciente arriba -->
+      <section class="rd-history">
+        <h3>Historial de gestión</h3>
+        @if (timeline().length === 0) {
+          <p class="rd-empty">Sin movimientos registrados todavía.</p>
+        } @else {
+          <ol class="rd-timeline">
+            @for (e of timeline(); track e.changeDate) {
+              <li class="rd-event" [attr.data-status]="e.newStatus">
+                <span class="rd-dot"></span>
+                <div class="rd-event-body">
+                  <div class="rd-event-top">
+                    <span class="rd-event-action">{{ actionLabels[e.newStatus] }}</span>
+                    <time>{{ e.changeDate | date: 'dd/MM/yyyy HH:mm' }}</time>
+                  </div>
+                  <div class="rd-event-by">
+                    {{ e.changedByName }}
+                    @if (e.changedByRole) { ({{ e.changedByRole }}) }
+                  </div>
+                  @if (e.justification) {
+                    <blockquote class="rd-quote"
+                      [class.rd-quote--clamp]="isLong(e.justification) && !isExpanded(e.changeDate)">
+                      {{ e.justification }}
+                    </blockquote>
+                    @if (isLong(e.justification)) {
+                      <button type="button" class="rd-more" (click)="toggle(e.changeDate)">
+                        {{ isExpanded(e.changeDate) ? 'Ver menos' : 'Ver más' }}
+                      </button>
+                    }
+                  }
+                </div>
+              </li>
+            }
+          </ol>
+        }
+      </section>
+  
+      <!-- 5. PIE -->
+      <footer class="rd-footer">
+        <button type="button" class="rd-btn" (click)="closed.emit()">Cerrar</button>
+      </footer>
+    </div>
+  </div>

@@ -65,6 +65,7 @@ export interface Reservation{
     requesterRole?: string;
     spaceName?: string;
     careerName?: string;
+    canDelete?: boolean;
 }
 
 export interface ReservationResourceItem {

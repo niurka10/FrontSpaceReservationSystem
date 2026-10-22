@@ -19,7 +19,7 @@
 
   <!-- Error -->
   @if (error()) {
-    <div class="alert-error">
+    <div class="alert-error" role="alert">
       <div class="alert-icon">!</div>
       <div>
         <strong>Ocurrió un problema</strong>
@@ -32,7 +32,12 @@
   <div class="form-card">
     <div class="form-card-header">
       <div class="form-icon">
-        🏛️
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 10l9-6 9 6" />
+          <path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8" />
+          <path d="M3 20h18" />
+        </svg>
       </div>
       <div>
         <h2>Información de la facultad</h2>

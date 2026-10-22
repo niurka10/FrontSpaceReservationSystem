@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { FacultyService } from '../../services/faculty.service';
@@ -29,5 +29,35 @@ export class FacultyList implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  //Filtro 
+  search = signal('');
+  filterOpen = signal(false);
+
+  filteredFaculties = computed(() => {
+    const term = this.normalize(this.search());
+
+    return this.faculties()
+      .filter((f) => this.normalize(f.name).includes(term))
+      .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  });
+  private normalize(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  toggleFilter(): void {
+    this.filterOpen.update((v) => !v);
+    if (this.filterOpen()) {
+      setTimeout(() => document.getElementById('faculty-filter-input')?.focus());
+    }
+  }
+
+  clearFilter(): void {
+    this.search.set('');
   }
 }

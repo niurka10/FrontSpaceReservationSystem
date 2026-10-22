@@ -8,6 +8,9 @@ import { CreateFacultyRequest, Faculty, UpdateFacultyRequest } from '../models/f
 })
 
 export class FacultyService {
+    delete(id: string) {
+      throw new Error('Method not implemented.');
+    }
     private readonly http = inject(HttpClient);
     private readonly apiUrl = '/api/Faculty';
 

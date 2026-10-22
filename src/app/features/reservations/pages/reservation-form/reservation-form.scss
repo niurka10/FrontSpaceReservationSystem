@@ -1,9 +1,16 @@
-$primary: #3457e8;
-$primary-dark: #2a46c4;
-$primary-soft: #eef2ff;
-$border: #d7dceb;
-$text: #1f2433;
-$muted: #6b7280;
+// ===== Paleta UNIBE (tomada del login y del menú lateral) =====
+$navy: #053a5e;          // azul más oscuro (fondo del menú)
+$blue: #0a5a85;          // azul principal
+$blue-dark: #07456a;
+$blue-soft: #eaf3f9;     // fondos suaves
+$blue-line: #cfe0ec;     // bordes suaves
+$yellow: #f9bc00;        // acento / botón principal
+$yellow-dark: #e0a800;
+$yellow-soft: #fff6d6;
+$border: #d5e2ec;
+$text: #0f2438;
+$muted: #5f7385;
+$bg-input: #f5f9fc;
 $ok: #1f9d63;
 $warn: #d98a0b;
 $danger: #c22b2b;
@@ -11,54 +18,63 @@ $danger: #c22b2b;
 .page { max-width: 1040px; margin: 0 auto; padding: 24px 16px 40px; }
 .text-muted { color: $muted; }
 
+// ---- encabezado ----
 .page-head {
-  margin-bottom: 16px;
-  h1 { margin: 0 0 4px; font-size: 26px; color: $text; }
+  margin-bottom: 18px;
+  h1 {
+    margin: 0 0 6px; font-size: 28px; font-weight: 800; color: $text;
+    &::after {
+      content: ''; display: block; width: 44px; height: 4px; margin-top: 8px;
+      border-radius: 99px; background: $yellow;
+    }
+  }
   p { margin: 0; color: $muted; }
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 22px;
   align-items: start;
   @media (max-width: 900px) { grid-template-columns: 1fr; }
 }
 
+// ---- alerta ----
 .alert-error {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  background: #fdeaea; color: $danger; border: 1px solid #f4c2c2;
-  border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 13px;
+  background: #fdeaea; color: $danger; border: 1px solid #f4c2c2; border-left: 4px solid $danger;
+  border-radius: 10px; padding: 11px 14px; margin-bottom: 16px; font-size: 13px; font-weight: 500;
   animation: pop-in 0.2s ease-out;
 }
 .alert-close { background: none; border: none; color: inherit; font-size: 20px; line-height: 1; cursor: pointer; }
 
 @keyframes pop-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 
-// ---- tarjeta compacta ----
+// ---- tarjeta del formulario ----
 .form-card {
-  background: #fff; border: 1px solid #e8eaf0; border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(20, 24, 38, 0.06);
-  padding: 22px 24px;
+  background: #fff; border: 1px solid $blue-line; border-top: 4px solid $blue; border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(5, 58, 94, 0.08);
+  padding: 24px 26px;
 }
-.reservation-form { display: flex; flex-direction: column; gap: 16px; }
+.reservation-form { display: flex; flex-direction: column; gap: 18px; }
 
 // ---- campos (solo hijos directos: no afectan inputs dentro de las tarjetas) ----
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.field > label { font-size: 13px; font-weight: 600; color: #4a5266; }
+.field > label { font-size: 13px; font-weight: 700; color: $blue-dark; }
 
 .field > select, .field > input, .field > textarea {
-  border: 1px solid $border; border-radius: 8px; padding: 9px 12px;
+  border: 1px solid $border; border-radius: 10px; padding: 10px 12px;
   font-size: 14px; font-family: inherit; color: $text;
-  box-sizing: border-box; width: 100%; background: #fff;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  &:hover { border-color: #b9c1dc; }
-  &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba(52, 87, 232, 0.12); }
-  &.invalid { border-color: $danger; }
+  box-sizing: border-box; width: 100%; background: $bg-input;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  &:hover { border-color: #a9c3d6; background: #fff; }
+  // CAMBIO: halo azul suave (antes amarillo)
+  &:focus { outline: none; background: #fff; border-color: $blue; box-shadow: 0 0 0 3px rgba(10, 90, 133, 0.15); }
+  &.invalid { border-color: $danger; background: #fff8f8; }
 }
 .field > textarea { resize: vertical; min-height: 64px; }
 
-.field-error { color: $danger; font-size: 12px; animation: pop-in 0.2s ease-out; }
+.field-error { color: $danger; font-size: 12px; font-weight: 500; animation: pop-in 0.2s ease-out; }
 
 .field-row {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;
@@ -67,58 +83,49 @@ $danger: #c22b2b;
 
 // ---- recursos ----
 .resources-block {
-  display: flex; flex-direction: column; gap: 12px;
-  padding-top: 16px; border-top: 1px solid #eef0f5;
+  display: flex; flex-direction: column; gap: 14px;
+  padding-top: 18px; border-top: 1px dashed $blue-line;
 }
-.block-title { font-size: 13px; font-weight: 600; color: #4a5266; }
+.block-title { font-size: 14px; font-weight: 700; color: $blue-dark; }
 
 .switch {
   display: inline-flex; align-items: center; gap: 12px; cursor: pointer;
-  font-size: 14px; font-weight: 500; color: $text; align-self: flex-start; position: relative;
+  font-size: 14px; font-weight: 600; color: $text; align-self: flex-start; position: relative;
   input { position: absolute; opacity: 0; pointer-events: none; }
-  .track { width: 40px; height: 22px; border-radius: 99px; background: #cdd3e4; position: relative; transition: background 0.2s; }
-  .thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.2s; }
-  input:checked + .track { background: $primary; }
+  .track { width: 42px; height: 24px; border-radius: 99px; background: #bfd0dd; position: relative; transition: background 0.2s; }
+  .thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.2s; }
+  input:checked + .track { background: $blue; }
+  // CAMBIO: perilla blanca (antes amarilla)
   input:checked + .track .thumb { transform: translateX(18px); }
-  input:focus-visible + .track { outline: 3px solid rgba(52, 87, 232, 0.35); outline-offset: 2px; }
+  input:focus-visible + .track { outline: 3px solid rgba(10, 90, 133, 0.35); outline-offset: 2px; }
 }
 
 .resource-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .resource-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 58px; // la tarjeta no cambia de alto al aparecer el contador
-  border: 1.5px solid $border;
-  border-radius: 12px;
-  padding: 10px 12px;
-  background: #fff;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 60px; // la tarjeta no cambia de alto al aparecer el contador
+  border: 1.5px solid $border; border-radius: 12px; padding: 10px 12px; background: #fff;
   transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s;
 
   &:hover:not(.disabled) {
-    border-color: $primary;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(52, 87, 232, 0.1);
+    border-color: $blue; transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(10, 90, 133, 0.14);
   }
-  &.selected { border-color: $primary; background: #f1f4ff; }
-  &.disabled { opacity: 0.55; background: #f7f7f9; }
+  // CAMBIO: sin franja amarilla a la izquierda
+  &.selected {
+    border-color: $blue; background: $blue-soft;
+  }
+  &.disabled { opacity: 0.55; background: #f3f6f9; }
 }
 
 .resource-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  position: relative;
-  margin: 0;
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+  cursor: pointer; position: relative; margin: 0;
 }
 .resource-card.disabled .resource-main { cursor: not-allowed; }
 
@@ -126,175 +133,131 @@ $danger: #c22b2b;
 .sr-check { position: absolute; opacity: 0; width: 0; height: 0; }
 
 .tick {
-  width: 18px; height: 18px; flex: none; border: 1.5px solid $border; border-radius: 5px;
+  width: 20px; height: 20px; flex: none; border: 1.5px solid #a9c3d6; border-radius: 6px;
   background: #fff; position: relative; transition: all 0.15s;
   &::after {
-    content: ''; position: absolute; left: 5px; top: 1px; width: 4px; height: 9px;
-    border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); opacity: 0; transition: opacity 0.15s;
+    content: ''; position: absolute; left: 6px; top: 2px; width: 4px; height: 9px;
+    border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); opacity: 0; transition: opacity 0.15s;
   }
 }
-.sr-check:checked + .tick { background: $primary; border-color: $primary; &::after { opacity: 1; } }
-.sr-check:focus-visible + .tick { outline: 3px solid rgba(52, 87, 232, 0.35); outline-offset: 2px; }
+// CAMBIO: check azul con visto blanco (antes amarillo)
+.sr-check:checked + .tick { background: $blue; border-color: $blue; &::after { opacity: 1; } }
+.sr-check:focus-visible + .tick { outline: 3px solid rgba(10, 90, 133, 0.4); outline-offset: 2px; }
 
-.resource-info { display: flex; flex-direction: column; gap: 3px; }
-.resource-name { font-size: 14px; font-weight: 600; color: $text; }
+.resource-info { display: flex; flex-direction: column; gap: 4px; }
+.resource-name { font-size: 14px; font-weight: 700; color: $text; }
 
 .stock {
   align-self: flex-start; font-size: 12px; font-weight: 600; border-radius: 99px; padding: 1px 9px;
   background: #e5f6ee; color: $ok;
-  &.low { background: #fff1d9; color: $warn; }
+  &.low { background: $yellow-soft; color: #9a6b00; }
   &.none { background: #fdeaea; color: $danger; }
 }
 
 .stepper {
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  flex: none; display: flex; align-items: center; gap: 4px;
   animation: pop-in 0.15s ease-out;
 
   button {
-    width: 28px;
-    height: 28px;
-    border: 1px solid $border;
-    background: #fff;
-    border-radius: 8px;
-    font-size: 16px;
-    line-height: 1;
-    cursor: pointer;
-    color: $text;
-    transition: all 0.15s;
-    &:hover:not(:disabled) { background: $primary; border-color: $primary; color: #fff; }
+    width: 28px; height: 28px; border: 1px solid $border; background: #fff; border-radius: 8px;
+    font-size: 16px; line-height: 1; cursor: pointer; color: $blue-dark; transition: all 0.15s;
+    // CAMBIO: hover azul (antes amarillo)
+    &:hover:not(:disabled) { background: $blue; border-color: $blue; color: #fff; }
     &:disabled { opacity: 0.4; cursor: not-allowed; }
   }
 
   input {
-    width: 40px;
-    height: 28px;
-    border: 1px solid $border;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 13px;
-    box-sizing: border-box;
-    padding: 0;
-    //-moz-appearance: textfield;
+    width: 40px; height: 28px; border: 1px solid $border; border-radius: 8px;
+    text-align: center; font-size: 13px; font-weight: 700; color: $text;
+    box-sizing: border-box; padding: 0; background: #fff;
+    &:focus { outline: none; border-color: $blue; box-shadow: 0 0 0 3px rgba(10, 90, 133, 0.15); }
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   }
 }
 
-// ---- resumen ----
+// ---- resumen (mismo azul que el menú lateral) ----
 .summary {
-  position: sticky;
-  top: 16px;
-  background: #fff;
-  border: 1px solid #c9d4fb;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(52, 87, 232, 0.12);
+  position: sticky; top: 16px; background: #fff; border: 1px solid $blue-line; border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(5, 58, 94, 0.18);
   overflow: hidden;
   @media (max-width: 900px) { position: static; }
 }
 
 .summary-head {
-  background: linear-gradient(135deg, $primary, $primary-dark);
-  color: #fff;
-  padding: 14px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  background: linear-gradient(160deg, $blue, $navy);
+  color: #fff; padding: 16px 20px; display: flex; flex-direction: column; gap: 2px;
+  border-bottom: 4px solid $yellow;
 
-  h2 { margin: 0; font-size: 16px; font-weight: 700; color: #fff; text-align: center; }
+  h2 { margin: 0; font-size: 16px; font-weight: 800; color: #fff; text-align: center; letter-spacing: 0.2px; }
   .summary-sub { font-size: 12px; opacity: 0.8; }
 }
 
 .summary-body {
-  background: #f7f9ff;
-  padding: 16px 20px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  background: $blue-soft; padding: 16px 20px 18px;
+  display: flex; flex-direction: column; gap: 14px;
 }
 
 .summary-data {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px 12px;
-  margin: 0;
-  font-size: 13px;
-
-  dt { color: $muted; }
-  dd { margin: 0; color: $text; font-weight: 600; text-align: right; }
+  display: grid; grid-template-columns: auto 1fr; gap: 10px 12px; margin: 0; font-size: 13px;
+  dt { color: $muted; font-weight: 500; }
+  dd { margin: 0; color: $text; font-weight: 700; text-align: right; }
 }
 
 .summary-resources {
-  border-top: 1px dashed #c9d4fb;
-  padding-top: 12px;
-  font-size: 13px;
+  border-top: 1px dashed #9fbfd4; padding-top: 12px; font-size: 13px;
 }
 
 .summary-title {
-  display: block;
-  color: $muted;
-  margin-bottom: 8px;
+  display: block; color: $blue-dark; font-weight: 700; margin-bottom: 8px;
 }
 
 .res-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px;
 
   &:empty::before { content: 'Ninguno todavía'; color: $muted; }
 
   li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    background: #fff;
-    border: 1px solid #dfe6fb;
-    border-left: 3px solid $primary;
-    border-radius: 8px;
-    padding: 6px 6px 6px 10px;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: #fff; border: 1px solid $blue-line; border-left: 4px solid $yellow;
+    border-radius: 8px; padding: 6px 6px 6px 10px;
     animation: pop-in 0.15s ease-out;
   }
 
   .res-name { color: $text; font-weight: 500; }
-  .res-name strong { color: $primary; font-weight: 700; }
+  .res-name strong { color: $blue; font-weight: 800; }
 
   button {
-    width: 22px;
-    height: 22px;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
-    color: $muted;
-    font-size: 16px;
-    line-height: 1;
-    cursor: pointer;
-    transition: all 0.15s;
+    width: 22px; height: 22px; border: none; border-radius: 50%;
+    background: transparent; color: $muted; font-size: 16px; line-height: 1;
+    cursor: pointer; transition: all 0.15s;
     &:hover { background: $danger; color: #fff; }
   }
 }
 
 // ---- acciones ----
-.form-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 4px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; padding-top: 6px; }
 .btn-ghost, .btn-primary {
-  display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 8px;
-  padding: 10px 18px; font-size: 14px; font-weight: 600; cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 10px;
+  padding: 11px 20px; font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s, border-color 0.15s;
   &:active:not(:disabled) { transform: scale(0.97); }
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
-.btn-ghost { background: #eef0f5; color: #4a5266; &:hover:not(:disabled) { background: #e3e6ee; } }
-.btn-primary { background: $primary; color: #fff; &:hover:not(:disabled) { background: $primary-dark; } }
+.btn-ghost {
+  background: #fff; color: $blue; border: 1.5px solid $blue;
+  &:hover:not(:disabled) { background: $blue-soft; }
+}
+.btn-primary {
+  background: $yellow; color: $navy; border: 1.5px solid $yellow;
+  box-shadow: 0 4px 12px rgba(249, 188, 0, 0.4);
+  &:hover:not(:disabled) { background: $yellow-dark; border-color: $yellow-dark; }
+}
 
 .spinner {
   width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent;
   border-radius: 50%; display: inline-block; animation: spin 0.7s linear infinite;
-  &.dark { color: #4a5266; }
+  &.dark { color: $blue; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 

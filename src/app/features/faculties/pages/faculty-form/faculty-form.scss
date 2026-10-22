@@ -1,40 +1,66 @@
+/* ===== Paleta UNIBE ===== */
 .faculty-form-page {
-  max-width: 900px;
+  --navy: #053a5e;
+  --blue: #0a5a85;
+  --blue-dark: #07456a;
+  --blue-soft: #eaf3f9;
+  --blue-line: #cfe0ec;
+  --yellow: #f9bc00;
+  --yellow-dark: #e0a800;
+  --border: #d5e2ec;
+  --text: #0f2438;
+  --muted: #5f7385;
+  --danger: #c22b2b;
+
+  max-width: 760px;
   margin: 0 auto;
-  padding: 28px;
+  padding: 28px 16px 40px;
 }
 
-/*ENCABEZADO*/
+/* ENCABEZADO */
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .breadcrumb {
   display: block;
   margin-bottom: 8px;
 
-  color: #6b7280;
+  color: var(--blue);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .page-header h1 {
   margin: 0 0 6px;
 
-  color: #1f2937;
+  color: var(--text);
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 800;
+}
+
+.page-header h1::after {
+  content: '';
+  display: block;
+
+  width: 44px;
+  height: 4px;
+  margin-top: 8px;
+
+  border-radius: 99px;
+  background: var(--yellow);
 }
 
 .page-header p {
   margin: 0;
 
-  color: #6b7280;
+  color: var(--muted);
   font-size: 14px;
 }
 
-/*ERROR*/
+/* ERROR */
 
 .alert-error {
   display: flex;
@@ -44,10 +70,11 @@
   margin-bottom: 20px;
   padding: 14px 16px;
 
-  border: 1px solid #fecaca;
-  border-radius: 9px;
+  border: 1px solid #f4c2c2;
+  border-left: 4px solid var(--danger);
+  border-radius: 10px;
 
-  background: #fef2f2;
+  background: #fdeaea;
 }
 
 .alert-icon {
@@ -55,14 +82,14 @@
   align-items: center;
   justify-content: center;
 
-  width: 25px;
-  height: 25px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
 
   border-radius: 50%;
 
-  background: #dc2626;
-  color: white;
+  background: var(--danger);
+  color: #fff;
 
   font-size: 13px;
   font-weight: 700;
@@ -70,31 +97,31 @@
 
 .alert-error strong {
   display: block;
-
   margin-bottom: 3px;
 
-  color: #991b1b;
+  color: #8f1f1f;
   font-size: 14px;
 }
 
 .alert-error p {
   margin: 0;
 
-  color: #b91c1c;
+  color: var(--danger);
   font-size: 13px;
 }
 
-/*TARJETA DEL FORMULARIO*/
+/* TARJETA */
 
 .form-card {
   overflow: hidden;
 
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid var(--blue-line);
+  border-top: 4px solid var(--blue);
+  border-radius: 14px;
 
-  background: white;
+  background: #fff;
 
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 20px rgba(5, 58, 94, 0.08);
 }
 
 .form-card-header {
@@ -102,11 +129,11 @@
   align-items: center;
   gap: 14px;
 
-  padding: 22px 24px;
+  padding: 20px 24px;
 
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--blue-line);
 
-  background: #fafafa;
+  background: var(--blue-soft);
 }
 
 .form-icon {
@@ -118,123 +145,131 @@
   height: 46px;
   flex-shrink: 0;
 
-  border-radius: 10px;
+  border-radius: 12px;
 
-  background: #eff6ff;
-
-  font-size: 22px;
+  background: linear-gradient(160deg, var(--blue), var(--navy));
+  color: #fff;
 }
 
 .form-card-header h2 {
-  margin: 0 0 4px;
+  margin: 0 0 3px;
 
-  color: #1f2937;
+  color: var(--text);
   font-size: 17px;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .form-card-header p {
   margin: 0;
 
-  color: #6b7280;
+  color: var(--muted);
   font-size: 13px;
 }
 
-/*FORMULARIO*/
+/* FORMULARIO */
 
 form {
   padding: 26px 24px 22px;
 }
 
 .form-group {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .form-group label {
   display: block;
 
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 
-  color: #374151;
+  color: var(--blue-dark);
 
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .form-group label span {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 .field-help {
   margin: 0 0 9px;
 
-  color: #9ca3af;
+  color: var(--muted);
   font-size: 12px;
 }
 
-/*INPUT*/
+/* INPUT */
 
 input {
   box-sizing: border-box;
 
   width: 100%;
-  min-height: 44px;
+  min-height: 46px;
 
-  padding: 10px 12px;
+  padding: 10px 14px;
 
-  border: 1px solid #d1d5db;
-  border-radius: 7px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 
   outline: none;
 
-  background: white;
-  color: #1f2937;
+  background: #fff;
+  color: var(--text);
 
   font-family: inherit;
   font-size: 14px;
 
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 input::placeholder {
-  color: #9ca3af;
+  color: #94a7b6;
+}
+
+input:hover {
+  border-color: #a9c3d6;
 }
 
 input:focus {
-  border-color: #2563eb;
-
-  box-shadow:
-    0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(10, 90, 133, 0.15);
 }
 
-/*VALIDACIÓN*/
+/* Estado inválido (solo visual, usa las clases que Angular ya agrega) */
+input.ng-invalid.ng-touched {
+  border-color: var(--danger);
+}
+
+input.ng-invalid.ng-touched:focus {
+  box-shadow: 0 0 0 3px rgba(194, 43, 43, 0.15);
+}
+
+/* VALIDACIÓN */
 
 .field-error {
   display: block;
 
   margin-top: 6px;
 
-  color: #dc2626;
+  color: var(--danger);
 
   font-size: 12px;
+  font-weight: 500;
 }
 
-/*INFORMACIÓN*/
+/* INFORMACIÓN */
 
 .form-info {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
 
-  margin-top: 5px;
-  padding: 11px 13px;
+  padding: 11px 14px;
 
-  border: 1px solid #dbeafe;
-  border-radius: 7px;
+  border: 1px solid var(--blue-line);
+  border-radius: 10px;
 
-  background: #eff6ff;
+  background: var(--blue-soft);
 }
 
 .info-icon {
@@ -248,8 +283,8 @@ input:focus {
 
   border-radius: 50%;
 
-  background: #2563eb;
-  color: white;
+  background: var(--blue);
+  color: #fff;
 
   font-size: 11px;
   font-weight: 700;
@@ -258,68 +293,77 @@ input:focus {
 .form-info p {
   margin: 0;
 
-  color: #374151;
+  color: var(--text);
   font-size: 12px;
 }
 
-/*BOTONES*/
+/* BOTONES */
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 
-  margin-top: 28px;
+  margin-top: 26px;
   padding-top: 20px;
 
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #eaf0f5;
 }
 
 .form-actions button {
-  min-width: 130px;
-  min-height: 40px;
+  min-width: 140px;
+  min-height: 42px;
 
-  padding: 9px 17px;
+  padding: 9px 18px;
 
-  border-radius: 7px;
+  border-radius: 10px;
 
   font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
 
   cursor: pointer;
 
-  transition: 0.2s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.form-actions button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .btn-cancel {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
 
-  background: white;
-  color: #374151;
+  background: #fff;
+  color: var(--text);
 }
 
 .btn-cancel:hover:not(:disabled) {
-  background: #f9fafb;
+  background: #f3f7fa;
+  border-color: #a9c3d6;
 }
 
 .btn-save {
-  border: 1px solid #1d4ed8;
+  border: 1px solid var(--yellow);
 
-  background: #1d4ed8;
-  color: white;
+  background: var(--yellow);
+  color: var(--navy);
+
+  box-shadow: 0 3px 10px rgba(249, 188, 0, 0.3);
 }
 
 .btn-save:hover:not(:disabled) {
-  background: #1e40af;
+  background: var(--yellow-dark);
+  border-color: var(--yellow-dark);
 }
 
 .form-actions button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
+  box-shadow: none;
 }
 
-/* LOADING DEL BOTÓN*/
+/* LOADING DEL BOTÓN */
 
 .button-loader {
   display: inline-block;
@@ -331,8 +375,8 @@ input:focus {
 
   vertical-align: -2px;
 
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  border-top-color: white;
+  border: 2px solid rgba(5, 58, 94, 0.3);
+  border-top-color: var(--navy);
 
   border-radius: 50%;
 
@@ -345,12 +389,11 @@ input:focus {
   }
 }
 
-/*RESPONSIVE*/
+/* RESPONSIVE */
 
 @media (max-width: 650px) {
-
   .faculty-form-page {
-    padding: 18px;
+    padding: 18px 14px 32px;
   }
 
   .page-header h1 {
@@ -358,7 +401,7 @@ input:focus {
   }
 
   .form-card-header {
-    padding: 18px;
+    padding: 16px 18px;
   }
 
   form {
@@ -372,5 +415,13 @@ input:focus {
   .form-actions button {
     width: 100%;
   }
+}
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

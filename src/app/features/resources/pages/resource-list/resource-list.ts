@@ -112,4 +112,18 @@ export class ResourceList implements OnInit {
       }
     });
   }
+
+  filterOpen = signal(false);
+
+  // FILTRO
+  toggleFilter(): void {
+    this.filterOpen.update((v) => !v);
+    if (this.filterOpen()) {
+      setTimeout(() => document.getElementById('resource-filter-input')?.focus());
+    }
+  }
+
+  clearFilter(): void {
+    this.search.set('');
+  }
 }

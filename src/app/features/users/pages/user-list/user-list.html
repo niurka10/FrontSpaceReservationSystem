@@ -1,83 +1,300 @@
 <div class="page">
+
+  <!-- Encabezado -->
   <div class="page-header">
     <div>
-      <h1 class="h3 mb-1">Usuarios</h1>
-      <p class="text-muted">Administra las cuentas, sus roles y su carrera</p>
+      <h1>Usuarios</h1>
+      <p>Administra las cuentas, sus roles y su carrera</p>
     </div>
-    <button type="button" class="btn-primary" (click)="openCreate()">+ Nuevo usuario</button>
+    <button type="button" class="btn-primary" (click)="openCreate()">
+      <span class="btn-icon">+</span> Nuevo usuario
+    </button>
   </div>
-
-  <!-- Filtros: el [formGroup] es el mismo que escucha el componente con
-       valueChanges, así que cualquier cambio aquí recarga la tabla solo. -->
-  <form [formGroup]="filters" class="filters">
-    <input type="search" formControlName="search" placeholder="Buscar por nombre o correo..." />
-
-    <select formControlName="role">
-      <option value="">Todos los roles</option>
-      @for (r of roleOptions; track r.value) {
-      <option [value]="r.value">{{ r.label }}</option>
-      }
-    </select>
-
-    <select formControlName="careerId">
-      <option value="">Todas las carreras</option>
-      @for (c of careers(); track c.id) {
-      <option [value]="c.id">{{ c.name }}</option>
-      }
-    </select>
-  </form>
 
   @if (isLoading()) {
-  <p class="text-muted">Cargando...</p>
+
+    <div class="state-card" role="status">
+      <div class="loader"></div>
+      <p>Cargando usuarios...</p>
+    </div>
+
   } @else if (errorMessage()) {
-  <div class="alert-error">{{ errorMessage() }}</div>
+
+    <div class="alert-error" role="alert">{{ errorMessage() }}</div>
+
   } @else if (users().length === 0) {
-  <div class="empty-state">
-    <p>No hay usuarios que coincidan con los filtros.</p>
-  </div>
+
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" />
+          <circle cx="17.5" cy="9" r="2.5" /><path d="M17 14c2.7 0 4.5 1.8 4.5 4.5" />
+        </svg>
+      </div>
+      <h3>No hay usuarios registrados</h3>
+      <p>Crea el primer usuario con el botón "Nuevo usuario".</p>
+    </div>
+
   } @else {
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Correo</th>
-          <th>Teléfono</th>
-          <th>Rol</th>
-          <th>Carrera</th>
-          <th>Estado</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (u of users(); track u.id) {
-        <tr [class.row-inactive]="!u.isActive">
-          <td>
-            <div class="user-name">{{ u.name }} {{ u.lastName }}</div>
-            @if (isMe(u)) {
-            <div class="user-me">Tú</div>
-            }
-          </td>
-          <td>{{ u.email }}</td>
-          <td>{{ u.phone || '—' }}</td>
-          <td>{{ roleLabels[u.role] ?? u.role }}</td>
-          <td>{{ u.careerName ?? '—' }}</td>
-          <td>
-            <span class="status-badge" [attr.data-active]="u.isActive">
-              {{ u.isActive ? 'Activo' : 'Inactivo' }}
-            </span>
-          </td>
-          <td class="actions-cell">
-            <button class="icon-btn icon-btn--edit" title="Editar" (click)="openEdit(u)">✎</button>
-            <button class="icon-btn" [class.icon-btn--deactivate]="u.isActive" [class.icon-btn--activate]="!u.isActive"
-              [title]="isMe(u) ? 'No puedes desactivar tu propia cuenta' : (u.isActive ? 'Desactivar' : 'Activar')"
-              [disabled]="isMe(u)" (click)="openStatusChange(u)">{{ u.isActive ? '✕' : '✓' }}</button>
-          </td>
-        </tr>
+
+    <!-- Filtros activos -->
+    @if (activeChips().length > 0) {
+      <div class="filter-bar">
+        <span class="filter-bar-label">Filtros:</span>
+        @for (chip of activeChips(); track chip.key) {
+          <div class="filter-chip">
+            <span>{{ chip.label }}: <strong>{{ chip.value }}</strong></span>
+            <button type="button" [attr.aria-label]="'Quitar filtro ' + chip.label"
+              (click)="clearFilter(chip.key)">×</button>
+          </div>
         }
-      </tbody>
-    </table>
-  </div>
+        <button type="button" class="link-btn" (click)="clearAllFilters()">Limpiar todo</button>
+      </div>
+    }
+
+    <div class="table-card">
+
+      @if (filteredUsers().length === 0) {
+
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+            </svg>
+          </div>
+          <h3>Sin resultados</h3>
+          <p>Ningún usuario coincide con los filtros aplicados.</p>
+          <button type="button" class="btn-cancel" (click)="clearAllFilters()">Limpiar filtros</button>
+        </div>
+
+      } @else {
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <!-- Nombre, Correo, Teléfono: filtro de texto -->
+                @for (col of textColumns; track col.key) {
+                  <th>
+                    <div class="th-inner">
+                      <span>{{ col.label }}</span>
+                      <button type="button" class="th-filter" [class.active]="hasFilter(col.key)"
+                        [attr.aria-label]="col.title" [attr.aria-expanded]="openFilter() === col.key"
+                        (click)="toggleFilter(col.key)">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                          <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    @if (openFilter() === col.key) {
+                      <div class="filter-backdrop" (click)="closeFilter()"></div>
+                      <div class="filter-popover" role="dialog" [attr.aria-label]="col.title">
+                        <span class="filter-title">{{ col.title }}</span>
+                        <div class="filter-input">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+                          </svg>
+                          <input id="col-filter-input" type="text" autocomplete="off"
+                            [placeholder]="col.placeholder" [value]="colFilters()[col.key]"
+                            (input)="setFilter(col.key, $any($event.target).value)"
+                            (keydown.escape)="closeFilter()" (keydown.enter)="closeFilter()" />
+                          @if (colFilters()[col.key]) {
+                            <button type="button" class="filter-clear" aria-label="Borrar búsqueda"
+                              (click)="clearFilter(col.key)">×</button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </th>
+                }
+
+                <!-- Rol -->
+                <th>
+                  <div class="th-inner">
+                    <span>Rol</span>
+                    <button type="button" class="th-filter" [class.active]="hasFilter('role')"
+                      aria-label="Filtrar por rol" [attr.aria-expanded]="openFilter() === 'role'"
+                      (click)="toggleFilter('role')">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                        <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  @if (openFilter() === 'role') {
+                    <div class="filter-backdrop" (click)="closeFilter()"></div>
+                    <div class="filter-popover popover-narrow" role="dialog" aria-label="Filtrar rol">
+                      <span class="filter-title">Filtrar rol</span>
+                      <div class="opt-list">
+                        @for (r of roleOptions; track r.value) {
+                          <button type="button" class="opt" [class.selected]="colFilters().role === '' + r.value"
+                            (click)="pick('role', '' + r.value)">
+                            {{ r.label }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </th>
+
+                <!-- Carrera -->
+                <th>
+                  <div class="th-inner">
+                    <span>Carrera</span>
+                    <button type="button" class="th-filter" [class.active]="hasFilter('career')"
+                      aria-label="Filtrar por carrera" [attr.aria-expanded]="openFilter() === 'career'"
+                      (click)="toggleFilter('career')">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                        <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  @if (openFilter() === 'career') {
+                    <div class="filter-backdrop" (click)="closeFilter()"></div>
+                    <div class="filter-popover popover-right" role="dialog" aria-label="Filtrar carrera">
+                      <span class="filter-title">Filtrar carrera</span>
+                      <div class="opt-list opt-list-scroll">
+                        <button type="button" class="opt" [class.selected]="colFilters().career === 'none'"
+                          (click)="pick('career', 'none')">
+                          Sin carrera
+                        </button>
+                        @for (c of careers(); track c.id) {
+                          <button type="button" class="opt" [class.selected]="colFilters().career === c.id"
+                            (click)="pick('career', c.id)">
+                            {{ c.name }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </th>
+
+                <!-- Estado: Activo / Inactivo -->
+                <th>
+                  <div class="th-inner">
+                    <span>Estado</span>
+                    <button type="button" class="th-filter" [class.active]="hasFilter('status')"
+                      aria-label="Filtrar por estado" [attr.aria-expanded]="openFilter() === 'status'"
+                      (click)="toggleFilter('status')">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                        <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  @if (openFilter() === 'status') {
+                    <div class="filter-backdrop" (click)="closeFilter()"></div>
+                    <div class="filter-popover popover-right popover-narrow" role="dialog" aria-label="Filtrar estado">
+                      <span class="filter-title">Filtrar estado</span>
+                      <div class="opt-list">
+                        <button type="button" class="opt" [class.selected]="colFilters().status === 'active'"
+                          (click)="pick('status', 'active')">
+                          <span class="dot dot-active"></span> Activo
+                        </button>
+                        <button type="button" class="opt" [class.selected]="colFilters().status === 'inactive'"
+                          (click)="pick('status', 'inactive')">
+                          <span class="dot dot-inactive"></span> Inactivo
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </th>
+
+                <th class="col-actions">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (u of pagedUsers(); track u.id) {
+                <tr [class.row-inactive]="!u.isActive">
+                  <td>
+                    <div class="user-cell">
+                      <span class="user-avatar">{{ (u.name || '').charAt(0) }}{{ (u.lastName || '').charAt(0) }}</span>
+                      <div>
+                        <div class="user-name">{{ u.name }} {{ u.lastName }}</div>
+                        @if (isMe(u)) {
+                          <div class="user-me">Tú</div>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ u.email }}</td>
+                  <td>{{ u.phone || '—' }}</td>
+                  <td><span class="role-pill">{{ roleLabels[u.role] ?? u.role }}</span></td>
+                  <td>{{ u.careerName ?? '—' }}</td>
+                  <td>
+                    <span class="status-badge" [attr.data-active]="u.isActive">
+                      <span class="dot"></span>
+                      {{ u.isActive ? 'Activo' : 'Inactivo' }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <button type="button" class="icon-btn icon-btn--edit" title="Editar" aria-label="Editar usuario"
+                      (click)="openEdit(u)">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 20h4L19 9l-4-4L4 16v4z" /><path d="M13.5 6.5l4 4" />
+                      </svg>
+                    </button>
+                    <button type="button" class="icon-btn"
+                      [class.icon-btn--deactivate]="u.isActive" [class.icon-btn--activate]="!u.isActive"
+                      [title]="isMe(u) ? 'No puedes desactivar tu propia cuenta' : (u.isActive ? 'Desactivar' : 'Activar')"
+                      [attr.aria-label]="u.isActive ? 'Desactivar usuario' : 'Activar usuario'"
+                      [disabled]="isMe(u)" (click)="openStatusChange(u)">
+                      @if (u.isActive) {
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                          <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M5 12.5l4.5 4.5L19 7.5" />
+                        </svg>
+                      }
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pager">
+          <span class="pager-info">
+            Mostrando <strong>{{ rangeStart() }}–{{ rangeEnd() }}</strong>
+            de <strong>{{ filteredUsers().length }}</strong> usuarios
+          </span>
+
+          @if (totalPages() > 1) {
+            <div class="pager-controls">
+              <button type="button" class="pager-btn" [disabled]="currentPage() === 1"
+                aria-label="Página anterior" (click)="prevPage()">‹</button>
+
+              @for (p of pageNumbers(); track $index) {
+                @if (p === '…') {
+                  <span class="pager-gap">…</span>
+                } @else {
+                  <button type="button" class="pager-btn" [class.active]="p === currentPage()"
+                    [attr.aria-current]="p === currentPage() ? 'page' : null" (click)="goToPage(p)">
+                    {{ p }}
+                  </button>
+                }
+              }
+
+              <button type="button" class="pager-btn" [disabled]="currentPage() === totalPages()"
+                aria-label="Página siguiente" (click)="nextPage()">›</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
   }
 </div>
 

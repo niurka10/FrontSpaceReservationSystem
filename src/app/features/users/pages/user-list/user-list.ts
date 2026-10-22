@@ -11,6 +11,7 @@ import { FacultyService } from '../../../faculties/services/faculty.service';
 import { UserListItem } from '../../models/user-summary.model';
 import { UserService } from '../../user.service';
 
+type ColKey = 'name' | 'email' | 'phone' | 'role' | 'career' | 'status';
 @Component({
     selector: 'app-user-list',
     standalone: true,
@@ -158,15 +159,164 @@ export class UserListComponent {
         return this.authService.currentUser()?.id === user.id;
     }
 
+    // ---------- filtros por columna + paginación (solo en pantalla) ----------
+
+    readonly pageSize = 15;
+    readonly page = signal(1);
+    readonly openFilter = signal<ColKey | null>(null);
+
+    readonly colFilters = signal<Record<ColKey, string>>({
+        name: '', email: '', phone: '', role: '', career: '', status: '',
+    });
+
+    // Columnas de texto: se pintan con un @for en la cabecera.
+    readonly textColumns: { key: ColKey; label: string; title: string; placeholder: string }[] = [
+        { key: 'name', label: 'Nombre', title: 'Filtrar nombre', placeholder: 'Buscar nombre...' },
+        { key: 'email', label: 'Correo', title: 'Filtrar correo', placeholder: 'Buscar correo...' },
+        { key: 'phone', label: 'Teléfono', title: 'Filtrar teléfono', placeholder: 'Buscar teléfono...' },
+    ];
+
+    private normalize(value: string): string {
+        return value
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    readonly filteredUsers = computed(() => {
+        const f = this.colFilters();
+        const name = this.normalize(f.name);
+        const email = this.normalize(f.email);
+        const phone = f.phone.trim();
+
+        return this.users().filter((u) => {
+            if (name && !this.normalize(`${u.name} ${u.lastName}`).includes(name)) return false;
+            if (email && !this.normalize(u.email).includes(email)) return false;
+            if (phone && !(u.phone ?? '').includes(phone)) return false;
+            if (f.role && this.roleCodeByName[u.role] !== Number(f.role)) return false;
+            if (f.career === 'none' && u.careerId) return false;
+            if (f.career && f.career !== 'none' && u.careerId !== f.career) return false;
+            if (f.status === 'active' && !u.isActive) return false;
+            if (f.status === 'inactive' && u.isActive) return false;
+            return true;
+        });
+    });
+
+    readonly totalPages = computed(() =>
+        Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize))
+    );
+    // Si al filtrar quedan menos páginas, la actual se ajusta sola.
+    readonly currentPage = computed(() => Math.min(this.page(), this.totalPages()));
+
+    readonly pagedUsers = computed(() => {
+        const start = (this.currentPage() - 1) * this.pageSize;
+        return this.filteredUsers().slice(start, start + this.pageSize);
+    });
+
+    readonly rangeStart = computed(() =>
+        this.filteredUsers().length === 0 ? 0 : (this.currentPage() - 1) * this.pageSize + 1
+    );
+    readonly rangeEnd = computed(() =>
+        Math.min(this.currentPage() * this.pageSize, this.filteredUsers().length)
+    );
+
+    readonly pageNumbers = computed<(number | '…')[]>(() => {
+        const total = this.totalPages();
+        const cur = this.currentPage();
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+        const pages: (number | '…')[] = [1];
+        const start = Math.max(2, cur - 1);
+        const end = Math.min(total - 1, cur + 1);
+        if (start > 2) pages.push('…');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < total - 1) pages.push('…');
+        pages.push(total);
+        return pages;
+    });
+
+    // Etiquetas de filtros activos (sobre la tabla).
+    readonly activeChips = computed(() => {
+        const f = this.colFilters();
+        const chips: { key: ColKey; label: string; value: string }[] = [];
+        if (f.name) chips.push({ key: 'name', label: 'Nombre', value: f.name });
+        if (f.email) chips.push({ key: 'email', label: 'Correo', value: f.email });
+        if (f.phone) chips.push({ key: 'phone', label: 'Teléfono', value: f.phone });
+        if (f.role) {
+            chips.push({
+                key: 'role', label: 'Rol',
+                value: this.roleOptions.find((r) => r.value === Number(f.role))?.label ?? f.role,
+            });
+        }
+        if (f.career) {
+            chips.push({
+                key: 'career', label: 'Carrera',
+                value: f.career === 'none'
+                    ? 'Sin carrera'
+                    : (this.careers().find((c) => c.id === f.career)?.name ?? ''),
+            });
+        }
+        if (f.status) {
+            chips.push({ key: 'status', label: 'Estado', value: f.status === 'active' ? 'Activo' : 'Inactivo' });
+        }
+        return chips;
+    });
+
+    hasFilter(col: ColKey): boolean {
+        return !!this.colFilters()[col];
+    }
+
+    toggleFilter(col: ColKey): void {
+        this.openFilter.update((cur) => (cur === col ? null : col));
+        if (this.openFilter()) {
+            setTimeout(() => document.getElementById('col-filter-input')?.focus());
+        }
+    }
+
+    closeFilter(): void {
+        this.openFilter.set(null);
+    }
+
+    setFilter(col: ColKey, value: string): void {
+        this.colFilters.update((f) => ({ ...f, [col]: value }));
+        this.page.set(1);
+    }
+
+    pick(col: ColKey, value: string): void {
+        this.setFilter(col, this.colFilters()[col] === value ? '' : value);
+        this.closeFilter();
+    }
+
+    clearFilter(col: ColKey): void {
+        this.setFilter(col, '');
+    }
+
+    clearAllFilters(): void {
+        this.colFilters.set({ name: '', email: '', phone: '', role: '', career: '', status: '' });
+        this.page.set(1);
+        this.closeFilter();
+    }
+
+    goToPage(p: number): void {
+        this.page.set(p);
+    }
+
+    prevPage(): void {
+        this.page.set(Math.max(1, this.currentPage() - 1));
+    }
+
+    nextPage(): void {
+        this.page.set(Math.min(this.totalPages(), this.currentPage() + 1));
+    }
+
     reload(): void {
         this.refresh$.next();
     }
 
-    // ---------- modal crear / editar ----------
 
     openCreate(): void {
         this.userForm.reset({ role: 1 });
-        // Correo y contraseña solo existen al crear.
         this.userForm.controls.emailUser.enable();
         this.userForm.controls.password.enable();
         this.selectedFacultyId.set('');
@@ -176,13 +326,9 @@ export class UserListComponent {
     }
 
     openEdit(user: UserListItem): void {
-        // El correo no se edita (decisión tomada) y la contraseña no se toca aquí.
-        // Al deshabilitarlos, Angular los ignora al validar el formulario.
         this.userForm.controls.emailUser.disable();
         this.userForm.controls.password.disable();
 
-        // El backend manda careerId pero no facultyId: se deduce buscando la
-        // carrera en la lista que ya cargamos, para precargar la cascada.
         const facultyId = this.careers().find((c) => c.id === user.careerId)?.facultyId ?? '';
         this.selectedFacultyId.set(facultyId);
 
@@ -215,8 +361,6 @@ export class UserListComponent {
         this.applyCareerRule();
     }
 
-    // Misma limpieza que el registro: solo minúsculas, números y punto,
-    // para que el correo siempre arme una dirección válida con el dominio.
     onEmailInput(event: Event): void {
         const input = event.target as HTMLInputElement;
         const clean = input.value
@@ -230,9 +374,6 @@ export class UserListComponent {
         }
     }
 
-    // Mismo criterio que el backend: carrera obligatoria solo para
-    // Student (1), Teacher (2) y Coordinator (3). Se aplica en vivo porque
-    // el rol puede cambiar con el modal abierto.
     private applyCareerRule(): void {
         const c = this.userForm.controls;
         const required = [1, 2, 3].includes(Number(c.role.value));
@@ -242,7 +383,6 @@ export class UserListComponent {
             ctrl.updateValueAndValidity({ emitEvent: false });
         }
 
-        // La carrera se habilita solo cuando ya hay facultad elegida.
         if (this.selectedFacultyId()) c.careerId.enable({ emitEvent: false });
         else c.careerId.disable({ emitEvent: false });
     }
@@ -262,8 +402,6 @@ export class UserListComponent {
         const raw = this.userForm.getRawValue();
         const careerId = raw.careerId || null;
 
-        // map(() => void 0) unifica los dos observables (create devuelve { id },
-        // update devuelve el usuario) para poder suscribirse una sola vez.
         const request$ =
             current.mode === 'create'
                 ? this.userService
@@ -293,7 +431,7 @@ export class UserListComponent {
             next: () => {
                 this.isSaving.set(false);
                 this.closeModal();
-                this.reload(); // recarga la tabla manteniendo los filtros
+                this.reload(); 
             },
             error: (err) => {
                 this.isSaving.set(false);

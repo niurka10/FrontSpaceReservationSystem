@@ -513,3 +513,43 @@ $success: #1f9d55;
     transition: none !important;
   }
 }
+
+.brand__logo {
+  display: block;
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  border-radius: 12px;
+
+  // Sin fondo ni borde blanco
+  padding: 0;
+  background: transparent;
+  box-shadow: 0 3px 10px rgba(0, 62, 94, 0.18);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-radius 0.25s ease;
+
+  &:hover {
+    transform: translateY(-3px) scale(1.07);
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0, 83, 126, 0.28);
+  }
+}
+
+.brand--mobile .brand__logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand__logo {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}

@@ -1,87 +1,325 @@
 <div class="page">
+
+  <!-- Encabezado -->
   <div class="page-header">
     <div>
-      <h1 class="h3 mb-1">Autorizaciones</h1>
-      <p class="text-muted">Solicitudes remitidas para tu autorización institucional</p>
+      <h1>Autorizaciones</h1>
+      <p>Solicitudes remitidas para tu autorización institucional</p>
     </div>
   </div>
 
   <div class="info-banner">
+    <span class="info-icon">i</span>
     Autorizas institucionalmente las solicitudes ya revisadas por el Coordinador de Carrera correspondiente.
   </div>
 
   @if (detailError(); as msg) {
-  <div class="alert-error">{{ msg }}</div>
+    <div class="alert-error" role="alert">{{ msg }}</div>
   }
-  
-  <div class="tabs">
+
+  <!-- Tarjetas de estado -->
+  <div class="res-tabs">
     @for (tab of tabs; track tab.id) {
-    <button class="tab" [class.active]="activeTab() === tab.id" (click)="selectTab(tab.id)">
-      {{ tab.label }}
-    </button>
+      <button type="button" class="res-tab" [class.active]="activeTab() === tab.id" (click)="selectTab(tab.id)">
+
+        @switch (tab.id) {
+          @case ('Pendientes') {
+            <span class="res-tab-icon icon-warn">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" />
+              </svg>
+            </span>
+          }
+          @case ('Autorizadas') {
+            <span class="res-tab-icon icon-ok">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+            </span>
+          }
+          @case ('Rechazadas') {
+            <span class="res-tab-icon icon-bad">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </span>
+          }
+          @default {
+            <span class="res-tab-icon icon-all">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 7h14M5 12h14M5 17h14" />
+              </svg>
+            </span>
+          }
+        }
+
+        <span class="res-tab-info">
+          <span class="res-tab-title">{{ tab.label }}</span>
+          <span class="res-tab-desc">
+            @switch (tab.id) {
+              @case ('Pendientes') { Esperan tu decisión }
+              @case ('Autorizadas') { Ya autorizadas }
+              @case ('Rechazadas') { No autorizadas }
+              @default { Total de solicitudes }
+            }
+          </span>
+        </span>
+
+        <span class="res-tab-count" [attr.data-tab]="tab.id">{{ tabCounts()[tab.id] }}</span>
+      </button>
     }
   </div>
 
   @if (isLoading()) {
-  <p class="text-muted">Cargando...</p>
-  } @else if (errorMessage()) {
-  <div class="alert-error">{{ errorMessage() }}</div>
-  } @else if (filteredReservations().length === 0) {
-  <div class="empty-state">
-    <p>No hay solicitudes en esta categoría.</p>
-  </div>
-  } @else {
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Solicitante</th>
-          <th>Carrera</th>
-          <th>Espacio</th>
-          <th>Fecha</th>
-          <th>Estado</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (r of filteredReservations(); track r.id) {
-        <tr>
-          <td class="code-cell">{{ pseudoCode(r.id) }}</td>
-          <td>
-            <div class="requester-name">{{ r.requesterName ?? r.userId }}</div>
-            @if (requesterLabel(r)) {
-            <div class="requester-role">{{ requesterLabel(r) }}</div>
-            }
-          </td>
-          <td>{{ r.careerName ?? '—' }}</td>
-          <td>{{ r.spaceName ?? '—' }}</td>
-          <td>{{ r.date.slice(0, 10) | date: 'dd-MMM':'UTC' }}</td>
-          <td>
-            <span class="status-badge" [attr.data-status]="r.currentStatus">
-              {{ statusLabels[r.currentStatus] }}
-            </span>
-          </td>
-          <td class="actions-cell">
-            <!-- El ojo siempre está disponible, sin importar el estado —
-                     ver el detalle no cambia nada, así que no hace falta
-                     restringirlo como sí se restringen aprobar/rechazar. -->
-            <button class="icon-btn icon-btn--view" title="Ver detalle" (click)="openDetail(r.id)">👁</button>
 
-            @if (r.currentStatus === 'PendingVicerrector') {
-            <button class="icon-btn icon-btn--accept" title="Autorizar" (click)="openAction(r.id, 'approve')">✓</button>
-            <button class="icon-btn icon-btn--reject" title="Rechazar" (click)="openAction(r.id, 'reject')">✕</button>
-            }
-          </td>
-        </tr>
+    <div class="state-card" role="status">
+      <div class="loader"></div>
+      <p>Cargando solicitudes...</p>
+    </div>
+
+  } @else if (errorMessage()) {
+
+    <div class="alert-error" role="alert">{{ errorMessage() }}</div>
+
+  } @else if (filteredReservations().length === 0) {
+
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M9 11h6M9 15h4" />
+        </svg>
+      </div>
+      <h3>No hay solicitudes en esta categoría</h3>
+      <p>Cuando lleguen solicitudes aparecerán aquí.</p>
+    </div>
+
+  } @else {
+
+    <!-- Filtros activos -->
+    @if (activeChips().length > 0) {
+      <div class="filter-bar">
+        <span class="filter-bar-label">Filtros:</span>
+        @for (chip of activeChips(); track chip.key) {
+          <div class="filter-chip">
+            <span>{{ chip.label }}: <strong>{{ chip.value }}</strong></span>
+            <button type="button" [attr.aria-label]="'Quitar filtro ' + chip.label"
+              (click)="clearFilter(chip.key)">×</button>
+          </div>
         }
-      </tbody>
-    </table>
-  </div>
+        <button type="button" class="link-btn" (click)="clearAllFilters()">Limpiar todo</button>
+      </div>
+    }
+
+    <div class="table-card">
+
+      @if (visibleReservations().length === 0) {
+
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+            </svg>
+          </div>
+          <h3>Sin resultados</h3>
+          <p>Ninguna solicitud coincide con los filtros aplicados.</p>
+          <button type="button" class="btn-cancel" (click)="clearAllFilters()">Limpiar filtros</button>
+        </div>
+
+      } @else {
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <!-- Turno, Solicitante, Carrera, Espacio: filtro de texto -->
+                @for (col of textColumns; track col.key) {
+                  <th>
+                    <div class="th-inner">
+                      <span>{{ col.label }}</span>
+                      <button type="button" class="th-filter" [class.active]="hasFilter(col.key)"
+                        [attr.aria-label]="col.title" [attr.aria-expanded]="openFilter() === col.key"
+                        (click)="toggleFilter(col.key)">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                          <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    @if (openFilter() === col.key) {
+                      <div class="filter-backdrop" (click)="closeFilter()"></div>
+                      <div class="filter-popover" role="dialog" [attr.aria-label]="col.title">
+                        <span class="filter-title">{{ col.title }}</span>
+                        <div class="filter-input">
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
+                          </svg>
+                          <input id="col-filter-input" type="text" autocomplete="off"
+                            [placeholder]="col.placeholder" [value]="colFilters()[col.key]"
+                            (input)="setFilter(col.key, $any($event.target).value)"
+                            (keydown.escape)="closeFilter()" (keydown.enter)="closeFilter()" />
+                          @if (colFilters()[col.key]) {
+                            <button type="button" class="filter-clear" aria-label="Borrar búsqueda"
+                              (click)="clearFilter(col.key)">×</button>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </th>
+                }
+
+                <!-- Fecha -->
+                <th>
+                  <div class="th-inner">
+                    <span>Fecha</span>
+                    <button type="button" class="th-filter" [class.active]="hasFilter('date')"
+                      aria-label="Filtrar por fecha" [attr.aria-expanded]="openFilter() === 'date'"
+                      (click)="toggleFilter('date')">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                        <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  @if (openFilter() === 'date') {
+                    <div class="filter-backdrop" (click)="closeFilter()"></div>
+                    <div class="filter-popover popover-narrow" role="dialog" aria-label="Filtrar fecha">
+                      <span class="filter-title">Filtrar fecha</span>
+                      <input class="date-input" type="date" [value]="colFilters().date"
+                        (change)="setFilter('date', $any($event.target).value)" />
+                      @if (colFilters().date) {
+                        <button type="button" class="link-btn" (click)="clearFilter('date')">Quitar fecha</button>
+                      }
+                    </div>
+                  }
+                </th>
+
+                <!-- Estado -->
+                <th>
+                  <div class="th-inner">
+                    <span>Estado</span>
+                    <button type="button" class="th-filter" [class.active]="hasFilter('status')"
+                      aria-label="Filtrar por estado" [attr.aria-expanded]="openFilter() === 'status'"
+                      (click)="toggleFilter('status')">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                        <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  @if (openFilter() === 'status') {
+                    <div class="filter-backdrop" (click)="closeFilter()"></div>
+                    <div class="filter-popover popover-right popover-narrow" role="dialog" aria-label="Filtrar estado">
+                      <span class="filter-title">Filtrar estado</span>
+                      <div class="opt-list">
+                        @for (s of statusOptions(); track s.value) {
+                          <button type="button" class="opt" [class.selected]="colFilters().status === s.value"
+                            (click)="pick('status', s.value)">
+                            <span class="status-badge" [attr.data-status]="s.value">{{ s.label }}</span>
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </th>
+
+                <th class="col-actions">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (r of pagedReservations(); track r.id) {
+                <tr>
+                  <td><span class="turn-code">{{ turnCode(r.id) }}</span></td>
+                  <td>
+                    <div class="requester-name">{{ r.requesterName ?? r.userId }}</div>
+                    @if (requesterLabel(r)) {
+                      <div class="requester-role">{{ requesterLabel(r) }}</div>
+                    }
+                  </td>
+                  <td>{{ r.careerName ?? '—' }}</td>
+                  <td>{{ r.spaceName ?? '—' }}</td>
+                  <td>{{ r.date.slice(0, 10) | date: 'dd/MM/yyyy':'UTC' }}</td>
+                  <td>
+                    <span class="status-badge" [attr.data-status]="r.currentStatus">
+                      {{ statusLabels[r.currentStatus] }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <!-- El ojo siempre está disponible, sin importar el estado:
+                         ver el detalle no cambia nada. -->
+                    <button type="button" class="icon-btn icon-btn--view" title="Ver detalle"
+                      aria-label="Ver detalle" (click)="openDetail(r.id)">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </button>
+
+                    @if (r.currentStatus === 'PendingVicerrector') {
+                      <button type="button" class="icon-btn icon-btn--accept" title="Autorizar"
+                        aria-label="Autorizar" (click)="openAction(r.id, 'approve')">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M5 12.5l4.5 4.5L19 7.5" />
+                        </svg>
+                      </button>
+                      <button type="button" class="icon-btn icon-btn--reject" title="Rechazar"
+                        aria-label="Rechazar" (click)="openAction(r.id, 'reject')">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                          <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pager">
+          <span class="pager-info">
+            Mostrando <strong>{{ rangeStart() }}–{{ rangeEnd() }}</strong>
+            de <strong>{{ visibleReservations().length }}</strong> solicitudes
+          </span>
+
+          @if (totalPages() > 1) {
+            <div class="pager-controls">
+              <button type="button" class="pager-btn" [disabled]="currentPage() === 1"
+                aria-label="Página anterior" (click)="prevPage()">‹</button>
+
+              @for (p of pageNumbers(); track $index) {
+                @if (p === '…') {
+                  <span class="pager-gap">…</span>
+                } @else {
+                  <button type="button" class="pager-btn" [class.active]="p === currentPage()"
+                    [attr.aria-current]="p === currentPage() ? 'page' : null" (click)="goToPage(p)">
+                    {{ p }}
+                  </button>
+                }
+              }
+
+              <button type="button" class="pager-btn" [disabled]="currentPage() === totalPages()"
+                aria-label="Página siguiente" (click)="nextPage()">›</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
   }
 </div>
 
-<!-- MODAL: aprobar / rechazar (mismo patrón visual que pending-coordinator) -->
+<!-- MODAL: aprobar / rechazar -->
 @if (action(); as current) {
 <div class="modal-backdrop" (click)="closeAction()">
   <div class="modal-card" (click)="$event.stopPropagation()">
@@ -108,4 +346,4 @@
 
 @if (selectedDetail(); as detail) {
   <app-reservation-detail-modal [detail]="detail" (closed)="closeDetail()" />
-  }
+}

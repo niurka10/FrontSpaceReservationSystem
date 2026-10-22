@@ -1,120 +1,142 @@
-<div class="container-fluid py-4 resource-form-page">
-    <div class="mb-4">
-        <button type="button" class="btn-back" (click)="cancel()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Recursos
-        </button>
-        <h2 class="mb-1 mt-2">{{ isEdit() ? 'Editar recurso' : 'Nuevo recurso' }}</h2>
-        <p class="text-muted mb-0">
-            {{ isEdit() ? 'Modifica la información del recurso.' : 'Registra un nuevo recurso institucional.' }}
-        </p>
+<div class="resource-form-page">
+
+  <!-- Encabezado -->
+  <div class="page-header">
+    <button type="button" class="btn-back" (click)="cancel()">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      Recursos
+    </button>
+
+    <h1>{{ isEdit() ? 'Editar recurso' : 'Nuevo recurso' }}</h1>
+    <p>
+      {{ isEdit() ? 'Modifica la información del recurso.' : 'Registra un nuevo recurso institucional.' }}
+    </p>
+  </div>
+
+  @if (error()) {
+    <div class="alert-error" role="alert">
+      <div class="alert-icon">!</div>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (loading()) {
+
+    <div class="state-card" role="status">
+      <div class="loader"></div>
+      <p>Cargando recurso...</p>
     </div>
 
-    @if (error()) {
-    <div class="alert alert-danger d-flex align-items-center gap-2">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-sm">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 8v5M12 16h.01" stroke-linecap="round"/>
-        </svg>
-        {{ error() }}
-    </div>
-    }
+  } @else {
 
-    @if (loading()) {
-    <div class="text-center py-5">
-        <div class="spinner-border" role="status"></div>
-        <p class="mt-2">Cargando recurso...</p>
-    </div>
-    } @else {
-    <div class="card shadow-sm form-card">
-        <div class="card-body">
-            <form [formGroup]="resourceForm" (ngSubmit)="save()">
-
-                <!-- Nombre -->
-                <div class="mb-4 form-field">
-                    <label for="name" class="form-label">
-                        Nombre <span class="required">*</span>
-                    </label>
-                    <input id="name" type="text" class="form-control"
-                        [class.is-invalid]="resourceForm.controls.name.touched && resourceForm.controls.name.invalid"
-                        formControlName="name" placeholder="Ej. Proyector" maxlength="150">
-                    <div class="field-footer">
-                        @if (resourceForm.controls.name.touched && resourceForm.controls.name.invalid) {
-                        <span class="text-danger small">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs">
-                                <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/>
-                            </svg>
-                            @if (resourceForm.controls.name.hasError('required') || resourceForm.controls.name.hasError('blank')) {
-                            El nombre es obligatorio.
-                            } @else if (resourceForm.controls.name.hasError('minlength')) {
-                            Debe tener al menos 3 caracteres.
-                            }
-                        </span>
-                        } @else {
-                        <span></span>
-                        }
-                        <span class="char-count">{{ resourceForm.controls.name.value.length || 0 }}/150</span>
-                    </div>
-                </div>
-
-                <!-- Descripción -->
-                <div class="mb-4 form-field">
-                    <label for="description" class="form-label">Descripción</label>
-                    <textarea id="description" rows="4" class="form-control" formControlName="description"
-                        placeholder="Descripción del recurso" maxlength="500"></textarea>
-                    <div class="field-footer">
-                        <span class="text-muted small">Opcional</span>
-                        <span class="char-count">{{ resourceForm.controls.description.value.length || 0 }}/500</span>
-                    </div>
-                </div>
-
-                <!-- Cantidad -->
-                <div class="mb-4 form-field form-field-narrow">
-                    <label for="availableQuantity" class="form-label">
-                        Cantidad disponible <span class="required">*</span>
-                    </label>
-                    <input id="availableQuantity" type="number" min="0" max="9999" step="1" class="form-control"
-                        [class.is-invalid]="resourceForm.controls.availableQuantity.touched && resourceForm.controls.availableQuantity.invalid"
-                        formControlName="availableQuantity">
-                    @if (resourceForm.controls.availableQuantity.touched &&
-                    resourceForm.controls.availableQuantity.invalid) {
-                    <div class="field-footer">
-                        <span class="text-danger small">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-xs">
-                                <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" stroke-linecap="round"/>
-                            </svg>
-                            @if (resourceForm.controls.availableQuantity.hasError('required')) {
-                            La cantidad es obligatoria.
-                            } @else if (resourceForm.controls.availableQuantity.hasError('pattern')) {
-                            Debe ser un número entero, sin decimales.
-                            } @else if (resourceForm.controls.availableQuantity.hasError('min')) {
-                            La cantidad no puede ser negativa.
-                            } @else if (resourceForm.controls.availableQuantity.hasError('max')) {
-                            La cantidad máxima es 9999.
-                            }
-                        </span>
-                    </div>
-                    }
-                </div>
-
-                <hr class="form-divider">
-
-                <div class="d-flex justify-content-end gap-2">
-                    <button type="button" class="btn btn-outline-secondary" (click)="cancel()"
-                        [disabled]="saving()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary btn-save" [disabled]="saving()">
-                        @if (saving()) {
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                        Guardando...
-                        } @else {
-                        {{ isEdit() ? 'Actualizar recurso' : 'Guardar recurso' }}
-                        }
-                    </button>
-                </div>
-            </form>
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="form-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+            <path d="M12 12l8-4.5M12 12v9M12 12L4 7.5" />
+          </svg>
         </div>
+        <div>
+          <h2>Información del recurso</h2>
+          <p>Completa los datos requeridos para registrar el recurso.</p>
+        </div>
+      </div>
+
+      <form [formGroup]="resourceForm" (ngSubmit)="save()">
+
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="name">Nombre <span class="required">*</span></label>
+
+          <input id="name" type="text" class="form-control"
+            [class.is-invalid]="resourceForm.controls.name.touched && resourceForm.controls.name.invalid"
+            formControlName="name" placeholder="Ej. Proyector" maxlength="150" autocomplete="off">
+
+          <div class="field-footer">
+            @if (resourceForm.controls.name.touched && resourceForm.controls.name.invalid) {
+              <span class="field-error">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                  stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" stroke-linecap="round" />
+                </svg>
+                @if (resourceForm.controls.name.hasError('required') || resourceForm.controls.name.hasError('blank')) {
+                  El nombre es obligatorio.
+                } @else if (resourceForm.controls.name.hasError('minlength')) {
+                  Debe tener al menos 3 caracteres.
+                }
+              </span>
+            } @else {
+              <span></span>
+            }
+            <span class="char-count">{{ resourceForm.controls.name.value.length || 0 }}/150</span>
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+          <label for="description">Descripción</label>
+
+          <textarea id="description" rows="4" class="form-control" formControlName="description"
+            placeholder="Descripción del recurso" maxlength="500"></textarea>
+
+          <div class="field-footer">
+            <span class="field-hint">Opcional</span>
+            <span class="char-count">{{ resourceForm.controls.description.value.length || 0 }}/500</span>
+          </div>
+        </div>
+
+        <!-- Cantidad -->
+        <div class="form-group form-group-narrow">
+          <label for="availableQuantity">
+            Cantidad disponible <span class="required">*</span>
+          </label>
+
+          <input id="availableQuantity" type="number" min="0" max="9999" step="1" class="form-control"
+            [class.is-invalid]="resourceForm.controls.availableQuantity.touched && resourceForm.controls.availableQuantity.invalid"
+            formControlName="availableQuantity">
+
+          @if (resourceForm.controls.availableQuantity.touched && resourceForm.controls.availableQuantity.invalid) {
+            <div class="field-footer">
+              <span class="field-error">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                  stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" stroke-linecap="round" />
+                </svg>
+                @if (resourceForm.controls.availableQuantity.hasError('required')) {
+                  La cantidad es obligatoria.
+                } @else if (resourceForm.controls.availableQuantity.hasError('pattern')) {
+                  Debe ser un número entero, sin decimales.
+                } @else if (resourceForm.controls.availableQuantity.hasError('min')) {
+                  La cantidad no puede ser negativa.
+                } @else if (resourceForm.controls.availableQuantity.hasError('max')) {
+                  La cantidad máxima es 9999.
+                }
+              </span>
+            </div>
+          }
+        </div>
+
+        <!-- Acciones -->
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="saving()">
+            Cancelar
+          </button>
+
+          <button type="submit" class="btn-save" [disabled]="saving()">
+            @if (saving()) {
+              <span class="button-loader"></span>
+              Guardando...
+            } @else {
+              {{ isEdit() ? 'Actualizar recurso' : 'Guardar recurso' }}
+            }
+          </button>
+        </div>
+      </form>
     </div>
-    }
+  }
 </div>

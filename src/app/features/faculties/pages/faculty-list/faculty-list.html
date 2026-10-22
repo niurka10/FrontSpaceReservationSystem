@@ -17,7 +17,7 @@
   @if (loading()) {
 
     <!-- Cargando -->
-    <div class="state-card">
+    <div class="state-card" role="status">
       <div class="loader"></div>
       <p>Cargando facultades...</p>
     </div>
@@ -25,9 +25,8 @@
   } @else if (error()) {
 
     <!-- Error -->
-    <div class="state-card error-card">
+    <div class="state-card error-card" role="alert">
       <div class="state-icon">!</div>
-
       <div>
         <h3>No se pudieron cargar las facultades</h3>
         <p>{{ error() }}</p>
@@ -36,34 +35,36 @@
 
   } @else {
 
-    <!-- Resumen -->
-    <div class="summary-card">
-      <div class="summary-icon">🏛️</div>
-      <div>
-        <span class="summary-label">Facultades registradas</span>
-        <strong>{{ faculties().length }}</strong>
-      </div>
-    </div>
-
     <!-- Tabla -->
     <div class="table-card">
       <div class="table-header">
         <div>
           <h2>Listado de facultades</h2>
-          <p>
-            Consulta y administra las facultades registradas.
-          </p>
+          <p>Consulta y administra las facultades registradas.</p>
         </div>
+
+        @if (search()) {
+          <div class="filter-chip">
+            <span>Nombre: <strong>{{ search() }}</strong></span>
+            <button type="button" aria-label="Quitar filtro" (click)="clearFilter()">×</button>
+          </div>
+        }
       </div>
 
       @if (faculties().length === 0) {
+
         <!-- Sin registros -->
         <div class="empty-state">
-          <div class="empty-icon">🏛️</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 10l9-6 9 6" />
+              <path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8" />
+              <path d="M3 20h18" />
+            </svg>
+          </div>
           <h3>No hay facultades registradas</h3>
-          <p>
-            Comienza registrando la primera facultad académica.
-          </p>
+          <p>Comienza registrando la primera facultad académica.</p>
 
           <a routerLink="/faculties/new" class="btn-new">
             <span class="btn-icon">+</span>
@@ -71,23 +72,91 @@
           </a>
         </div>
 
+      } @else if (filteredFaculties().length === 0) {
+
+        <!-- Filtro sin resultados -->
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-3.5-3.5" />
+            </svg>
+          </div>
+          <h3>Sin resultados</h3>
+          <p>No hay facultades que coincidan con "{{ search() }}".</p>
+          <button type="button" class="btn-outline" (click)="clearFilter()">Limpiar filtro</button>
+        </div>
+
       } @else {
+
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>Nombre de la facultad</th>
+                <th class="col-index">#</th>
+
+                <th>
+                  <div class="th-inner">
+                    <span>Nombre de la facultad</span>
+
+                    <button type="button" class="th-filter" [class.active]="!!search()"
+                      aria-label="Filtrar por nombre" [attr.aria-expanded]="filterOpen()"
+                      (click)="toggleFilter()">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                        <path d="M3 4h18l-7 8.5V19l-4 2v-8.5L3 4z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  @if (filterOpen()) {
+                    <div class="filter-backdrop" (click)="filterOpen.set(false)"></div>
+
+                    <div class="filter-popover" role="dialog" aria-label="Filtrar nombre">
+                      <span class="filter-title">Filtrar nombre</span>
+
+                      <div class="filter-input">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <circle cx="11" cy="11" r="7" />
+                          <path d="M20 20l-3.5-3.5" />
+                        </svg>
+                        <input
+                          id="faculty-filter-input"
+                          type="text"
+                          placeholder="Buscar nombre..."
+                          autocomplete="off"
+                          [value]="search()"
+                          (input)="search.set($any($event.target).value)"
+                          (keydown.escape)="filterOpen.set(false)"
+                          (keydown.enter)="filterOpen.set(false)" />
+                        @if (search()) {
+                          <button type="button" class="filter-clear" aria-label="Borrar búsqueda"
+                            (click)="clearFilter()">×</button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </th>
+
                 <th class="actions-column">Acciones</th>
               </tr>
             </thead>
 
             <tbody>
-              @for (faculty of faculties(); track faculty.id) {
+              @for (faculty of filteredFaculties(); track faculty.id; let i = $index) {
                 <tr>
+                  <td class="col-index">{{ i + 1 }}</td>
+
                   <td>
                     <div class="faculty-name">
                       <div class="faculty-avatar">
-                        🏛️
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                          stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                          <path d="M3 10l9-6 9 6" />
+                          <path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8" />
+                          <path d="M3 20h18" />
+                        </svg>
                       </div>
                       <div>
                         <strong>{{ faculty.name }}</strong>
@@ -95,12 +164,17 @@
                       </div>
                     </div>
                   </td>
+
                   <td class="actions-column">
-                    <a
-                      [routerLink]="['/faculties', faculty.id, 'edit']"
-                      class="btn-edit">
-                      Editar
-                    </a>
+                    <div class="row-actions">
+                      <a [routerLink]="['/faculties', faculty.id, 'edit']" class="btn-edit">
+                        Editar
+                      </a>
+                      <button type="button" class="btn-delete" disabled
+                        title="Próximamente: la eliminación aún no está disponible">
+                        Eliminar
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -110,4 +184,5 @@
       }
     </div>
   }
+
 </div>

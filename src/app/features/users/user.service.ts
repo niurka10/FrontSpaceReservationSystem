@@ -13,6 +13,12 @@ export class UserService {
   private readonly _me = signal<UserSummaryResponse | null>(null);
   readonly me = this._me.asReadonly();
 
+  // Se llama desde AuthService al cerrar sesión y al iniciar una nueva, para
+  // que un cambio de usuario sin recargar la página no arrastre datos del anterior.
+  clearCache(): void {
+    this._me.set(null);
+  }
+
   // role y careerId son opcionales — el backend los usa como filtros si vienen.
   search(role?: string, careerId?: string): Observable<UserSummaryResponse[]> {
     let params = new HttpParams();

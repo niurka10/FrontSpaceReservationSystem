@@ -1,36 +1,56 @@
-.grid-kpi {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
+// Paleta del dashboard. Vive aquí (no en estilos globales) y baja a los
+// componentes hijos por herencia de variables CSS.
+:host {
+  display: block;
+  max-width: 1140px;
+  margin: 0 auto;
+  color: var(--text);
+
+  --brand: #0b4f7a;
+  --brand-deep: #003a5c;
+  --brand-ink: #062f4a;
+  --brand-soft: #e6f0f6;
+  --accent: #fbba00;
+  --accent-strong: #ffc72c;
+  --accent-soft: #fff5d6;
+  --bg: #f3f7fa;
+  --surface: #ffffff;
+  --surface-alt: #f7fafc;
+  --text: #0f2433;
+  --text-2: #3d5364;
+  --muted: #5c6e7d;
+  --line: #dce7ef;
+  --line-strong: #c4d5e0;
+  --focus: #0a6c9e;
+
+  --radius: 18px;
+  --radius-sm: 10px;
+  --shadow-soft: 0 12px 28px rgba(9, 46, 70, 0.09);
+  --shadow-hero: 0 20px 46px rgba(3, 32, 51, 0.22);
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  // Colores por estado (los usarán las tarjetas y la agenda en los próximos bloques).
+  --st-draft-fg: #4f5b68;      --st-draft-bg: #edf1f4;      --st-draft-dot: #7c8a96;
+  --st-review-fg: #9c4a05;     --st-review-bg: #fcebdd;     --st-review-dot: #e8710a;
+  --st-approved-fg: #12784a;   --st-approved-bg: #e4f4ea;   --st-approved-dot: #12784a;
+  --st-rejected-fg: #ae2b23;   --st-rejected-bg: #fbe7e5;   --st-rejected-dot: #ae2b23;
+  --st-cancelled-fg: #3f4a55;  --st-cancelled-bg: #e8ecef;  --st-cancelled-dot: #4b5864;
 }
 
-.kpi {
-  background: #fff;
-  border: 1px solid #e4e8f2;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(16, 29, 56, .04), 0 8px 24px -12px rgba(16, 29, 56, .12);
+.section { margin-top: 28px; }
+
+.state-msg {
+  margin: 28px 0 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
-.accentbar {
-  height: 4px;
-  width: 100%;
-}
-
-.kpi-inner {
-  padding: 17px 19px 16px;
-}
-
-.val {
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.lbl {
-  font-size: 12.5px;
-  color: #6c7690;
-  margin-top: 6px;
-  font-weight: 500;
+.alert-error {
+  margin-top: 28px;
+  background: #fdeaea;
+  color: #c22b2b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
 }

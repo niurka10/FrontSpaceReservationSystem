@@ -3,6 +3,7 @@ import { AuthUser, DecodedToken,  JWT_CLAIMS,   LoginRequest,  RawAuthResponse, 
 import { Observable, tap } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
+import { UserService } from "../../features/users/user.service";
 
 const ACCESS_TOKEN_KEY = 'srs_access_token';
 const REFRESH_TOKEN_KEY = 'srs_refresh_token';
@@ -16,7 +17,7 @@ export class AuthService {
     readonly isAuthenticated = computed(() => this._currentUser() !== null);
     readonly role = computed(() => this._currentUser()?.role ?? null);
 
-    constructor(private http: HttpClient, private router: Router) { }
+    constructor(private http: HttpClient, private router: Router, private userService: UserService) { }
 
     login(request: LoginRequest): Observable<RawAuthResponse> {
         return this.http.post<RawAuthResponse>(`${API_BASE}/login`, request).pipe(
@@ -34,6 +35,7 @@ export class AuthService {
         localStorage.removeItem(ACCESS_TOKEN_KEY);
         localStorage.removeItem(REFRESH_TOKEN_KEY);
         this._currentUser.set(null);
+        this.userService.clearCache();
         this.router.navigate(['/login']);
     }
 
@@ -49,6 +51,7 @@ export class AuthService {
     private handleAuthSuccess(response: RawAuthResponse): void {
         localStorage.setItem(ACCESS_TOKEN_KEY, response.accessToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+        this.userService.clearCache();
         this._currentUser.set(this.decodeUserFromToken(response.accessToken));
     }
 

@@ -1,0 +1,78 @@
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  
+  .kpi-card {
+    display: grid;
+    justify-items: start;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease), border-color 0.18s var(--ease);
+  
+    &:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  }
+  
+  @media (hover: hover) {
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow-soft);
+    }
+  }
+  
+  // Cada grupo toma sus colores de las variables definidas en el :host del dashboard.
+  .kpi--draft    { --fg: var(--st-draft-fg);    --bg: var(--st-draft-bg); }
+  .kpi--review   { --fg: var(--st-review-fg);   --bg: var(--st-review-bg); }
+  .kpi--approved { --fg: var(--st-approved-fg); --bg: var(--st-approved-bg); }
+  .kpi--closed   { --fg: var(--st-rejected-fg); --bg: var(--st-rejected-bg); }
+  
+  .kpi-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 18px;
+  }
+  
+  .kpi-label { font-size: 13px; font-weight: 700; color: var(--muted); }
+  
+  .kpi-value {
+    margin-top: 6px;
+    font-size: clamp(38px, 4vw, 46px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums; // los dígitos no "bailan" mientras suben
+  }
+  
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .kpi-card { transition: none; }
+    .kpi-card:hover { transform: none; }
+  }

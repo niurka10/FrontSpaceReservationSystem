@@ -52,11 +52,7 @@ export const NAV_ITEMS: NavItem[] = [
         path: '/reservations/pending-coordinator',
         roles: ['Coordinator', 'Admin'],
     },
-    {
-        label: 'notificaciones',
-        path: '/alerts',
-        roles: ['Admin', 'Student', 'Teacher'],
-    },
+
     {
         label: 'Autorizaciones',
         path: '/reservations/pending-vicerrector',
@@ -74,7 +70,7 @@ export const NAV_ITEMS: NavItem[] = [
         roles: ['Admin'],
         children: [
             { label: 'Usuarios', path: '/users', roles: ['Admin'] },
-            { label: 'Reservas (todas)', path: '/admin/reservations', roles: ['Admin'] },
+            { label: 'Reservas (todas)', path: '/reservations', roles: ['Admin'] },
         ],
     },
 

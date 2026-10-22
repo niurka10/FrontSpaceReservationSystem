@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RESERVATION_STATUS_LABELS, Reservation, ReservationDetail } from '../../models/reservation.interface';
 import { ReservationService } from '../../services/reservation.service';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +13,7 @@ function pseudoCode(id: string): string {
 }
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'draft' | 'closed';
+const FILTER_KEYS: StatusFilter[] = ['pending', 'approved', 'draft', 'closed'];
 
 function matchesFilter(r: Reservation, f: StatusFilter): boolean {
   switch (f) {
@@ -120,9 +121,12 @@ export class ReservationListComponent implements OnInit {
     this.filter.update((current) => (current === value ? 'all' : value));
   }
 
-  constructor(private reservationsService: ReservationService) { }
+  constructor(private reservationsService: ReservationService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
+    const estado = this.route.snapshot.queryParamMap.get('estado') as StatusFilter | null;
+      if (estado && FILTER_KEYS.includes(estado)) this.filter.set(estado);
+      
     this.reservationsService.listMine().subscribe({
       next: (reservations) => {
         this.reservations.set(reservations);

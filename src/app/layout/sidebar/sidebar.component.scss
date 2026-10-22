@@ -1,61 +1,94 @@
-$navy: #101d38;
-$navy-2: #17284d;
+/* Colores como variables CSS en el host: para cambiar la paleta basta editar este bloque. */
+:host {
+  --brand-1: #0b4f7a;   // fondo, arriba
+  --brand-2: #003a5c;   // fondo, abajo
+  --accent: #fbba00;    // SOLO para el indicador del item activo y detalles
+  --text: #e3edf4;
+  --text-muted: #b3c7d6;
+  --line: rgba(255, 255, 255, 0.12);
+  --rail-w-open: 260px;
 
-$accent: #3457e8;
-$accent-2: #5c7cf5;
+  display: block;
+  width: var(--rail-w, 72px); // compacto; --rail-w lo define el shell
+  transition: width 0.2s ease; // el contenido se desliza junto con el menú
+}
+
+:host(.is-expanded) {
+  width: var(--rail-w-open);
+}
 
 .sidebar {
-  width: 250px;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
 
-  background: linear-gradient(
-    180deg,
-    $navy 0%,
-    $navy-2 100%
-  );
+  overflow-x: hidden;
+  overflow-y: auto; // si la pantalla es baja, el menú scrollea por dentro
+  scrollbar-width: thin;
 
-  color: #fff;
+  background: linear-gradient(180deg, var(--brand-1) 0%, var(--brand-2) 100%);
+  color: var(--text);
 
   padding: 22px 14px;
-
   gap: 4px;
 }
 
+/* Etiquetas: se ocultan con opacity + max-width (NO display:none) para que el texto siga
+   en el DOM y cada link conserve su nombre accesible. */
+.navitem > span,
+.brand .word,
+.userinfo,
+.logout-btn > span {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.2s ease, opacity 0.15s ease;
+}
 
-/* =========================
-   MARCA
-   ========================= */
+.navgroup-label {
+  max-height: 0;
+  opacity: 0;
+  padding: 0 12px;
+  overflow: hidden;
+  transition: max-height 0.2s ease, padding 0.2s ease, opacity 0.15s ease;
+}
 
+.sidebar.is-expanded {
+  .navitem > span,
+  .brand .word,
+  .userinfo,
+  .logout-btn > span {
+    max-width: 200px;
+    opacity: 1;
+  }
+
+  .navgroup-label {
+    max-height: 36px;
+    opacity: 1;
+    padding: 12px 12px 6px;
+  }
+}
+
+/* ===== Marca ===== */
 .brand {
-  padding: 6px 10px 22px 10px;
+  padding: 6px 7px 22px 7px;
 }
 
 .brand .mark {
-  width: 30px;
-  height: 30px;
-
-  border-radius: 8px;
-
-  background: linear-gradient(
-    135deg,
-    $accent-2,
-    $accent
-  );
-
   position: relative;
   flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent); // detalle amarillo
 }
 
 .brand .mark::before {
   content: "";
-
   position: absolute;
-
   inset: 7px;
-
-  border: 2px solid #fff;
+  border: 2px solid var(--brand-2);
   border-radius: 3px;
-
   transform: rotate(45deg);
 }
 
@@ -63,366 +96,300 @@ $accent-2: #5c7cf5;
   font-weight: 800;
   font-size: 16.5px;
   letter-spacing: 0.3px;
+  color: #fff;
 }
 
 .brand .word small {
   display: block;
-
   margin-top: 1px;
-
-  color: #a9b6de;
-
+  color: var(--text-muted);
   font-size: 9.5px;
   font-weight: 500;
-
   letter-spacing: 1.2px;
-
   text-transform: uppercase;
 }
 
-
-/* =========================
-   TÍTULO MENÚ
-   ========================= */
+/* ===== Grupos del menú ===== */
+.navgroup + .navgroup {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line); // en el riel compacto hace de divisor
+}
 
 .navgroup-label {
-  padding: 16px 12px 7px;
-
-  color: #7a87ac;
-
+  color: var(--text-muted);
   font-size: 10.5px;
   font-weight: 600;
-
   letter-spacing: 1.1px;
-
   text-transform: uppercase;
 }
 
-
-/* =========================
-   LINKS PRINCIPALES
-   ========================= */
-
+/* ===== Links ===== */
 .navitem {
+  position: relative; // para el indicador amarillo
   display: flex;
   align-items: center;
-
   gap: 10px;
 
-  padding: 9px 12px;
-
+  padding: 9px 13px;
   margin-bottom: 2px;
-
   border-radius: 9px;
 
-  color: #c4cce6 !important;
-
+  color: var(--text) !important;
   font-size: 13.5px;
   font-weight: 500;
-
   text-decoration: none;
 
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.navitem svg {
-  width: 17px;
-  height: 17px;
-
+.navitem i,
+.logout-btn i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 
-  opacity: 0.85;
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 1;
 
+  opacity: 0.85;
   transition: opacity 0.15s ease;
 }
 
 .navitem:hover {
-  background: rgba(255, 255, 255, 0.06);
-
+  background: rgba(255, 255, 255, 0.08);
   color: #fff !important;
-
-  transform: translateX(2px);
 }
 
 .navitem.active {
-  background: $accent;
-
+  background: rgba(255, 255, 255, 0.14);
   color: #fff !important;
-
-  box-shadow: 0 4px 12px rgba(52, 87, 232, 0.22);
 }
 
-.navitem.active svg {
+.navitem.active i {
   opacity: 1;
 }
 
-
-/* =========================
-   SECCIONES DESPLEGABLES
-   ========================= */
-
-.nav-section {
-  margin: 2px 0;
+/* Indicador amarillo: barra pegada al borde izquierdo del menú (el sidebar tiene 14px de
+   padding, de ahí el left negativo). */
+.navitem.active::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 7px;
+  bottom: 7px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+  background: var(--accent);
 }
 
-
-/* Quitamos el marcador
-   predeterminado del details */
-
-.section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  width: 100%;
-
-  padding: 9px 12px;
-
-  border-radius: 9px;
-
-  color: #c4cce6;
-
-  cursor: pointer;
-
-  list-style: none;
-
-  font-size: 11.5px;
-  font-weight: 700;
-
-  letter-spacing: 0.5px;
-
-  text-transform: uppercase;
-
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.section-title::-webkit-details-marker {
-  display: none;
-}
-
-.section-title:hover {
-  background: rgba(255, 255, 255, 0.05);
-
-  color: #fff;
-}
-
-
-/* Icono + texto */
-
-.section-left {
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-}
-
-.section-left svg {
-  width: 16px;
-  height: 16px;
-
-  opacity: 0.75;
-}
-
-
-/* Flecha */
-
-.chevron {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 18px;
-  height: 18px;
-
-  color: #8997bc;
-
-  font-size: 16px;
-
-  transition: transform 0.2s ease;
-}
-
-
-/* Rotación al abrir */
-
-.nav-section[open] .chevron {
-  transform: rotate(180deg);
-}
-
-
-/* =========================
-   SUBMENÚ
-   ========================= */
-
-.submenu {
-  position: relative;
-
-  margin: 2px 0 5px 12px;
-
-  padding-left: 13px;
-
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-
-  animation: submenuOpen 0.18s ease;
-}
-
-@keyframes submenuOpen {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-
-/* Links dentro del submenu */
-
-.submenu-item {
-  padding: 8px 10px;
-
-  margin-bottom: 2px;
-
-  font-size: 13px;
-}
-
-.submenu-item svg {
-  width: 16px;
-  height: 16px;
-}
-
-
-/* =========================
-   REPORTES
-   ========================= */
-
-.main-item {
-  margin-top: 5px;
-}
-
-
-/* =========================
-   PARTE INFERIOR
-   ========================= */
-
+/* ===== Parte inferior ===== */
 .sidebar-foot {
   margin-top: auto;
-
   padding-top: 14px;
-
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--line);
 }
 
 .userchip {
   display: flex;
   align-items: center;
-
   gap: 9px;
 
-  padding: 8px 10px;
-
+  padding: 8px 6px;
   margin-bottom: 4px;
-
   border-radius: 10px;
-
-  transition: background 0.15s ease;
 }
-
-.userchip:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-
-/* =========================
-   AVATAR
-   ========================= */
 
 .avatar {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 
   width: 32px;
   height: 32px;
-
-  flex-shrink: 0;
-
   border-radius: 50%;
 
-  background: $accent-2;
-
-  color: #fff;
-
+  background: var(--accent);
+  color: var(--brand-2); // texto oscuro sobre amarillo: buen contraste
   font-size: 12px;
   font-weight: 700;
 }
 
-
-/* =========================
-   USUARIO
-   ========================= */
+.userinfo {
+  min-width: 0; // permite que el correo largo se recorte con "…" en vez de desbordar
+}
 
 .u-name {
   color: #fff;
-
   font-size: 13px;
   font-weight: 600;
-
   line-height: 1.2;
 }
 
 .u-role {
-  color: #9db0e0;
-
+  color: var(--text-muted);
   font-size: 10.5px;
 }
-
-
-/* =========================
-   CERRAR SESIÓN
-   ========================= */
 
 .logout-btn {
   display: flex;
   align-items: center;
-
-  gap: 8px;
+  gap: 10px;
 
   width: 100%;
-
-  padding: 8px 10px;
+  padding: 8px 13px;
 
   border: none;
   border-radius: 9px;
-
   background: transparent;
 
-  color: #c4cce6;
-
+  color: var(--text);
   font-size: 13px;
   font-weight: 500;
-
   cursor: pointer;
 
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.logout-btn svg {
-  width: 16px;
-  height: 16px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .logout-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
+}
+
+/* Foco visible para quien navega con teclado. */
+.navitem:focus-visible,
+.logout-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Sin animaciones para quien las desactiva en su sistema. */
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .sidebar,
+  .sidebar * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ===== Botones del cajón: ocultos en escritorio ===== */
+.menu-btn,
+.close-btn {
+  display: none;
+}
+
+/* ===== Pantallas estrechas (menos de 768px): el menú es un cajón ===== */
+@media (max-width: 767.98px) {
+  :host {
+    width: 0; // no reserva espacio: el contenido ocupa todo el ancho
+    z-index: 1101; // el topbar del shell tiene z-index 1100; sin esto taparía el botón y la X
+    transition: none;
+  }
+
+  :host(.is-expanded) {
+    width: 0;
+  }
+
+  /* Botón ☰, alineado con la campana de notificaciones (que está arriba a la derecha).
+     Si no queda alineado, ajusta solo el "top". */
+  .menu-btn {
+    position: fixed;
+    top: 39px;
+    left: 14px;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+
+    background: var(--brand-1);
+    color: #fff;
+    font-size: 22px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
+
+  .menu-btn:focus-visible,
+  .close-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Con el cajón abierto, o con un modal de Bootstrap abierto, el ☰ no debe verse. */
+  :host(.is-expanded) .menu-btn,
+  :host-context(.modal-open) .menu-btn {
+    display: none;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: rgba(0, 16, 28, 0.55);
+  }
+
+  /* El menú sale de pantalla hacia la izquierda y se desliza al abrirse. */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+
+    width: min(280px, 85vw);
+    height: auto;
+
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar.is-expanded {
+    transform: translateX(0);
+    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.35);
+  }
+
+  /* En el cajón las etiquetas siempre se ven (no existe el modo compacto). */
+  .navitem > span,
+  .brand .word,
+  .userinfo,
+  .logout-btn > span {
+    max-width: 200px;
+    opacity: 1;
+  }
+
+  .navgroup-label {
+    max-height: 36px;
+    opacity: 1;
+    padding: 12px 12px 6px;
+  }
+
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 9px;
+
+    background: transparent;
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
 }

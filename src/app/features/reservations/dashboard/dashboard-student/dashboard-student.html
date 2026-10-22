@@ -1,18 +1,23 @@
-<h1 class="h3 mb-1">Dashboard</h1>
-<p class="text-muted">Resumen general de tu actividad en el sistema</p>
+<app-dashboard-greeting />
 
 @if (isLoading()) {
-  <p class="text-muted">Cargando...</p>
+<p class="state-msg">Cargando tus reservas...</p>
+} @else if (loadError(); as msg) {
+<div class="alert-error">{{ msg }}</div>
 } @else {
-  <div class="grid-kpi">
-    @for (c of cards(); track c.label) {
-      <div class="kpi">
-        <div class="accentbar" [style.background]="c.accent"></div>
-        <div class="kpi-inner">
-          <div class="val">{{ c.value }}</div>
-          <div class="lbl">{{ c.label }}</div>
-        </div>
-      </div>
-    }
-  </div>
+<section class="section">
+  <app-dashboard-kpis [reservations]="reservations()" />
+</section>
+<section class="section">
+  <app-dashboard-upcoming [reservations]="reservations()" (voucher)="openVoucher($event)" />
+</section>
+<section class="section">
+  <app-dashboard-week [reservations]="reservations()" />
+</section>
+<section class="section">
+  <app-dashboard-activity />
+</section>
+}
+@if (voucherId(); as id) {
+<app-voucher-modal [reservationId]="id" (closed)="closeVoucher()" />
 }

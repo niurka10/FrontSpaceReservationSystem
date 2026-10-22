@@ -1,0 +1,46 @@
+<div class="section-head">
+    <h2 id="proximas-heading">Próximas reservas aprobadas</h2>
+    <p class="section-sub">Tus próximos usos confirmados de espacios y recursos.</p>
+  </div>
+  
+  <div class="upcoming-grid" aria-labelledby="proximas-heading">
+    @for (r of items(); track r.id) {
+      <article class="upcoming-card">
+        <div class="upcoming-top">
+            <span class="kind-tag">{{ r.spaceId ? 'Espacio' : 'Recursos' }}</span>
+            <div class="upcoming-badges">
+              @if (r.resourceCount && r.resourceCount > 0) {
+              <span class="pill-resources">
+                <i class="bi bi-box-seam" aria-hidden="true"></i> +{{ r.resourceCount }} recursos
+              </span>
+              }
+              <span class="badge">Aprobada</span>
+            </div>
+          </div>
+  
+        <h3>{{ r.spaceName ?? 'Reserva de recursos' }}</h3>
+  
+        <p class="upcoming-meta">
+          <i class="bi bi-clock" aria-hidden="true"></i>
+          <span>{{ shortDate(r.date) }} · {{ r.startTime.slice(0, 5) }} – {{ r.endTime.slice(0, 5) }}</span>
+        </p>
+  
+        <div class="upcoming-foot">
+          <div class="code">
+            <span class="code-label">Voucher</span>
+            <span class="voucher-code">{{ rsvCode(r.id) }}</span>
+          </div>
+          <button type="button" class="btn-voucher" (click)="voucher.emit(r.id)">
+            <i class="bi bi-receipt" aria-hidden="true"></i> Ver voucher
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <div class="empty-state">
+        <span class="empty-icon"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
+        <h3>Aún no tienes reservas aprobadas</h3>
+        <p>Cuando Bienes apruebe una solicitud, aparecerá aquí con su código de voucher.</p>
+        <a routerLink="/reservations/new" class="empty-link">Reservar un espacio</a>
+      </div>
+    }
+  </div>

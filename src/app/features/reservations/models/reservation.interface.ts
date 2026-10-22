@@ -53,19 +53,20 @@ export type ReservationStatus =
 };
 
 export interface Reservation{
-    id: string;
-    date: string;
-    startTime: string,
-    endTime: string;
-    reason: string,
-    currentStatus: ReservationStatus;
-    userId: string;
-    spaceId: string | null;
-    requesterName?: string;
-    requesterRole?: string;
-    spaceName?: string;
-    careerName?: string;
-    canDelete?: boolean;
+  id: string;
+  date: string;
+  startTime: string,
+  endTime: string;
+  reason: string,
+  currentStatus: ReservationStatus;
+  userId: string;
+  spaceId: string | null;
+  requesterName?: string;
+  requesterRole?: string;
+  spaceName?: string;
+  careerName?: string;
+  canDelete?: boolean;
+  resourceCount?: number | null;
 }
 
 export interface ReservationResourceItem {
@@ -79,6 +80,16 @@ export interface ReservationHistoryEntry {
   changeDate: string;
   changedByName: string;
   changedByRole: string | null;
+}
+
+export interface ReservationActivityItem {
+  reservationId: string;
+  spaceName: string | null;
+  newStatus: ReservationStatus;
+  changedByName: string;
+  changedByRole: string | null;
+  changeDate: string;
+  justification?: string;
 }
  
 export interface ReservationDetail extends Reservation {

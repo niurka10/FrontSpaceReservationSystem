@@ -1,0 +1,21 @@
+<header class="greeting">
+    <div class="greeting-copy">
+      <p class="eyebrow">UNIB·E · Panel de reservas</p>
+      <h1>Hola{{ firstName() ? ', ' + firstName() : '' }}</h1>
+      <p class="greeting-date">
+        <i class="bi bi-calendar3" aria-hidden="true"></i>
+        <span>{{ today }}</span>
+      </p>
+    </div>
+  
+    <div class="greeting-actions">
+      <a routerLink="/reservations/new" class="btn btn-accent">
+        <i class="bi bi-building" aria-hidden="true"></i>
+        Reservar un espacio
+      </a>
+      <a routerLink="/reservations/new-resources" class="btn btn-outline-accent">
+        <i class="bi bi-box-seam" aria-hidden="true"></i>
+        Reservar recursos
+      </a>
+    </div>
+  </header>

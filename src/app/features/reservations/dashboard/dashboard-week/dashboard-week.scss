@@ -1,0 +1,136 @@
+.section-head h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  
+  .section-sub {
+    margin: 4px 0 16px;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+  
+  // Colores por estado: cada elemento con data-s toma el suyo de las variables del :host del dashboard.
+  [data-s='draft']     { --s-fg: var(--st-draft-fg);     --s-bg: var(--st-draft-bg);     --s-dot: var(--st-draft-dot); }
+  [data-s='review']    { --s-fg: var(--st-review-fg);    --s-bg: var(--st-review-bg);    --s-dot: var(--st-review-dot); }
+  [data-s='approved']  { --s-fg: var(--st-approved-fg);  --s-bg: var(--st-approved-bg);  --s-dot: var(--st-approved-dot); }
+  [data-s='rejected']  { --s-fg: var(--st-rejected-fg);  --s-bg: var(--st-rejected-bg);  --s-dot: var(--st-rejected-dot); }
+  [data-s='cancelled'] { --s-fg: var(--st-cancelled-fg); --s-bg: var(--st-cancelled-bg); --s-dot: var(--st-cancelled-dot); }
+  
+  .week-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  
+  .legend {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin: 0;
+    padding: 14px 20px;
+    list-style: none;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-alt);
+  }
+  
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+  
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 3px;
+    background: var(--s-dot);
+    flex: none;
+  }
+  
+  .agenda { margin: 0; padding: 0; list-style: none; }
+  
+  .agenda-day {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 14px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+  
+    &:first-child { border-top: 0; }
+    &.is-today { background: var(--brand-soft); }
+  }
+  
+  .agenda-day-head { display: grid; align-content: start; gap: 2px; }
+  
+  .agenda-day-name {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  
+  .agenda-day-num { font-size: 20px; font-weight: 700; line-height: 1.1; color: var(--text); }
+  .is-today .agenda-day-num { color: var(--brand); }
+  
+  .today-chip {
+    justify-self: start;
+    margin-top: 2px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #182430;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  
+  .agenda-items { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  
+  .agenda-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--s-bg);
+    color: var(--s-fg);
+    border-left: 3px solid var(--s-dot);
+  }
+  
+  .agenda-time { font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .agenda-status { justify-self: end; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; }
+  .agenda-space { grid-column: 1 / -1; font-size: 13px; font-weight: 600; }
+  .agenda-empty { padding: 4px 0; font-size: 12.5px; color: var(--muted); }
+  
+  .week-foot {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+    background: var(--surface-alt);
+  }
+  
+  .week-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--brand);
+    text-decoration: none;
+  
+    &:hover { text-decoration: underline; }
+    &:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+  }
+  
+  @media (max-width: 520px) {
+    .agenda-day { grid-template-columns: 56px minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
+    .legend, .week-foot { padding-left: 14px; padding-right: 14px; }
+  }

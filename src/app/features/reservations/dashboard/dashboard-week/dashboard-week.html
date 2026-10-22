@@ -1,0 +1,45 @@
+<div class="section-head">
+    <h2 id="week-heading">{{ range }}</h2>
+    <p class="section-sub">Tus reservas de la semana, ordenadas por día y hora.</p>
+  </div>
+  
+  <div class="week-panel">
+    <ul class="legend" aria-label="Estados de reserva">
+      @for (l of legend; track l.key) {
+        <li class="legend-item" [attr.data-s]="l.key">
+          <span class="legend-dot"></span>{{ l.label }}
+        </li>
+      }
+    </ul>
+  
+    <ol class="agenda" aria-labelledby="week-heading">
+      @for (d of days(); track d.iso) {
+        <li class="agenda-day" [class.is-today]="d.isToday"
+            [attr.aria-current]="d.isToday ? 'date' : null">
+          <div class="agenda-day-head">
+            <span class="agenda-day-name">{{ d.name }}</span>
+            <span class="agenda-day-num">{{ d.num }}</span>
+            @if (d.isToday) { <span class="today-chip">Hoy</span> }
+          </div>
+  
+          <ul class="agenda-items">
+            @for (it of d.items; track it.id) {
+              <li class="agenda-item" [attr.data-s]="it.visual">
+                <span class="agenda-time">{{ it.start }}–{{ it.end }}</span>
+                <span class="agenda-status">{{ it.statusLabel }}</span>
+                <span class="agenda-space">{{ it.space }}</span>
+              </li>
+            } @empty {
+              <li class="agenda-empty">Sin reservas</li>
+            }
+          </ul>
+        </li>
+      }
+    </ol>
+  
+    <div class="week-foot">
+      <a routerLink="/reservations/calendar" class="week-link">
+        Ver calendario completo <i class="bi bi-arrow-right" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>

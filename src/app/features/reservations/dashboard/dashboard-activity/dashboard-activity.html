@@ -1,0 +1,34 @@
+<div class="section-head">
+    <h2 id="actividad-heading">Actividad reciente</h2>
+    <p class="section-sub">Los últimos movimientos de tus solicitudes.</p>
+  </div>
+  
+  @if (isLoading()) {
+  <p class="state-msg">Cargando actividad...</p>
+  } @else if (loadError(); as msg) {
+  <div class="alert-error">{{ msg }}</div>
+  } @else {
+  <ul class="activity-list" aria-labelledby="actividad-heading">
+    @for (item of items(); track item.reservationId + item.changeDate) {
+    <li class="activity-item">
+      <span class="activity-dot" [class]="'visual-' + visual(item.newStatus)"></span>
+      <div class="activity-body">
+        <p class="activity-text">
+          {{ message(item) }}
+          @if (item.spaceName) { <span class="activity-space">· {{ item.spaceName }}</span> }
+        </p>
+        <div class="activity-foot">
+          <span class="voucher-code">{{ rsvCode(item.reservationId) }}</span>
+          <span class="activity-time">{{ timeAgo(item.changeDate) }}</span>
+        </div>
+      </div>
+    </li>
+    } @empty {
+    <li class="empty-state">
+      <span class="empty-icon"><i class="bi bi-activity" aria-hidden="true"></i></span>
+      <p>Todavía no hay movimientos en tus solicitudes.</p>
+    </li>
+    }
+  </ul>
+  <a routerLink="/reservations" class="activity-see-all">Ver todas en Mis reservas</a>
+  }

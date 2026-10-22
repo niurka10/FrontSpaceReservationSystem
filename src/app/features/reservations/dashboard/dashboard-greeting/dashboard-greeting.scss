@@ -1,0 +1,134 @@
+// Los colores (--brand, --accent...) los define el :host del dashboard y llegan
+// aquí por herencia: las variables CSS se heredan por el DOM.
+.greeting {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    flex-wrap: wrap;
+    padding: 34px 36px 32px;
+    border-radius: 22px;
+    color: #fff;
+    background-image:
+      radial-gradient(120% 150% at 100% 0%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 56%),
+      linear-gradient(118deg, var(--brand) 0%, var(--brand-deep) 100%);
+    box-shadow: var(--shadow-hero);
+  }
+  
+  .greeting-copy { min-width: 0; }
+  
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #c7dce9;
+  
+    &::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 2px;
+      background: var(--accent);
+      flex: none;
+    }
+  }
+  
+  h1 {
+    margin: 10px 0 0;
+    font-size: clamp(34px, 4vw, 46px);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    color: #fff;
+  
+    // La barrita amarilla bajo el título.
+    &::after {
+      content: '';
+      display: block;
+      width: 44px;
+      height: 3px;
+      margin-top: 15px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+  }
+  
+  .greeting-date {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 13px 0 0;
+    color: #d3e2ec;
+    font-size: 14px;
+  }
+  
+  .greeting-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.18s var(--ease), border-color 0.18s var(--ease),
+      transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+  
+    &:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+    &:active { transform: translateY(0); }
+  }
+  
+  .btn-accent {
+    background: var(--accent);
+    color: #182430;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  }
+  
+  .btn-outline-accent {
+    background: transparent;
+    border-color: rgba(251, 186, 0, 0.8);
+    color: var(--accent);
+  }
+  
+  // El "levantar" al pasar el cursor solo donde hay hover real (no en táctiles).
+  @media (hover: hover) {
+    .btn-accent:hover {
+      background: var(--accent-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+    }
+    .btn-outline-accent:hover {
+      background: rgba(251, 186, 0, 0.12);
+      border-color: var(--accent);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .greeting { padding: 26px 20px 24px; }
+    .greeting-actions, .btn { width: 100%; }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+    .btn-accent:hover { transform: none; }
+  }

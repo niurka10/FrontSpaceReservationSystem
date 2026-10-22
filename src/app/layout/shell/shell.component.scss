@@ -11,6 +11,7 @@
 
 .shell-content {
   flex: 1;
+  min-width: 0;
   padding: 1.5rem;
 }
 
@@ -24,12 +25,11 @@
 }
 
 app-slidebar {
+  --rail-w: 72px;
+
   position: sticky;
   top: 0;
   height: 100vh;
-  flex-shrink: 0;     // evita que el flex lo comprima si el contenido es ancho
-  overflow-y: auto;   // si la pantalla es baja, el menú scrollea por dentro
-  // Sin esto, el flex lo estira a la altura de TODO el contenido y un
-  // elemento tan alto como su contenedor no tiene espacio para "pegarse".
+  flex-shrink: 0;
   align-self: flex-start;
 }

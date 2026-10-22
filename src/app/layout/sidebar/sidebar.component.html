@@ -1,372 +1,165 @@
-<aside class="sidebar d-flex flex-column">
+<!-- NUEVO (solo pantallas estrechas): botón que abre el cajón. -->
+<button #menuBtn type="button" class="menu-btn" aria-label="Abrir menú" [attr.aria-expanded]="expanded()"
+  (click)="openDrawer()">
+  <i class="bi bi-list"></i>
+</button>
 
-  <!-- LOGO -->
+<!-- Fondo oscuro: tocarlo cierra el cajón. -->
+@if (isNarrow() && expanded()) {
+<div class="sidebar-backdrop" (click)="closeDrawer()"></div>
+}
+<aside #sidebar class="sidebar d-flex flex-column" [class.is-expanded]="expanded()"
+  [attr.inert]="drawerClosed() ? '' : null" (keydown.escape)="onEscape()"
+  (mouseenter)="open()" (mouseleave)="onMouseLeave(sidebar)"
+  (focusin)="onFocusIn($event)" (focusout)="onFocusOut($event, sidebar)">
+
   <div class="brand d-flex align-items-center gap-2">
-
-    <div class="mark"></div>
-
+    <div class="mark" aria-hidden="true"></div>
     <div class="word">
       UNIB·E
       <small>Reservas</small>
     </div>
-
+    <button #closeBtn type="button" class="close-btn ms-auto" aria-label="Cerrar menú" (click)="closeDrawer()">
+      <i class="bi bi-x-lg"></i>
+    </button>
   </div>
 
-  <div class="navgroup-label">
-    Menú
-  </div>
+  <!-- Cada grupo se pinta solo si el rol ve al menos uno de sus links (canSee con varios
+       paths = "¿alguno es visible?"). Los títulos son visuales (aria-hidden): el grupo ya
+       tiene su aria-label. -->
+       <nav class="nav flex-column flex-grow-1" aria-label="Menú principal" (click)="onNavClick($event)">
 
-  <nav class="nav flex-column flex-grow-1">
+    @if (canSee('/dashboard', '/reservations/calendar', '/alerts')) {
+    <div class="navgroup" role="group" aria-label="Principal">
+      <div class="navgroup-label" aria-hidden="true">Principal</div>
 
-    <!-- DASHBOARD -->
-    <!-- NUEVO: cada bloque ahora está envuelto en @if (canSee(...)) —
-         canSee() vive en sidebar.component.ts y consulta la config única
-         de nav-items.ts. Si el rol logueado no tiene ese path permitido,
-         Angular directamente NO renderiza el bloque en el DOM (no es solo
-         display:none, no existe en la página). -->
-    @if (canSee('/dashboard')) {
-    <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="navitem">
-
-      <i class="bi bi-layout-wtf"></i>
-
-      <span>Dashboard</span>
-
-    </a>
+      @if (canSee('/dashboard')) {
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="navitem">
+        <i class="bi bi-layout-wtf"></i><span>Dashboard</span>
+      </a>
+      }
+      @if (canSee('/reservations/calendar')) {
+      <a routerLink="/reservations/calendar" routerLinkActive="active" class="navitem">
+        <i class="bi bi-calendar-check"></i><span>Calendario</span>
+      </a>
+      }
+      @if (canSee('/alerts')) {
+      <a routerLink="/alerts" routerLinkActive="active" class="navitem">
+        <i class="bi bi-bell"></i><span>Alertas</span>
+      </a>
+      }
+    </div>
     }
 
-    @if (canSee('/reservations/calendar')) {
-    <a routerLink="/reservations/calendar" routerLinkActive="active" class="navitem main-item">
-      <i class="bi bi-calendar-check"></i>
-      <span>Calendario</span>
-    </a>
+    @if (canSee('/reservations', '/reservations/new', '/reservations/new-resources')) {
+    <div class="navgroup" role="group" aria-label="Reservas">
+      <div class="navgroup-label" aria-hidden="true">Reservas</div>
+
+      <!-- "Mis reservas" no se muestra a Admin: él ve "Reservas (todas)", que apunta a la
+           misma ruta. canSee('/users') es el marcador de Admin (solo él ve ese path). -->
+      @if (canSee('/reservations') && !canSee('/users')) {
+      <a routerLink="/reservations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        class="navitem">
+        <i class="bi bi-list-check"></i><span>Mis reservas</span>
+      </a>
+      }
+      @if (canSee('/users')) {
+      <a routerLink="/reservations" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        class="navitem">
+        <i class="bi bi-card-list"></i><span>Reservas (todas)</span>
+      </a>
+      }
+      @if (canSee('/reservations/new')) {
+      <a routerLink="/reservations/new" routerLinkActive="active" class="navitem">
+        <i class="bi bi-plus-circle"></i><span>Reservar espacios</span>
+      </a>
+      }
+      @if (canSee('/reservations/new-resources')) {
+      <a routerLink="/reservations/new-resources" routerLinkActive="active" class="navitem">
+        <i class="bi bi-box-seam"></i><span>Reservar recursos</span>
+      </a>
+      }
+    </div>
     }
 
+    @if (canSee('/reservations/pending-coordinator', '/reservations/pending-vicerrector',
+    '/reservations/pending-assets')) {
+    <div class="navgroup" role="group" aria-label="Revisión">
+      <div class="navgroup-label" aria-hidden="true">Revisión</div>
 
-    <!-- MIS RESERVAS (Student / Teacher) -->
-    @if (canSee('/reservations') && !canSee('/users')) {
-    <!-- El "&& !canSee('/users')" evita que Admin vea este link duplicado:
-         Admin ya tiene "Reservas (todas)" abajo, dentro de Administración,
-         apuntando a la misma ruta '/reservations'. Es un pequeño hack para
-         no repetir el mismo path dos veces en nav-items.ts con distinto
-         label según el rol — si el día de mañana Admin y Student necesitan
-         ver cosas distintas en esa ruta, ahí sí conviene separar los paths
-         (ej. '/reservations/mine' vs '/reservations') en vez de esta condición. -->
-    <a routerLink="/reservations" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}"
-      class="navitem main-item">
-      <i class="bi bi-list-check"></i>
-      <span>Mis reservas</span>
-    </a>
+      @if (canSee('/reservations/pending-coordinator')) {
+      <a routerLink="/reservations/pending-coordinator" routerLinkActive="active" class="navitem">
+        <i class="bi bi-clipboard-check"></i><span>Pendientes (Coordinador)</span>
+      </a>
+      }
+      @if (canSee('/reservations/pending-vicerrector')) {
+      <a routerLink="/reservations/pending-vicerrector" routerLinkActive="active" class="navitem">
+        <i class="bi bi-shield-check"></i><span>Autorizaciones</span>
+      </a>
+      }
+      @if (canSee('/reservations/pending-assets')) {
+      <a routerLink="/reservations/pending-assets" routerLinkActive="active" class="navitem">
+        <i class="bi bi-geo-alt"></i><span>Asignaciones</span>
+      </a>
+      }
+    </div>
     }
 
-    <!-- AGREGAR RESERVA ESPACIOS -->
-
-    @if (canSee('/reservations/new') ) {
-    <a routerLink="/reservations/new" routerLinkActive="active" class="navitem main-item">
-      <i class="bi bi-plus-circle"></i>
-      <span>Reservar Espacios</span>
-    </a>
-    }
-
-    <!-- RESERVAR SOLO RECURSOS -->
-    @if (canSee('/reservations/new-resources')) {
-    <a routerLink="/reservations/new-resources" routerLinkActive="active" class="navitem main-item">
-      <i class="bi bi-box-seam"></i>
-      <span>Reservar Recursos</span>
-    </a>
-    }
-
-    <!-- PENDIENTES (COORDINADOR) -->
-    @if (canSee('/reservations/pending-coordinator')) {
-    <a routerLink="/reservations/pending-coordinator" routerLinkActive="active" class="navitem main-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 11l3 3L22 4" />
-        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-      </svg>
-      <span>Pendientes (Coordinador)</span>
-    </a>
-    }
-    
-
-    <!-- AUTORIZACIONES (VICERRECTOR) -->
-    <!-- NUEVO: mismo bloque que el de Coordinador de arriba, apuntando a la
-         nueva ruta y filtrado por canSee(), que ya sabe que este path solo
-         es visible para Vicerrector/Admin (ver nav-items.ts). -->
-    @if (canSee('/reservations/pending-vicerrector')) {
-    <a routerLink="/reservations/pending-vicerrector" routerLinkActive="active" class="navitem main-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 2l7 4v5c0 5-3 9-7 11-4-2-7-6-7-11V6l7-4Z" />
-        <path d="M9 12l2 2 4-4" />
-      </svg>
-      <span>Autorizaciones</span>
-    </a>
-    }
-
-    <!-- ASIGNACIONES (BIENES) -->
-    <!-- Mismo patrón que Autorizaciones: canSee() consulta nav-items.ts,
-         donde este path solo es visible para Bienes/Admin. -->
-    @if (canSee('/reservations/pending-assets')) {
-    <a routerLink="/reservations/pending-assets" routerLinkActive="active" class="navitem main-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
-      <span>Asignaciones</span>
-    </a>
-    }
-    <!-- =========================
-         ADMINISTRACIÓN
-         ========================= -->
-
-    <!-- canSee con varios paths = "¿al menos uno de los links de adentro
-         es visible?" — si ninguno lo es, ni siquiera pintamos la sección
-         colapsable vacía. -->
-    @if (canSee('/users', '/admin/reservations')) {
-    <details class="nav-section">
-      <summary class="section-title">
-        <span class="section-left">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2l7 4v5c0 5-3 9-7 11-4-2-7-6-7-11V6l7-4Z" />
-            <path d="M9 12l2 2 4-4" />
-          </svg>
-          <span>Administración</span>
-        </span>
-        <span class="chevron">⌄</span>
-      </summary>
-
-      <div class="submenu">
-
-        @if (canSee('/users')) {
-        <a routerLink="/users" routerLinkActive="active" class="navitem submenu-item">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-
-          <span>Usuarios</span>
-
-        </a>
-        }
-
-        @if (canSee('/reservations')) {
-        <a routerLink="/reservations" routerLinkActive="active" class="navitem submenu-item">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8 6h13M8 12h13M8 18h13" />
-            <path d="M3 6h.01M3 12h.01M3 18h.01" />
-          </svg>
-
-          <span>Reservas (todas)</span>
-
-        </a>
-        }
-
-      </div>
-
-    </details>
-    }
-
-
-    <!-- =========================
-         CATÁLOGOS
-         ========================= -->
-
-    @if (canSee('/faculties', '/careers')) {
-    <details class="nav-section">
-
-      <summary class="section-title">
-
-        <span class="section-left">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" />
-          </svg>
-
-          <span>Catálogos</span>
-
-        </span>
-
-        <span class="chevron">⌄</span>
-
-      </summary>
-
-      <div class="submenu">
-
-        <!-- FACULTADES -->
-        @if (canSee('/faculties')) {
-        <a routerLink="/faculties" routerLinkActive="active" class="navitem submenu-item">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="4" y="3" width="16" height="18" rx="1" />
-            <path d="M9 8h1M14 8h1M9 12h1M14 12h1M9 16h1M14 16h1" />
-          </svg>
-
-          <span>Facultades</span>
-
-        </a>
-        }
-
-
-        <!-- CARRERAS -->
-        @if (canSee('/careers')) {
-        <a routerLink="/careers" routerLinkActive="active" class="navitem submenu-item">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-            <path d="M3 10l9-5 9 5-9 5-9-5Z" />
-            <path d="M7 12.5V17c2.5 2 7.5 2 10 0v-4.5" />
-            <path d="M21 10v6" />
-
-          </svg>
-
-          <span>Carreras</span>
-
-        </a>
-        }
-
-      </div>
-
-    </details>
-    }
-
-
-    <!-- =========================
-         RECURSOS
-         ========================= -->
-
-    @if (canSee('/spaces', '/resources')) {
-    <details class="nav-section">
-
-      <summary class="section-title">
-
-        <span class="section-left">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-            <path d="M21 8l-9-5-9 5v8l9 5 9-5V8Z" />
-            <path d="M3.3 8.7 12 13l8.7-4.3" />
-            <path d="M12 13v8" />
-
-          </svg>
-
-          <span>Recursos</span>
-
-        </span>
-
-        <span class="chevron">⌄</span>
-
-      </summary>
-
-      <div class="submenu">
-
-        <!-- ESPACIOS Y RECURSOS -->
-        @if (canSee('/spaces')) {
-        <a routerLink="/spaces" routerLinkActive="active" class="navitem submenu-item">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 8l-9-5-9 5v8l9 5 9-5V8Z" />
-            <path d="M3.3 8.7 12 13l8.7-4.3" />
-            <path d="M12 13v8" />
-          </svg>
-
-          <span>Espacios</span>
-
-        </a>
-        }
-
-        <!-- RECURSOS -->
-        @if (canSee('/resources')) {
-        <a routerLink="/resources" routerLinkActive="active" class="navitem submenu-item">
-
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="7" width="18" height="13" rx="2" />
-            <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          </svg>
-
-          <span>Recursos</span>
-        </a>
-        }
-
-      </div>
-
-    </details>
-    }
-
-    <!--ALERTAS-->
-    @if (canSee('/alerts')) {
-    <a routerLink="/alerts" routerLinkActive="active" class="navitem">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-3-9-9" />
-        <path d="M10 21h4" />
-      </svg>
-
-      <span>Alertas</span>
-    </a>
-    }
-
-    <!--REPORTES-->
-    @if (canSee('/reports')) {
-    <a routerLink="/reports" routerLinkActive="active" class="navitem main-item">
-
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-        <path d="M3 3v18h18" />
-        <rect x="7" y="12" width="3" height="6" />
-        <rect x="12" y="8" width="3" height="10" />
-        <rect x="17" y="5" width="3" height="13" />
-
-      </svg>
-
-      <span>Reportes</span>
-
-    </a>
+    @if (canSee('/users', '/faculties', '/careers', '/spaces', '/resources', '/reports')) {
+    <div class="navgroup" role="group" aria-label="Gestión">
+      <div class="navgroup-label" aria-hidden="true">Gestión</div>
+
+      @if (canSee('/users')) {
+      <a routerLink="/users" routerLinkActive="active" class="navitem">
+        <i class="bi bi-people"></i><span>Usuarios</span>
+      </a>
+      }
+      @if (canSee('/faculties')) {
+      <a routerLink="/faculties" routerLinkActive="active" class="navitem">
+        <i class="bi bi-building"></i><span>Facultades</span>
+      </a>
+      }
+      @if (canSee('/careers')) {
+      <a routerLink="/careers" routerLinkActive="active" class="navitem">
+        <i class="bi bi-mortarboard"></i><span>Carreras</span>
+      </a>
+      }
+      @if (canSee('/spaces')) {
+      <a routerLink="/spaces" routerLinkActive="active" class="navitem">
+        <i class="bi bi-door-open"></i><span>Espacios</span>
+      </a>
+      }
+      @if (canSee('/resources')) {
+      <a routerLink="/resources" routerLinkActive="active" class="navitem">
+        <i class="bi bi-boxes"></i><span>Recursos</span>
+      </a>
+      }
+      @if (canSee('/reports')) {
+      <a routerLink="/reports" routerLinkActive="active" class="navitem">
+        <i class="bi bi-bar-chart"></i><span>Reportes</span>
+      </a>
+      }
+    </div>
     }
 
   </nav>
 
-
-  <!-- USUARIO-->
   <div class="sidebar-foot">
 
     @if (authService.currentUser(); as user) {
-
-    <div class="userchip">
-
-      <div class="avatar">
-        {{ initials(user.email) }}
+    <!-- title: con el riel compacto, el correo completo se ve al pasar el mouse. -->
+    <div class="userchip" [attr.title]="user.email">
+      <div class="avatar" aria-hidden="true">{{ initials(user.email) }}</div>
+      <div class="userinfo">
+        <div class="u-name text-truncate">{{ user.email }}</div>
+        <div class="u-role">{{ roleLabel(user.role) }}</div>
       </div>
-
-      <div>
-
-        <div class="u-name text-truncate" style="max-width: 150px;">
-          {{ user.email }}
-        </div>
-
-        <div class="u-role">
-          {{ user.role }}
-        </div>
-
-      </div>
-
     </div>
-
     }
 
-    <button class="logout-btn" (click)="authService.logout()">
-
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <path d="M16 17l5-5-5-5" />
-        <path d="M21 12H9" />
-
-      </svg>
-
-      Cerrar sesión
-
+    <button type="button" class="logout-btn" (click)="authService.logout()">
+      <i class="bi bi-box-arrow-right"></i>
+      <span>Cerrar sesión</span>
     </button>
 
   </div>

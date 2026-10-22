@@ -1,0 +1,12 @@
+<h2 class="sr-only" id="kpi-heading">Resumen de tus reservas</h2>
+<div class="kpis" aria-labelledby="kpi-heading" role="group">
+  @for (k of cards(); track k.group; let i = $index) {
+    <a class="kpi-card" [class]="'kpi-card kpi--' + k.group"
+       routerLink="/reservations" [queryParams]="{ estado: k.estado }"
+       [attr.aria-label]="k.label + ': ' + k.value + '. Ver en Mis reservas'">
+      <span class="kpi-icon"><i class="bi" [class]="'bi ' + k.icon" aria-hidden="true"></i></span>
+      <span class="kpi-label">{{ k.label }}</span>
+      <span class="kpi-value" aria-hidden="true">{{ shown()[i] }}</span>
+    </a>
+  }
+</div>

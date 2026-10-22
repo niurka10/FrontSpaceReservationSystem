@@ -1,47 +1,29 @@
-import { CommonModule } from "@angular/common";
-import { Component, computed, OnInit, signal } from "@angular/core";
+import { Component, OnInit, signal } from "@angular/core";
 import { Reservation } from "../../models/reservation.interface";
 import { ReservationService } from "../../services/reservation.service";
-
-
-interface StatCard {
-    label: string;
-    value: number;
-    accent: string;
-}
+import { apiErrorMessage } from "../../utils/api-error";
+import { DashboardGreetingComponent } from "../dashboard-greeting/dashboard-greeting";
+import { DashboardKpisComponent } from "../dashboard-kpis/dashboard-kpis";
+import { VoucherModalComponent } from "../../../../shared/components/voucher-modal/voucher-modal.component";
+import { DashboardUpcomingComponent } from "../dashboard-upcoming/dashboard-upcoming";
+import { DashboardWeekComponent } from "../dashboard-week/dashboard-week";
+import { DashboardActivityComponent } from "../dashboard-activity/dashboard-activity";
 
 @Component({
     selector: 'app-dashboard-student',
     standalone: true,
-    imports: [CommonModule],
+    imports: [DashboardGreetingComponent, DashboardKpisComponent, DashboardUpcomingComponent, VoucherModalComponent, DashboardWeekComponent, DashboardActivityComponent],
     templateUrl: './dashboard-student.html',
     styleUrl: './dashboard-student.scss'
 })
-
 export class DashboardStudentComponent implements OnInit {
+    // Una sola petición a /mine; los componentes hijos reciben la lista por input.
     readonly reservations = signal<Reservation[]>([]);
     readonly isLoading = signal(true);
+    readonly loadError = signal<string | null>(null);
+    readonly voucherId = signal<string | null>(null);
 
-    readonly cards = computed<StatCard[]>(() => {
-        const row = this.reservations();
-        const enTramite = row.filter(r => 
-            !['Approved', 'Rejected', 'Cancelled'].includes(r.currentStatus)
-        ).length;
-
-        const aprobadas = row.filter(r => r.currentStatus === 'Approved').length;
-        const rechazadas = row.filter(r => r.currentStatus === 'Rejected').length;
-
-        return [
-            { label: 'Mis solicitudes en tramites', value: enTramite, accent: '#b3720a'},
-            { label: 'Reservas aprobadas', value: aprobadas, accent: '#158a4c'},
-            { label: 'Rechazadas', value: rechazadas, accent: '#c22b2b'},
-            { label: 'Total en mi historia', value: row.length, accent: '#8892a6'},
-        ]
-    });
-
-
-    constructor(private reservationService: ReservationService){}
-
+    constructor(private reservationService: ReservationService) { }
 
     ngOnInit(): void {
         this.reservationService.listMine().subscribe({
@@ -49,7 +31,19 @@ export class DashboardStudentComponent implements OnInit {
                 this.reservations.set(rows);
                 this.isLoading.set(false);
             },
-            error: () => this.isLoading.set(false),
-        })
+            error: (err) => {
+                this.loadError.set(apiErrorMessage(err, 'No se pudieron cargar tus reservas.'));
+                this.isLoading.set(false);
+            },
+        });
+    }
+
+    openVoucher(id: string): void {
+        this.voucherId.set(id);
+    }
+
+    closeVoucher(): void {
+        this.voucherId.set(null);
     }
 }
+

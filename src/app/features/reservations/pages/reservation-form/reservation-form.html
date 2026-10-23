@@ -38,14 +38,32 @@
         @if (!resourcesOnly()) {
         <div class="field">
           <label for="spaceId">Espacio *</label>
-          <select id="spaceId" formControlName="spaceId">
-            <option value="">Sin espacio, solo recursos</option>
-            @for (space of spaces(); track space.id) {
-            <option [value]="space.id">
-              {{ space.name }} — {{ spaceTypeLabels[space.type] }} (cap. {{ space.capacity }})
-            </option>
+
+          <div class="combo-box">
+            <input id="spaceId" type="text" autocomplete="off" role="combobox" [attr.aria-expanded]="spaceOpen()"
+              aria-controls="space-list" placeholder="Buscar espacio por nombre o tipo..."
+              [class.invalid]="form.controls.spaceId.invalid && form.controls.spaceId.touched"
+              [value]="spaceOpen() ? spaceSearch() : selectedSpaceLabel()" (focus)="openSpaces()"
+              (input)="onSpaceSearch($any($event.target).value)" (keydown)="onSpaceKeydown($event)"
+              (blur)="closeSpaces()" />
+            <span class="chevron" aria-hidden="true">▾</span>
+
+            @if (spaceOpen()) {
+            <ul class="combo-list" id="space-list" role="listbox">
+              @for (opt of spaceOptions(); track opt.id; let i = $index) {
+              <li role="option" [class.active]="i === activeIndex()"
+                [class.selected]="opt.id === form.controls.spaceId.value"
+                (mousedown)="$event.preventDefault(); selectSpace(opt.id)" (mouseenter)="activeIndex.set(i)">
+                <span class="opt-name">{{ opt.name }}</span>
+                @if (opt.meta) { <span class="opt-meta">{{ opt.meta }}</span> }
+              </li>
+              } @empty {
+              <li class="empty">No se encontraron espacios</li>
+              }
+            </ul>
             }
-          </select>
+          </div>
+
           @if (form.controls.spaceId.invalid && form.controls.spaceId.touched) {
           <small class="field-error">Selecciona un espacio.</small>
           }
@@ -118,6 +136,8 @@
                       getResourceAvailable(row.option.id, row.option.availableQuantity) + '!' :
                       getResourceAvailable(row.option.id, row.option.availableQuantity) + ' disp.' }} </span>
                   </span>
+                  <img class="resource-img" [src]="resourceImage(row.option.name)" [alt]="row.option.name"
+                    loading="lazy" (error)="onImageError($event, row.option.name)" />
               </label>
 
               @if (row.selected) {

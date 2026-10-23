@@ -18,6 +18,7 @@ interface ResourceRow {
 }
 
 const MAX_DURATION_MINUTES = 120;
+const RESOURCE_IMAGE_EXTS = ['jpg', 'png', 'webp', 'jpeg'];
 
 function toMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number);
@@ -66,6 +67,75 @@ export class ReservationFormComponent implements OnInit {
   }
 
   readonly showResourcesSection = computed(() => this.resourcesOnly() || this.wantsResources());
+
+  // ===== Buscador de espacios =====
+  readonly spaceSearch = signal('');
+  readonly spaceOpen = signal(false);
+  readonly activeIndex = signal(0);
+
+  private normalize(text: string): string {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  readonly spaceOptions = computed(() => {
+    const q = this.normalize(this.spaceSearch());
+    const filtered = this.spaces()
+      .filter((s) => !q || this.normalize(`${s.name} ${SPACE_TYPE_LABELS[s.type]}`).includes(q))
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        meta: `${SPACE_TYPE_LABELS[s.type]} · cap. ${s.capacity}`,
+      }));
+
+    return q ? filtered : [{ id: '', name: 'Sin espacio, solo recursos', meta: '' }, ...filtered];
+  });
+
+  selectedSpaceLabel(): string {
+    const id = this.form.controls.spaceId.value;
+    if (!id) return 'Sin espacio, solo recursos';
+    return this.spaces().find((s) => s.id === id)?.name ?? '';
+  }
+
+  openSpaces(): void {
+    this.spaceSearch.set('');
+    this.activeIndex.set(0);
+    this.spaceOpen.set(true);
+  }
+
+  closeSpaces(): void {
+    this.spaceOpen.set(false);
+    this.form.controls.spaceId.markAsTouched();
+  }
+
+  onSpaceSearch(value: string): void {
+    this.spaceSearch.set(value);
+    this.activeIndex.set(0);
+    this.spaceOpen.set(true);
+  }
+
+  selectSpace(id: string): void {
+    this.form.controls.spaceId.setValue(id);
+    this.form.controls.spaceId.markAsTouched();
+    this.spaceOpen.set(false);
+  }
+
+  onSpaceKeydown(event: KeyboardEvent): void {
+    const options = this.spaceOptions();
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.spaceOpen.set(true);
+      this.activeIndex.set(Math.min(this.activeIndex() + 1, options.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.activeIndex.set(Math.max(this.activeIndex() - 1, 0));
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const opt = options[this.activeIndex()];
+      if (opt) this.selectSpace(opt.id);
+    } else if (event.key === 'Escape') {
+      this.spaceOpen.set(false);
+    }
+  }
 
   readonly form = this.fb.group({
     spaceId: [''],
@@ -369,5 +439,32 @@ export class ReservationFormComponent implements OnInit {
       },
       error: onError,
     });
+  }
+
+  //Convierte el nombre del recurso en nombre de archivo (minúsculas, sin tildes, espacios a guiones)
+  private resourceSlug(name: string): string {
+    return name
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  // Arma la ruta de la imagen usando ese nombre
+  resourceImage(name: string): string {
+    return `/${this.resourceSlug(name)}.${RESOURCE_IMAGE_EXTS[0]}`;
+  }
+
+  // verifica la ruta
+  onImageError(event: Event, name: string): void {
+    const img = event.target as HTMLImageElement;
+    const tried = Number(img.dataset['try'] ?? 0) + 1;
+
+    if (tried < RESOURCE_IMAGE_EXTS.length) {
+      img.dataset['try'] = String(tried);
+      img.src = `/${this.resourceSlug(name)}.${RESOURCE_IMAGE_EXTS[tried]}`;
+    } else {
+      img.style.display = 'none';
+    }
   }
 }

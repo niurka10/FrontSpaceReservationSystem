@@ -1,13 +1,8 @@
 <div class="login-wrap">
   <div class="login-card">
-
-    <!-- Marca / Logotipo -->
-    <div class="brand">
-      <div class="mark"></div>
-      <div class="word">
-        Space Reservation
-        <small>Sistema de reservas</small>
-      </div>
+    <div class="seal" role="img" aria-label="UNIBE">
+      <span>UNI</span>
+      <span>B.E</span>
     </div>
 
     <h1 class="login-title">Crea tu cuenta</h1>
@@ -170,42 +165,44 @@
       <fieldset class="group">
         <legend class="section-title">Datos académicos</legend>
 
-        <!-- Facultad -->
-        <div class="field"
-          [class.is-invalid]="form.controls.facultyId.touched && form.controls.facultyId.invalid"
-          [class.is-valid]="form.controls.facultyId.dirty && form.controls.facultyId.valid">
-          <label for="faculty">Facultad <span class="req" aria-hidden="true">*</span></label>
-          <div class="control select-wrap">
-            <select id="faculty" formControlName="facultyId" (change)="onFacultyChange($event)">
-              <option value="">Selecciona tu facultad</option>
-              @for (faculty of faculties(); track faculty.id) {
-              <option [value]="faculty.id">{{ faculty.name }}</option>
-              }
-            </select>
+        <div class="row">
+          <!-- Facultad -->
+          <div class="field"
+            [class.is-invalid]="form.controls.facultyId.touched && form.controls.facultyId.invalid"
+            [class.is-valid]="form.controls.facultyId.dirty && form.controls.facultyId.valid">
+            <label for="faculty">Facultad <span class="req" aria-hidden="true">*</span></label>
+            <div class="control select-wrap">
+              <select id="faculty" formControlName="facultyId" (change)="onFacultyChange($event)">
+                <option value="">Selecciona tu facultad</option>
+                @for (faculty of faculties(); track faculty.id) {
+                <option [value]="faculty.id">{{ faculty.name }}</option>
+                }
+              </select>
+            </div>
+            @if (form.controls.facultyId.touched && form.controls.facultyId.invalid) {
+            <span class="field-error">Selecciona una facultad</span>
+            }
           </div>
-          @if (form.controls.facultyId.touched && form.controls.facultyId.invalid) {
-          <span class="field-error">Selecciona una facultad</span>
-          }
-        </div>
 
-        <!-- Carrera -->
-        <div class="field"
-          [class.is-invalid]="form.controls.careerId.touched && form.controls.careerId.invalid"
-          [class.is-valid]="form.controls.careerId.dirty && form.controls.careerId.valid">
-          <label for="career">Carrera <span class="req" aria-hidden="true">*</span></label>
-          <div class="control select-wrap">
-            <select id="career" formControlName="careerId">
-              <option value="">
-                {{ form.controls.careerId.disabled ? 'Primero elige una facultad' : 'Selecciona tu carrera' }}
-              </option>
-              @for (career of careers(); track career.id) {
-              <option [value]="career.id">{{ career.name }}</option>
-              }
-            </select>
+          <!-- Carrera -->
+          <div class="field"
+            [class.is-invalid]="form.controls.careerId.touched && form.controls.careerId.invalid"
+            [class.is-valid]="form.controls.careerId.dirty && form.controls.careerId.valid">
+            <label for="career">Carrera <span class="req" aria-hidden="true">*</span></label>
+            <div class="control select-wrap">
+              <select id="career" formControlName="careerId">
+                <option value="">
+                  {{ form.controls.careerId.disabled ? 'Primero elige una facultad' : 'Selecciona tu carrera' }}
+                </option>
+                @for (career of careers(); track career.id) {
+                <option [value]="career.id">{{ career.name }}</option>
+                }
+              </select>
+            </div>
+            @if (form.controls.careerId.touched && form.controls.careerId.invalid) {
+            <span class="field-error">Selecciona una carrera</span>
+            }
           </div>
-          @if (form.controls.careerId.touched && form.controls.careerId.invalid) {
-          <span class="field-error">Selecciona una carrera</span>
-          }
         </div>
       </fieldset>
 

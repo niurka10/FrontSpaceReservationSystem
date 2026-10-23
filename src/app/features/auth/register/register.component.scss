@@ -1,35 +1,66 @@
-$navy: #101d38;
-$accent: #3457e8;
-$accent-2: #5c7cf5;
-$accent-light: #eaf0ff;
-$text: #161f36;
-$muted: #6c7690;
-$border: #e1e6f1;
+/* ===== Paleta UNIBE (la misma del login) ===== */
+$navy: #053a5e;
+$blue: #0a5a85;
+$blue-dark: #07456a;
+$blue-soft: #eaf3f9;
+$yellow: #f9bc00;
+$yellow-dark: #e0a800;
+$text: #0f2438;
+$muted: #5f7385;
+$border: #d5e2ec;
+$surface: #f5f9fc;
 $danger: #c22b2b;
 $danger-bg: #fdeaea;
 $success: #1f9d55;
 $success-bg: #e8f6ee;
 $warning: #d98a00;
-$surface: #f7f9fd;
 
+/* ================= FONDO AZUL CON CÍRCULOS (como el login) ================= */
 .login-wrap {
-  min-height: 100vh;
+  position: relative;
   display: flex;
-  padding: 20px 16px;
-  background:
-    radial-gradient(circle at 15% 20%, rgba(92, 124, 245, 0.18), transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(52, 87, 232, 0.22), transparent 40%),
-    linear-gradient(160deg, $navy 0%, #0b1428 100%);
+  min-height: 100vh;
+  padding: 28px 16px;
+  overflow: hidden;
+  background: linear-gradient(160deg, $blue 0%, $navy 100%);
+
+  // Círculos concéntricos decorativos
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::before {
+    right: -160px;
+    bottom: -180px;
+    width: 520px;
+    height: 520px;
+    box-shadow: 0 0 0 90px rgba(255, 255, 255, 0.025);
+  }
+
+  &::after {
+    left: -140px;
+    top: -160px;
+    width: 420px;
+    height: 420px;
+    box-shadow: 0 0 0 70px rgba(255, 255, 255, 0.025);
+  }
 }
 
 .login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 520px;
+  max-width: 540px;
   margin: auto;
-  padding: 26px 36px 22px;
+  padding: 10px 20px 10px;
   background: #fff;
   border-radius: 20px;
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 10, 0.55);
+  box-shadow: 0 30px 60px -20px rgba(0, 20, 40, 0.55);
   animation: cardIn 0.4s ease both;
 
   @media (max-width: 480px) { padding: 24px 18px 20px; }
@@ -40,63 +71,75 @@ $surface: #f7f9fd;
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ---------- Marca ---------- */
-.brand {
+.seal {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding-bottom: 10px;
 
-  .mark {
-    width: 28px;
-    height: 28px;
-    border-radius: 9px;
-    background: linear-gradient(135deg, $accent-2, $accent);
-    position: relative;
-    flex-shrink: 0;
-    box-shadow: 0 6px 14px -4px rgba(52, 87, 232, 0.6);
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 14px;
 
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 8px;
-      border: 2px solid #fff;
-      border-radius: 3px;
-      transform: rotate(45deg);
-    }
+  border-radius: 14px;
+  background: $yellow;
+  color: $blue-dark;
+
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.5px;
+
+  box-shadow: 0 3px 10px rgba(0, 62, 94, 0.18);
+  user-select: none;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-radius 0.25s ease;
+
+  &:hover {
+    transform: translateY(-3px) scale(1.07);
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0, 83, 126, 0.28);
   }
+}
 
-  .word {
-    font-weight: 800;
-    font-size: 15px;
-    color: $text;
-    line-height: 1.15;
+@media (prefers-reduced-motion: reduce) {
+  .seal {
+    transition: none;
 
-    small {
-      display: block;
-      font-weight: 500;
-      font-size: 11px;
-      color: $muted;
-      margin-top: 1px;
+    &:hover {
+      transform: none;
     }
   }
 }
 
 .login-title {
-  font-size: 20px;
-  font-weight: 800;
-  text-align: center;
-  margin: 0 0 2px;
+  margin: 0;
   color: $text;
-  letter-spacing: -0.2px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  text-align: center;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 44px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 99px;
+    background: $yellow;
+  }
 }
 
 .login-desc {
-  font-size: 13px;
+  margin: 12px 0 20px;
   color: $muted;
+  font-size: 13.5px;
   text-align: center;
-  margin: 0 0 16px;
 }
 
 /* ---------- Error del servidor ---------- */
@@ -134,7 +177,7 @@ $surface: #f7f9fd;
   40%, 80% { transform: translateX(4px); }
 }
 
-/* ---------- Secciones (texto simple) ---------- */
+/* ---------- Secciones ---------- */
 .group {
   border: 0;
   margin: 0;
@@ -143,14 +186,27 @@ $surface: #f7f9fd;
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 10px;
   padding: 0;
-  margin: 0 0 8px;
-  font-size: 13.5px;
-  font-weight: 700;
-  color: $text;
+  color: $blue-dark;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $border;
+  }
 }
 
-.group + .group { margin-top: 4px; }
+.group + .group { margin-top: 8px; }
 
 /* ---------- Layout ---------- */
 .row {
@@ -158,26 +214,26 @@ $surface: #f7f9fd;
   grid-template-columns: 1fr 1fr;
   gap: 0 12px;
 
-  @media (max-width: 480px) { grid-template-columns: 1fr; }
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
 }
 
 /* ---------- Campos ---------- */
 .field {
-  margin-bottom: 10px;
+  margin-bottom: 11px;
   min-width: 0;
 
   label {
     display: block;
+    margin-bottom: 4px;
+    color: $text;
     font-size: 12.5px;
     font-weight: 600;
-    color: $text;
-    margin-bottom: 4px;
   }
 
   .req {
+    margin-left: 1px;
     color: $danger;
     font-weight: 700;
-    margin-left: 1px;
   }
 
   .control { position: relative; }
@@ -185,28 +241,28 @@ $surface: #f7f9fd;
   input,
   select {
     width: 100%;
-    padding: 8px 12px;
+    padding: 9px 12px;
     border: 1.5px solid $border;
     border-radius: 10px;
-    font-size: 14px;
-    font-family: inherit;
     background: $surface;
     color: $text;
+    font-family: inherit;
+    font-size: 14px;
     transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 
-    &::placeholder { color: #a6aec4; }
+    &::placeholder { color: #94a7b6; }
 
-    &:hover:not(:disabled):not(:focus) { border-color: #cdd4e6; }
+    &:hover:not(:disabled):not(:focus) { border-color: #a9c3d6; }
 
     &:focus {
       outline: none;
-      border-color: $accent-2;
+      border-color: $blue;
       background: #fff;
-      box-shadow: 0 0 0 4px rgba(92, 124, 245, 0.16);
+      box-shadow: 0 0 0 4px rgba(10, 90, 133, 0.15);
     }
 
     &:disabled {
-      background: #f1f3f7;
+      background: #f1f4f7;
       color: $muted;
       cursor: not-allowed;
     }
@@ -228,7 +284,7 @@ $surface: #f7f9fd;
       transform: scale(1);
       background: $success;
 
-      &::before { content: "✓"; }
+      &::before { content: '✓'; }
     }
 
     .counter { color: $success; }
@@ -247,7 +303,7 @@ $surface: #f7f9fd;
       transform: scale(1);
       background: $danger;
 
-      &::before { content: "!"; }
+      &::before { content: '!'; }
     }
 
     .counter { color: $danger; }
@@ -259,11 +315,11 @@ $surface: #f7f9fd;
   position: absolute;
   top: 50%;
   right: 11px;
+  display: grid;
+  place-items: center;
   width: 18px;
   height: 18px;
   margin-top: -9px;
-  display: grid;
-  place-items: center;
   border-radius: 50%;
   color: #fff;
   font-size: 11px;
@@ -281,10 +337,10 @@ $surface: #f7f9fd;
   top: 50%;
   right: 12px;
   transform: translateY(-50%);
+  color: #8fa2b2;
   font-size: 11.5px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: #9aa3bb;
   pointer-events: none;
   transition: color 0.15s;
 }
@@ -300,7 +356,7 @@ $surface: #f7f9fd;
   }
 
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 50%;
     right: 15px;
@@ -314,17 +370,17 @@ $surface: #f7f9fd;
     transition: border-color 0.15s;
   }
 
-  &:focus-within::after { border-color: $accent; }
+  &:focus-within::after { border-color: $blue; }
 }
 
-/* Mensajes de error (sin punto) */
+/* Mensajes de error */
 .field-error {
   display: block;
-  font-size: 12px;
   margin-top: 4px;
-  line-height: 1.35;
   color: $danger;
+  font-size: 12px;
   font-weight: 500;
+  line-height: 1.35;
   animation: errorIn 0.2s ease both;
 }
 
@@ -337,27 +393,27 @@ $surface: #f7f9fd;
 .field .input-group {
   display: flex;
   align-items: stretch;
+  overflow: hidden;
   border: 1.5px solid $border;
   border-radius: 10px;
   background: $surface;
-  overflow: hidden;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
 
-  &:hover:not(:focus-within) { border-color: #cdd4e6; }
+  &:hover:not(:focus-within) { border-color: #a9c3d6; }
 
   &:focus-within {
-    border-color: $accent-2;
+    border-color: $blue;
     background: #fff;
-    box-shadow: 0 0 0 4px rgba(92, 124, 245, 0.16);
+    box-shadow: 0 0 0 4px rgba(10, 90, 133, 0.15);
   }
 
   input {
     flex: 1;
     min-width: 0;
-    border: none;
-    background: transparent;
-    border-radius: 0;
     padding-right: 12px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
 
     &:focus,
     &:hover { box-shadow: none; background: transparent; }
@@ -367,30 +423,30 @@ $surface: #f7f9fd;
     display: flex;
     align-items: center;
     padding: 0 14px;
-    background: $accent-light;
-    color: $accent;
-    font-weight: 600;
-    font-size: 13.5px;
     border-left: 1.5px solid $border;
+    background: $blue-soft;
+    color: $blue-dark;
+    font-size: 13.5px;
+    font-weight: 600;
     white-space: nowrap;
     user-select: none;
   }
 
   .toggle {
-    border: none;
-    border-left: 1.5px solid $border;
-    background: $accent-light;
-    color: $accent;
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 600;
     min-width: 84px;
     padding: 0 14px;
+    border: none;
+    border-left: 1.5px solid $border;
+    background: $blue-soft;
+    color: $blue-dark;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
     cursor: pointer;
-    transition: filter 0.15s;
+    transition: background 0.15s, color 0.15s;
 
-    &:hover { filter: brightness(0.96); }
-    &:focus-visible { outline: 2px solid $accent; outline-offset: -2px; }
+    &:hover { background: $blue; color: #fff; }
+    &:focus-visible { outline: 2px solid $blue; outline-offset: -2px; }
   }
 }
 
@@ -417,9 +473,9 @@ $surface: #f7f9fd;
 
   &__bars {
     display: grid;
+    flex: 1;
     grid-template-columns: repeat(3, 1fr);
     gap: 5px;
-    flex: 1;
 
     span {
       height: 4px;
@@ -431,113 +487,113 @@ $surface: #f7f9fd;
 
   &__label {
     min-width: 138px;
-    text-align: right;
+    color: $muted;
     font-size: 11.5px;
     font-weight: 600;
-    color: $muted;
+    text-align: right;
     transition: color 0.2s;
   }
 
-  &[data-level="1"] {
+  &[data-level='1'] {
     .strength__bars span:nth-child(-n + 1) { background: $danger; }
     .strength__label { color: $danger; }
   }
 
-  &[data-level="2"] {
+  &[data-level='2'] {
     .strength__bars span:nth-child(-n + 2) { background: $warning; }
     .strength__label { color: $warning; }
   }
 
-  &[data-level="3"] {
+  &[data-level='3'] {
     .strength__bars span { background: $success; }
     .strength__label { color: $success; }
   }
 }
 
-/* ---------- Requisitos de contraseña (una sola línea) ---------- */
+/* ---------- Requisitos de contraseña ---------- */
 .checklist {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
 
   li {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 11.5px;
-    color: $muted;
     padding: 3px 10px 3px 7px;
+    border: 1px solid $border;
     border-radius: 99px;
     background: $surface;
-    border: 1px solid $border;
+    color: $muted;
+    font-size: 11.5px;
     transition: color 0.2s, background 0.2s, border-color 0.2s;
 
     &::before {
-      content: "";
+      content: '';
+      flex-shrink: 0;
       width: 12px;
       height: 12px;
-      flex-shrink: 0;
+      border: 1.5px solid #a9bccb;
       border-radius: 50%;
-      border: 1.5px solid #b9c1d6;
+      color: #fff;
       font-size: 8px;
       font-weight: 800;
       line-height: 9px;
       text-align: center;
-      color: #fff;
       transition: all 0.2s;
     }
 
     &.ok {
-      color: $success;
-      background: $success-bg;
       border-color: rgba(31, 157, 85, 0.3);
+      background: $success-bg;
+      color: $success;
 
       &::before {
-        content: "✓";
-        background: $success;
+        content: '✓';
         border-color: $success;
+        background: $success;
       }
     }
   }
 }
 
-/* ---------- Botón ---------- */
+/* ---------- Botón (amarillo, como "Iniciar sesión") ---------- */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px 18px;
-  margin-top: 6px;
+  margin-top: 10px;
+  padding: 13px 18px;
+  border: 1px solid $yellow;
   border-radius: 11px;
-  border: none;
+  background: $yellow;
+  color: $navy;
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
-  background: linear-gradient(135deg, $accent-2, $accent);
-  color: #fff;
   cursor: pointer;
-  box-shadow: 0 10px 20px -8px rgba(52, 87, 232, 0.65);
-  transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 8px 18px -8px rgba(249, 188, 0, 0.7);
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
 
   &:hover:not(:disabled) {
-    filter: brightness(1.07);
-    box-shadow: 0 14px 24px -8px rgba(52, 87, 232, 0.7);
+    border-color: $yellow-dark;
+    background: $yellow-dark;
   }
 
   &:active:not(:disabled) { transform: scale(0.985); }
 
   &:focus-visible {
-    outline: 3px solid rgba(92, 124, 245, 0.45);
+    outline: 3px solid rgba(10, 90, 133, 0.4);
     outline-offset: 2px;
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.65;
     box-shadow: none;
   }
 }
@@ -547,8 +603,8 @@ $surface: #f7f9fd;
 .spinner {
   width: 15px;
   height: 15px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
+  border: 2px solid rgba(5, 58, 94, 0.3);
+  border-top-color: $navy;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -559,20 +615,20 @@ $surface: #f7f9fd;
 
 /* ---------- Enlace a login ---------- */
 .register-link {
-  text-align: center;
-  font-size: 13px;
-  color: $muted;
-  margin: 14px 0 0;
-  padding-top: 12px;
+  margin: 16px 0 0;
+  padding-top: 14px;
   border-top: 1px solid $border;
+  color: $muted;
+  font-size: 13px;
+  text-align: center;
 
   a {
-    color: $accent;
+    color: $blue-dark;
     font-weight: 700;
     text-decoration: none;
 
     &:hover { text-decoration: underline; }
-    &:focus-visible { outline: 2px solid $accent; outline-offset: 2px; border-radius: 3px; }
+    &:focus-visible { outline: 2px solid $blue; outline-offset: 2px; border-radius: 3px; }
   }
 }
 

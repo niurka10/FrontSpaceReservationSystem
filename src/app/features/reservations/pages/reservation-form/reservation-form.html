@@ -29,6 +29,9 @@
             <option [value]="candidate.id">{{ candidate.name }} — {{ candidate.role }}</option>
             }
           </select>
+          @if (candidatesError(); as msg) {
+          <small class="field-error">{{ msg }}</small>
+          }
         </div>
         }
 
@@ -52,7 +55,8 @@
         <div class="field-row">
           <div class="field">
             <label for="date">Fecha *</label>
-            <input id="date" type="date" formControlName="date" [min]="minDate" (change)="checkResourceAvailability()" />
+            <input id="date" type="date" formControlName="date" [min]="minDate"
+              (change)="checkResourceAvailability()" />
           </div>
           <div class="field">
             <label for="startTime">Hora inicio *</label>

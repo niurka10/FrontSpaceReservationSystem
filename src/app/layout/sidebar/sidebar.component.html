@@ -9,9 +9,8 @@
 <div class="sidebar-backdrop" (click)="closeDrawer()"></div>
 }
 <aside #sidebar class="sidebar d-flex flex-column" [class.is-expanded]="expanded()"
-  [attr.inert]="drawerClosed() ? '' : null" (keydown.escape)="onEscape()"
-  (mouseenter)="open()" (mouseleave)="onMouseLeave(sidebar)"
-  (focusin)="onFocusIn($event)" (focusout)="onFocusOut($event, sidebar)">
+  [attr.inert]="drawerClosed() ? '' : null" (keydown.escape)="onEscape()" (mouseenter)="open()"
+  (mouseleave)="onMouseLeave(sidebar)" (focusin)="onFocusIn($event)" (focusout)="onFocusOut($event, sidebar)">
 
   <div class="brand d-flex align-items-center gap-2">
     <div class="mark" aria-hidden="true"></div>
@@ -19,6 +18,12 @@
       UNIB·E
       <small>Reservas</small>
     </div>
+    @if (!isNarrow()) {
+    <button type="button" class="pin-btn ms-auto" [class.is-pinned]="pinned()" aria-label="Fijar menú"
+      [attr.aria-pressed]="pinned()" [attr.title]="pinned() ? 'Soltar menú' : 'Fijar menú'" (click)="togglePin()">
+      <i class="bi" [class.bi-pin-angle]="!pinned()" [class.bi-pin-angle-fill]="pinned()" aria-hidden="true"></i>
+    </button>
+    }
     <button #closeBtn type="button" class="close-btn ms-auto" aria-label="Cerrar menú" (click)="closeDrawer()">
       <i class="bi bi-x-lg"></i>
     </button>
@@ -27,7 +32,7 @@
   <!-- Cada grupo se pinta solo si el rol ve al menos uno de sus links (canSee con varios
        paths = "¿alguno es visible?"). Los títulos son visuales (aria-hidden): el grupo ya
        tiene su aria-label. -->
-       <nav class="nav flex-column flex-grow-1" aria-label="Menú principal" (click)="onNavClick($event)">
+  <nav class="nav flex-column flex-grow-1" aria-label="Menú principal" (click)="onNavClick($event)">
 
     @if (canSee('/dashboard', '/reservations/calendar', '/alerts')) {
     <div class="navgroup" role="group" aria-label="Principal">

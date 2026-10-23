@@ -9,6 +9,7 @@ import { UserSummaryResponse } from "../../../users/models/user-summary.model";
 import { AuthService } from "../../../../core/auth/auth.service";
 import { UserService } from "../../../users/user.service";
 import { forkJoin } from "rxjs";
+import { apiErrorMessage } from "../../utils/api-error";
 
 interface ResourceRow {
   option: ResourceOption;
@@ -43,8 +44,9 @@ export class ReservationFormComponent implements OnInit {
   readonly isLoadingOptions = signal(false);
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly candidatesError = signal<string | null>(null);
   readonly canCreateForOthers = computed(() =>
-    this.authService.hasRole('Coordinator', 'Vicerrector', 'Bienes', 'Admin')
+    this.authService.hasRole('Coordinator', 'Bienes', 'Admin')
   );
   readonly candidates = signal<UserSummaryResponse[]>([]);
   readonly isEditMode = signal(false);
@@ -180,8 +182,8 @@ export class ReservationFormComponent implements OnInit {
         // Actualizar la disponibilidad para la fecha y horario cargados.
         this.checkResourceAvailability();
       },
-      error: () =>
-        this.errorMessage.set('No se pudo cargar la reserva a editar.'),
+      error: (err) =>
+        this.errorMessage.set(apiErrorMessage(err, 'No se pudo cargar la reserva a editar.')),
 
     });
   }
@@ -328,26 +330,44 @@ export class ReservationFormComponent implements OnInit {
 
   private loadCandidates(): void {
     if (!this.canCreateForOthers()) return;
+    this.candidatesError.set(null);
 
-    this.userService.ensureMeLoaded().subscribe((me) => {
-      // Coordinator: solo Student/Teacher de SU carrera (regla del backend).
-      if (this.authService.hasRole('Coordinator')) {
-        if (!me.careerId) return;
+    // Un solo manejador para las tres peticiones: muestra el `description` del backend
+    // y, si no hay, un texto de respaldo.
+    const onError = (err: unknown) =>
+      this.candidatesError.set(
+        apiErrorMessage(err, 'No se pudo cargar la lista de usuarios. Aun así puedes reservar para ti.')
+      );
 
-        forkJoin([
-          this.userService.search('Student', me.careerId),
-          this.userService.search('Teacher', me.careerId),
-        ]).subscribe(([students, teachers]) => {
-          this.candidates.set([...students, ...teachers]);
+    this.userService.getMe().subscribe({
+      next: (me) => {
+        // Coordinator: solo Student/Teacher de SU carrera (regla del backend).
+        if (this.authService.hasRole('Coordinator')) {
+          if (!me.careerId) {
+            this.candidatesError.set(
+              'Tu usuario no tiene una carrera asignada, por eso no se puede listar a quién reservar.'
+            );
+            return;
+          }
+
+          forkJoin([
+            this.userService.search('Student', me.careerId),
+            this.userService.search('Teacher', me.careerId),
+          ]).subscribe({
+            next: ([students, teachers]) => this.candidates.set([...students, ...teachers]),
+            error: onError,
+          });
+          return;
+        }
+
+        // Bienes y Admin: sin restricción de a quién. Se excluye
+        // al propio usuario porque "Para mí" ya es la primera opción del select.
+        this.userService.search().subscribe({
+          next: (users) => this.candidates.set(users.filter((u) => u.id !== me.id)),
+          error: onError,
         });
-        return;
-      }
-
-      // Vicerrector, Bienes y Admin: sin restricción de a quién. Se excluye
-      // al propio usuario porque "Para mí" ya es la primera opción del select.
-      this.userService.search().subscribe((users) => {
-        this.candidates.set(users.filter((u) => u.id !== me.id));
-      });
+      },
+      error: onError,
     });
   }
 }

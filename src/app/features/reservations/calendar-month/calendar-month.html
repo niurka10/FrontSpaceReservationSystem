@@ -1,0 +1,181 @@
+<!-- Botón "Nueva reserva": se usa en el pie de la hoja y en el estado vacío. -->
+<ng-template #bookBtn>
+    @if (canBook()) {
+    <a routerLink="/reservations/new" class="btn-new">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva reserva
+    </a>
+    } @else {
+    <!-- aria-disabled (no disabled): sigue enfocable y conserva el tooltip.
+         El texto visible de abajo cubre a quien no tiene mouse (móvil). -->
+    <button type="button" class="btn-new is-disabled" aria-disabled="true" title="Se requiere 72 horas de anticipación"
+        (click)="$event.preventDefault()">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva reserva
+    </button>
+    <small class="book-hint">Se requiere 72 horas de anticipación.</small>
+    }
+</ng-template>
+
+<section class="cal-page">
+    <h1 class="sr-only">Calendario de reservas</h1>
+
+    @if (errorMessage(); as msg) {
+    <div class="alert-error" role="alert">{{ msg }}</div>
+    }
+
+    <!-- MES (ocupa todo el ancho) -->
+    <div class="month-card">
+        <header class="month-head">
+            <button type="button" class="nav-btn" aria-label="Mes anterior" (click)="prevMonth()">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+            </button>
+            <h2 class="month-title" aria-live="polite">{{ monthLabel() }}</h2>
+            <button type="button" class="nav-btn" aria-label="Mes siguiente" (click)="nextMonth()">
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="today-btn" (click)="goToday()">Hoy</button>
+        </header>
+
+        <div class="month-body">
+            @if (isLoading()) {
+            <p class="state-msg">Cargando reservas...</p>
+            }
+
+            <div class="weekdays" aria-hidden="true">
+                @for (w of weekdays; track w) { <span>{{ w }}</span> }
+            </div>
+
+            <div class="days">
+                @for (c of cells(); track $index) {
+                @if (c) {
+                <button type="button" class="day" [class.is-today]="c.isToday" [class.is-selected]="c.isSelected"
+                    [attr.aria-pressed]="c.isSelected" [attr.aria-current]="c.isToday ? 'date' : null"
+                    [attr.aria-label]="c.label" (click)="selectDay(c.key, $event)">
+                    <span class="day-num">{{ c.num }}</span>
+                    <span class="dots" aria-hidden="true">
+                        @for (g of c.dots; track $index) { <span class="dot" [attr.data-g]="g"></span> }
+                        @if (c.extra > 0) { <span class="more">+{{ c.extra }}</span> }
+                    </span>
+                </button>
+                } @else {
+                <span class="day-blank"></span>
+                }
+                }
+            </div>
+
+            <ul class="legend" aria-label="Colores de estado">
+                @for (l of legend; track l.g) {
+                <li><span class="dot" [attr.data-g]="l.g"></span>{{ l.label }}</li>
+                }
+            </ul>
+        </div>
+        <!-- HOJA INFERIOR: reservas del día. -->
+        <div class="sheet-backdrop" [class.is-open]="panelOpen()" (click)="closePanel()"></div>
+
+        <div class="sheet" [class.is-open]="panelOpen()" [attr.inert]="panelOpen() ? null : ''" role="dialog"
+            aria-modal="true" aria-labelledby="sheet-title" (keydown.escape)="onEscape()">
+            <span class="sheet-handle" aria-hidden="true"></span>
+
+            <header class="sheet-head">
+                <div>
+                    <h2 id="sheet-title" class="panel-date">{{ selectedDateLabel() }}</h2>
+                    <p class="panel-count" aria-live="polite">{{ countLabel() }}</p>
+                </div>
+                <button #closeBtn type="button" class="sheet-close" aria-label="Cerrar" (click)="closePanel()">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </header>
+
+            <div class="sheet-body">
+                @if (detailError(); as msg) {
+                <div class="alert-error sheet-alert" role="alert">{{ msg }}</div>
+                }
+
+                @if (items().length > 0) {
+                <ul class="res-list">
+                    @for (it of items(); track it.id) {
+                    <li>
+                        <!-- La tarjeta es un botón: se abre con clic, Enter o Espacio. Solo spans
+                   dentro (un botón no admite <p> ni <div>). -->
+                        <button type="button" class="res-card" [attr.data-s]="it.visual" aria-haspopup="dialog"
+                            [disabled]="loadingId() === it.id" (click)="openDetail(it.id, $event)">
+                            <span class="res-top">
+                                <span class="res-time">{{ it.start }} – {{ it.end }}</span>
+                                <span class="chip">{{ it.statusLabel }}</span>
+                            </span>
+
+                            <span class="res-main">
+                                <span class="res-space">{{ it.space }}</span>
+                                @if (it.resourcePill) { <span class="pill">{{ it.resourcePill }}</span> }
+                            </span>
+
+                            <span class="res-reason">{{ it.reason }}</span>
+
+                            @if (it.requester) {
+                            <span class="res-requester">
+                                <i class="bi bi-person" aria-hidden="true"></i> {{ it.requester }}
+                            </span>
+                            }
+                        </button>
+                    </li>
+                    }
+                </ul>
+                } @else {
+                <!-- Estado vacío: ilustración animada (SVG + CSS) y el mismo botón. -->
+                <div class="empty-day">
+                    <svg class="empty-art" viewBox="0 0 160 130" aria-hidden="true" focusable="false">
+                        <ellipse class="art-shadow" cx="76" cy="119" rx="44" ry="6" />
+                        <g class="art-cal">
+                            <rect class="art-body" x="30" y="22" width="92" height="86" rx="12" />
+                            <rect class="art-top" x="30" y="22" width="92" height="24" rx="12" />
+                            <rect class="art-top" x="30" y="34" width="92" height="12" />
+                            <rect class="art-ring" x="48" y="14" width="8" height="18" rx="4" />
+                            <rect class="art-ring" x="98" y="14" width="8" height="18" rx="4" />
+                            <g class="art-dots">
+                                <circle cx="48" cy="62" r="3.5" />
+                                <circle cx="66" cy="62" r="3.5" />
+                                <circle cx="84" cy="62" r="3.5" />
+                                <circle cx="102" cy="62" r="3.5" />
+                                <circle cx="48" cy="78" r="3.5" />
+                                <circle cx="66" cy="78" r="3.5" />
+                                <circle cx="84" cy="78" r="3.5" />
+                                <circle cx="102" cy="78" r="3.5" />
+                                <circle cx="48" cy="94" r="3.5" />
+                                <circle cx="66" cy="94" r="3.5" />
+                                <circle cx="84" cy="94" r="3.5" />
+                                <circle cx="102" cy="94" r="3.5" />
+                            </g>
+                        </g>
+                        <g class="art-lens">
+                            <circle class="art-lens-glass" cx="112" cy="84" r="15" />
+                            <line class="art-lens-handle" x1="123" y1="95" x2="136" y2="108" />
+                        </g>
+                        <g transform="translate(22 36)">
+                            <path class="art-spark" d="M0 -7L2 -2L7 0L2 2L0 7L-2 2L-7 0L-2 -2Z" />
+                        </g>
+                        <g transform="translate(142 30)">
+                            <path class="art-spark s2" d="M0 -6L1.6 -1.6L6 0L1.6 1.6L0 6L-1.6 1.6L-6 0L-1.6 -1.6Z" />
+                        </g>
+                    </svg>
+
+                    <h3 class="empty-title">Día libre</h3>
+                    <p class="empty-text">No hay reservas este día.</p>
+                    <div class="empty-actions">
+                        <ng-container [ngTemplateOutlet]="bookBtn" />
+                    </div>
+                </div>
+                }
+            </div>
+
+            @if (items().length > 0) {
+            <footer class="sheet-foot">
+                <ng-container [ngTemplateOutlet]="bookBtn" />
+            </footer>
+            }
+        </div>
+    </div>
+
+    <!-- Detalle compartido (z-index 1200: queda por encima de la hoja, que es 1190). -->
+    @if (selectedDetail(); as detail) {
+    <app-reservation-detail-modal [detail]="detail" (closed)="closeDetail()" />
+    }
+</section>

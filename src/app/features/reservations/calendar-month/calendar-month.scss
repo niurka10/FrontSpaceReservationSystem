@@ -1,0 +1,777 @@
+:host {
+    display: block;
+    --navy-1: #101d38;
+    --navy-2: #17284d;
+    --accent: #3457e8;
+    --accent-light: #5c7cf5;
+    --page-bg: #f2f4fa;
+    --text: #1c2233;
+    --muted: #6c7690;
+    --line: #e4e8f2;
+
+    // Puntos por grupo de estado.
+    --dot-approved: #158a4c;
+    --dot-review: #f0a30a;
+    --dot-draft: #8892a6;
+    // Chips de las tarjetas (texto, fondo).
+    --chip-approved-fg: #12784a;
+    --chip-approved-bg: #e4f4ea;
+    --chip-review-fg: #9c4a05;
+    --chip-review-bg: #fcebdd;
+    --chip-draft-fg: #4f5b68;
+    --chip-draft-bg: #edf1f4;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// ================= PÁGINA =================
+.cal-page {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 20px;
+    background: var(--page-bg);
+    border-radius: 18px;
+    // Alto = pantalla menos la barra superior y el relleno del shell.
+    // La primera línea es el respaldo para navegadores sin "dvh".
+    height: calc(100vh - 120px);
+    height: calc(100dvh - 120px);
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+
+.alert-error {
+    flex: none;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: #fdeaea;
+    color: #c22b2b;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+// ================= TARJETA DEL MES =================
+.month-card {
+    position: relative; // la hoja se ancla a esta tarjeta
+    isolation: isolate; // los z-index de adentro no salen de aquí
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden; // recorta la hoja mientras sube
+    overflow: clip;
+    box-shadow: 0 2px 8px rgba(16, 29, 56, 0.06);
+}
+
+// ---- encabezado: mes + año, flechas y "Hoy" ----
+.month-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--navy-1), var(--navy-2));
+    color: #fff;
+}
+
+.month-title {
+    flex: 1;
+    margin: 0;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.nav-btn {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.22);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--accent-light);
+        outline-offset: 2px;
+    }
+}
+
+.today-btn {
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 9px;
+    background: transparent;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.14);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--accent-light);
+        outline-offset: 2px;
+    }
+}
+
+.month-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px 16px;
+}
+
+.state-msg {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+// ---- cuadrícula: 7 columnas, semana desde lunes ----
+.weekdays,
+.days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.weekdays {
+    flex: none;
+    margin-bottom: 6px;
+
+    span {
+        text-align: center;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+}
+
+.days {
+    flex: 1;
+    min-height: 0;
+    grid-auto-rows: minmax(0, 1fr); // las filas se reparten el alto disponible
+}
+
+.day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 0;
+    padding: 6px 2px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: #f8f9fc;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+        background: #eef2ff;
+        border-color: #d6defc;
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(52, 87, 232, 0.4);
+        outline-offset: 1px;
+    }
+}
+
+.day-blank {
+    min-height: 0;
+}
+
+.day-num {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+// Hoy: anillo.
+.day.is-today {
+    box-shadow: inset 0 0 0 2px var(--accent-light);
+}
+
+// Seleccionado: relleno azul.
+.day.is-selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: none;
+
+    &:hover {
+        background: var(--accent);
+    }
+
+    // Hoy y seleccionado a la vez: anillo claro por fuera.
+    &.is-today {
+        box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent-light);
+    }
+
+    // Sobre el azul, el punto lleva borde claro para no perderse.
+    .dot {
+        box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.85);
+    }
+}
+
+// ---- puntos ----
+.dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 8px;
+}
+
+.dot {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dot-draft);
+
+    &[data-g='approved'] {
+        background: var(--dot-approved);
+    }
+
+    &[data-g='review'] {
+        background: var(--dot-review);
+    }
+
+    &[data-g='draft'] {
+        background: var(--dot-draft);
+    }
+}
+
+.more {
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.8;
+}
+
+// ---- leyenda ----
+.legend {
+    flex: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 14px 0 0;
+    padding: 12px 0 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+}
+
+// ================= HOJA INFERIOR =================
+.sheet-backdrop {
+    position: absolute; // cubre solo el calendario, no toda la pantalla
+    inset: 0;
+    z-index: 1;
+    background: rgba(16, 29, 56, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0s 0.25s;
+
+    &.is-open {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.25s ease;
+    }
+}
+
+.sheet {
+    position: absolute; // pegada al borde inferior de la tarjeta, centrada
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    width: min(100%, 760px);
+    margin: 0 auto;
+    max-height: min(64%, 520px); // deja a la vista parte del calendario
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 40px rgba(16, 29, 56, 0.28);
+    transform: translateY(100%);
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1), visibility 0s 0.3s;
+
+    &.is-open {
+        transform: translateY(0);
+        visibility: visible;
+        transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+    }
+}
+
+.sheet-handle {
+    flex: none;
+    align-self: center;
+    width: 44px;
+    height: 4px;
+    margin: 10px 0 2px;
+    border-radius: 4px;
+    background: #cbd3e1;
+}
+
+.sheet-head {
+    flex: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 18px 14px;
+    border-bottom: 1px solid var(--line);
+}
+
+.panel-date {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.panel-count {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.sheet-close {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 9px;
+    background: #eef0f5;
+    color: #4a5266;
+    font-size: 14px;
+    cursor: pointer;
+
+    &:hover {
+        background: #e1e5ee;
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(52, 87, 232, 0.4);
+        outline-offset: 2px;
+    }
+}
+
+// Solo esta zona hace scroll; el encabezado y el pie quedan fijos.
+.sheet-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.sheet-alert {
+    margin: 12px 16px 0;
+}
+
+// ---- lista de reservas ----
+.res-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 14px 16px 18px;
+    list-style: none;
+}
+
+// La tarjeta es un <button>; sus colores vienen de data-s.
+.res-card {
+    --s-fg: var(--chip-draft-fg);
+    --s-bg: var(--chip-draft-bg);
+    --s-bar: var(--dot-draft);
+
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    padding: 12px 14px 12px 16px;
+    background: #f8f9fc;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--s-bar);
+    border-radius: 10px;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+    &[data-s='approved'] {
+        --s-fg: var(--chip-approved-fg);
+        --s-bg: var(--chip-approved-bg);
+        --s-bar: var(--dot-approved);
+    }
+
+    &[data-s='review'] {
+        --s-fg: var(--chip-review-fg);
+        --s-bg: var(--chip-review-bg);
+        --s-bar: var(--dot-review);
+    }
+
+    &[data-s='draft'] {
+        --s-fg: var(--chip-draft-fg);
+        --s-bg: var(--chip-draft-bg);
+        --s-bar: var(--dot-draft);
+    }
+
+    &:hover {
+        box-shadow: 0 4px 14px rgba(16, 29, 56, 0.1);
+        transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(52, 87, 232, 0.4);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.65;
+        cursor: progress;
+    }
+}
+
+.res-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.res-time {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.chip {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--s-bg);
+    color: var(--s-fg);
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.res-main {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.res-space {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.pill {
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: var(--accent);
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+// Motivo recortado a 2 líneas.
+.res-reason {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #4a5266;
+}
+
+.res-requester {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+// ---- pie con "Nueva reserva" ----
+.sheet-foot {
+    flex: none;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+}
+
+.btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: #2a46c4;
+    }
+
+    &:focus-visible {
+        outline: 3px solid rgba(52, 87, 232, 0.4);
+        outline-offset: 2px;
+    }
+
+    // Menos de 72 h: se ve apagado pero sigue enfocable.
+    &.is-disabled {
+        background: #cbd3e1;
+        cursor: not-allowed;
+
+        &:hover {
+            background: #cbd3e1;
+        }
+    }
+}
+
+.book-hint {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+// ---- estado vacío ----
+.empty-day {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 22px 18px 28px;
+    text-align: center;
+}
+
+.empty-art {
+    width: min(220px, 60%);
+    height: auto;
+}
+
+.empty-title {
+    margin: 6px 0 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.empty-text {
+    margin: 0 0 10px;
+    font-size: 13.5px;
+    color: var(--muted);
+}
+
+.empty-actions {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+}
+
+// ---- ilustración (colores de la paleta; animación solo CSS) ----
+.art-shadow {
+    fill: rgba(16, 29, 56, 0.08);
+}
+
+.art-body {
+    fill: #fff;
+    stroke: #d6defc;
+    stroke-width: 2;
+}
+
+.art-top {
+    fill: var(--accent);
+}
+
+.art-ring {
+    fill: var(--navy-1);
+}
+
+.art-dots circle {
+    fill: #d6defc;
+}
+
+.art-lens-glass {
+    fill: rgba(92, 124, 245, 0.15);
+    stroke: var(--accent);
+    stroke-width: 4;
+}
+
+.art-lens-handle {
+    stroke: var(--navy-2);
+    stroke-width: 6;
+    stroke-linecap: round;
+}
+
+.art-spark {
+    fill: var(--accent-light);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: twinkle 2.4s ease-in-out infinite;
+
+    &.s2 {
+        fill: var(--dot-review);
+        animation-delay: 1.2s;
+    }
+}
+
+.art-cal {
+    animation: bob 3.2s ease-in-out infinite;
+}
+
+// La lupa recorre el calendario "buscando" reservas.
+.art-lens {
+    animation: sweep 4s ease-in-out infinite;
+}
+
+@keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@keyframes sweep {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(-38px, -30px); }
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.25; transform: scale(0.7); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+// ================= RESPONSIVO (va después de todo lo base) =================
+
+// Pantallas bajas: días más compactos para que 6 filas quepan.
+@media (max-height: 760px) {
+    .day {
+        gap: 3px;
+        padding: 4px 2px;
+    }
+
+    .day-num {
+        font-size: 15px;
+    }
+}
+
+// Pantallas muy bajas (p. ej. celular horizontal): el borde inferior del
+// calendario puede quedar fuera de la vista; la hoja se pega a la pantalla.
+@media (max-height: 600px) {
+    .sheet-backdrop {
+        position: fixed;
+        z-index: 1189;
+    }
+
+    .sheet {
+        position: fixed;
+        z-index: 1190;
+        max-height: 82vh;
+    }
+}
+
+// Pantallas estrechas.
+@media (max-width: 767.98px) {
+    .cal-page {
+        padding: 12px;
+        border-radius: 0;
+    }
+
+    .month-body {
+        padding: 10px 10px 12px;
+    }
+}
+
+// ================= MOVIMIENTO REDUCIDO (SIEMPRE AL FINAL) =================
+@media (prefers-reduced-motion: reduce) {
+    .nav-btn,
+    .today-btn,
+    .day,
+    .res-card,
+    .btn-new {
+        transition: none;
+    }
+
+    // .is-open tiene su propia transición (más específica): se cubre también.
+    .sheet,
+    .sheet.is-open,
+    .sheet-backdrop,
+    .sheet-backdrop.is-open {
+        transition: none;
+    }
+
+    .res-card:hover {
+        transform: none;
+    }
+
+    .art-cal,
+    .art-lens,
+    .art-spark {
+        animation: none;
+    }
+
+    .art-spark {
+        opacity: 0.8;
+    }
+}

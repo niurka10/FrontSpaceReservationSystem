@@ -3,6 +3,22 @@ import { RouterLink, RouterLinkActive } from "@angular/router";
 import { AuthService } from "../../core/auth/auth.service";
 import { NAV_ITEMS } from "./nav-items";
 
+
+const PIN_KEY = 'unibe.sidebar.pinned';
+function readPinned(): boolean {
+    try {
+        return localStorage.getItem(PIN_KEY) === '1';
+    } catch {
+        return false;
+    }
+}
+function writePinned(value: boolean): void {
+    try {
+        localStorage.setItem(PIN_KEY, value ? '1' : '0');
+    } catch {
+        // Sin almacenamiento: la preferencia dura solo mientras la página esté abierta.
+    }
+}
 @Component({
     selector: 'app-slidebar',
     standalone: true,
@@ -19,7 +35,7 @@ export class SlidebarComponent {
         // cambiar el tamaño de la ventana). Al cruzarlo, el menú vuelve a estado cerrado.
         const onChange = (e: MediaQueryListEvent) => {
             this.isNarrow.set(e.matches);
-            this.expanded.set(false);
+            this.isOpen.set(false);
         };
         this.narrowQuery.addEventListener('change', onChange);
         this.destroyRef.onDestroy(() => this.narrowQuery.removeEventListener('change', onChange));
@@ -39,9 +55,12 @@ export class SlidebarComponent {
     private readonly narrowQuery = window.matchMedia('(max-width: 767.98px)');
     readonly isNarrow = signal(this.narrowQuery.matches);
 
-    // Única fuente de verdad del estado del menú (true = expandido en escritorio,
-    // cajón abierto en pantallas estrechas).
-    readonly expanded = signal(false);
+    private readonly isOpen = signal(false);
+    readonly pinned = signal(readPinned());
+
+    readonly expanded = computed(() =>
+        this.isNarrow() ? this.isOpen() : this.pinned() || this.isOpen()
+    );
 
     // NUEVO: cajón cerrado = oculto fuera de pantalla. Se usa para marcarlo "inert":
     // sin eso, Tab pasaría por links invisibles.
@@ -54,20 +73,20 @@ export class SlidebarComponent {
     // un toque en el celular dispara mouseenter/mouseleave "falsos" y abriría y cerraría
     // el cajón solo. ---
     open(): void {
-        if (!this.isNarrow()) this.expanded.set(true);
+        if (!this.isNarrow()) this.isOpen.set(true);
     }
 
     // Al sacar el mouse se cierra, salvo que haya foco de TECLADO dentro.
     onMouseLeave(sidebar: HTMLElement): void {
         if (this.isNarrow()) return;
-        if (!sidebar.querySelector(':focus-visible')) this.expanded.set(false);
+        if (!sidebar.querySelector(':focus-visible')) this.isOpen.set(false);
     }
 
     // Solo se expande con foco de teclado (:focus-visible). Con :focus-within puro, un
     // clic con el mouse deja el foco dentro y el menú se quedaría abierto.
     onFocusIn(event: FocusEvent): void {
         if (this.isNarrow()) return;
-        if ((event.target as HTMLElement).matches(':focus-visible')) this.expanded.set(true);
+        if ((event.target as HTMLElement).matches(':focus-visible')) this.isOpen.set(true);
     }
 
     // Se cierra cuando el foco sale del sidebar, salvo que el mouse siga encima.
@@ -75,18 +94,18 @@ export class SlidebarComponent {
         if (this.isNarrow()) return;
         const next = event.relatedTarget as Node | null;
         const leftSidebar = !next || !sidebar.contains(next);
-        if (leftSidebar && !sidebar.matches(':hover')) this.expanded.set(false);
+        if (leftSidebar && !sidebar.matches(':hover')) this.isOpen.set(false);
     }
 
     // --- Pantallas estrechas: cajón con botón. ---
     openDrawer(): void {
-        this.expanded.set(true);
+        this.isOpen.set(true);
         // setTimeout: se espera a que Angular quite el "inert" antes de mover el foco.
         setTimeout(() => this.closeBtn()?.nativeElement.focus());
     }
 
     closeDrawer(returnFocus = true): void {
-        this.expanded.set(false);
+        this.isOpen.set(false);
         if (returnFocus) setTimeout(() => this.menuBtn()?.nativeElement.focus());
     }
 
@@ -96,7 +115,15 @@ export class SlidebarComponent {
     }
 
     onEscape(): void {
-        if (this.isNarrow() && this.expanded()) this.closeDrawer();
+        if (this.isNarrow() && this.isOpen()) this.closeDrawer();
+    }
+
+
+    togglePin(): void {                 //* Alterna entre menú fijo e interactivo
+        if (this.isNarrow()) return;
+        const next = !this.pinned();
+        this.pinned.set(next);
+        writePinned(next);
     }
 
 

@@ -1,8 +1,8 @@
 /* Colores como variables CSS en el host: para cambiar la paleta basta editar este bloque. */
 :host {
-  --brand-1: #0b4f7a;   // fondo, arriba
-  --brand-2: #003a5c;   // fondo, abajo
-  --accent: #fbba00;    // SOLO para el indicador del item activo y detalles
+  --brand-1: #0b4f7a; // fondo, arriba
+  --brand-2: #003a5c; // fondo, abajo
+  --accent: #fbba00; // SOLO para el indicador del item activo y detalles
   --text: #e3edf4;
   --text-muted: #b3c7d6;
   --line: rgba(255, 255, 255, 0.12);
@@ -34,10 +34,10 @@
 
 /* Etiquetas: se ocultan con opacity + max-width (NO display:none) para que el texto siga
    en el DOM y cada link conserve su nombre accesible. */
-.navitem > span,
+.navitem>span,
 .brand .word,
 .userinfo,
-.logout-btn > span {
+.logout-btn>span {
   max-width: 0;
   opacity: 0;
   overflow: hidden;
@@ -54,10 +54,11 @@
 }
 
 .sidebar.is-expanded {
-  .navitem > span,
+
+  .navitem>span,
   .brand .word,
   .userinfo,
-  .logout-btn > span {
+  .logout-btn>span {
     max-width: 200px;
     opacity: 1;
   }
@@ -110,7 +111,7 @@
 }
 
 /* ===== Grupos del menú ===== */
-.navgroup + .navgroup {
+.navgroup+.navgroup {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--line); // en el riel compacto hace de divisor
@@ -269,12 +270,59 @@
 
 /* Sin animaciones para quien las desactiva en su sistema. */
 @media (prefers-reduced-motion: reduce) {
+
   :host,
   .sidebar,
   .sidebar * {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ===== Botón de fijar el menú (solo escritorio) ===== */
+.pin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 32px;
+  height: 32px;
+  // Oculto en el riel compacto. Se esconde con max-width + opacity (NO display:none)
+  // para que siga en el orden de Tab: al enfocarlo, el menú se expande y aparece.
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 15px;
+  cursor: pointer;
+
+  transition: max-width 0.2s ease, opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar.is-expanded .pin-btn {
+  max-width: 32px;
+  opacity: 1;
+}
+
+.pin-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+// Fijado: chincheta rellena y en amarillo, para distinguirlo de un vistazo.
+.pin-btn.is-pinned {
+  color: var(--accent);
+  background: rgba(251, 186, 0, 0.14);
+}
+
+.pin-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ===== Botones del cajón: ocultos en escritorio ===== */
@@ -359,10 +407,10 @@
   }
 
   /* En el cajón las etiquetas siempre se ven (no existe el modo compacto). */
-  .navitem > span,
+  .navitem>span,
   .brand .word,
   .userinfo,
-  .logout-btn > span {
+  .logout-btn>span {
     max-width: 200px;
     opacity: 1;
   }

@@ -163,7 +163,7 @@ export class RegisterComponent {
         careerId: raw.careerId ?? undefined
       })
       .subscribe({
-        next: () => this.router.navigate(['/reservations']),
+        next: () => this.router.navigate(['/dashboard']),
         error: (err) => {
           this.isLoading.set(false);
           this.errorMessage.set(

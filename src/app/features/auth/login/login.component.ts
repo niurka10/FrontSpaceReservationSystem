@@ -47,7 +47,7 @@ export class LoginComponent {
     const { email, password } = this.form.getRawValue();
 
     this.authService.login({ email: email!, password: password! }).subscribe({
-      next: () => this.router.navigate(['/reservations']),
+      next: () => this.router.navigate(['/dashboard']),
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(

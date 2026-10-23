@@ -43,8 +43,8 @@ export const RESERVATIONS_ROUTES: Routes = [
   {
     path: 'calendar',
     loadComponent: () =>
-      import('./calendar/calendar.component').then(
-        (m) => m.CalendarComponent)
+      import('./calendar-month/calendar-month').then(
+        (m) => m.CalendarMonthComponent)
   },
   {
     path: 'new-resources',

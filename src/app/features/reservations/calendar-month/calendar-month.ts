@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Reservation, ReservationDetail } from '../models/reservation.interface';
 import { ReservationService } from '../services/reservation.service';
@@ -14,7 +14,8 @@ import { NgTemplateOutlet } from '@angular/common';
 const MAX_DOTS = 3;
 const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const GROUP_ORDER: Record<StatusGroup, number> = { approved: 0, review: 1, draft: 2, closed: 3 };
-const ROLE_ES: Record<string, string> = { Student: 'Estudiante', Teacher: 'Docente' };
+//const ROLE_ES: Record<string, string> = { Student: 'Estudiante', Teacher: 'Docente' };
+const ROLE_ES: Record<string, string> = { Student: 'Estudiante', Teacher: 'Docente', Coordinator: 'Coordinador' };
 const pad = (n: number) => String(n).padStart(2, '0');
 const dayKey = (year: number, month: number, day: number) => `${year}-${pad(month + 1)}-${pad(day)}`;
 
@@ -23,6 +24,9 @@ function plusDays(key: string, n: number): string {
     const r = new Date(y, m - 1, d + n);
     return dayKey(r.getFullYear(), r.getMonth(), r.getDate());
 }
+
+const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+const spaceOf = (r: Reservation) => (r.spaceId ? (r.spaceName ?? 'Espacio') : 'Solo recursos');
 
 // Una celda de la cuadrícula del mes.
 interface DayCell {
@@ -76,6 +80,93 @@ export class CalendarMonthComponent implements OnInit {
 
     readonly canBook = computed(() => this.selectedKey() >= this.minBookingKey);
 
+    // ---------- filtros ----------
+    readonly roleFilter = signal<string>('all');
+    readonly statusFilter = signal<StatusGroup | 'all'>('all');
+    readonly spaceFilter = signal<string>('all');
+    readonly personQuery = signal('');
+
+    // Opciones sacadas de los datos reales (sin filtrar).
+    readonly roleOptions = computed(() => {
+        const roles = new Set<string>();
+        for (const r of this.reservations()) if (r.requesterRole) roles.add(r.requesterRole);
+        return [...roles].map((v) => ({ value: v, label: ROLE_ES[v] ?? v }));
+    });
+
+    readonly spaceOptions = computed(() =>
+        [...new Set(this.reservations().map(spaceOf))].sort((a, b) => a.localeCompare(b, 'es'))
+    );
+
+    readonly hasFilters = computed(() =>
+        this.roleFilter() !== 'all' || this.statusFilter() !== 'all' ||
+        this.spaceFilter() !== 'all' || this.personQuery().trim() !== ''
+    );
+
+    // Reservas que pasan todos los filtros (se combinan con AND).
+    readonly filtered = computed(() => {
+        const role = this.roleFilter();
+        const status = this.statusFilter();
+        const space = this.spaceFilter();
+        const q = norm(this.personQuery());
+        return this.reservations().filter((r) =>
+            (role === 'all' || r.requesterRole === role) &&
+            (status === 'all' || statusGroup(r.currentStatus) === status) &&
+            (space === 'all' || spaceOf(r) === space) &&
+            (!q || norm(r.requesterName ?? '').includes(q))
+        );
+    });
+
+    onRole(e: Event): void { this.roleFilter.set((e.target as HTMLSelectElement).value); }
+    onSpace(e: Event): void { this.spaceFilter.set((e.target as HTMLSelectElement).value); }
+    onPerson(e: Event): void { this.personQuery.set((e.target as HTMLInputElement).value); }
+    toggleStatus(g: StatusGroup): void {
+        this.statusFilter.update((cur) => (cur === g ? 'all' : g));
+    }
+    clearFilters(): void {
+        this.roleFilter.set('all');
+        this.statusFilter.set('all');
+        this.spaceFilter.set('all');
+        this.personQuery.set('');
+    }
+
+    // ---------- panel de filtros ----------
+    readonly filtersOpen = signal(false);
+    private readonly host = inject(ElementRef) as ElementRef<HTMLElement>;
+
+    toggleFilters(): void { this.filtersOpen.update((v) => !v); }
+
+    // Clic fuera del panel: se cierra.
+    @HostListener('document:click', ['$event'])
+    onDocClick(e: Event): void {
+        if (!this.filtersOpen()) return;
+        const box = this.host.nativeElement.querySelector('.f-wrap');
+        if (box && !e.composedPath().includes(box)) this.filtersOpen.set(false);
+    }
+
+    // Elegir una opción; si vuelves a tocar la misma, se quita.
+    setRole(v: string): void { this.roleFilter.update((c) => (c === v ? 'all' : v)); }
+    setSpace(v: string): void { this.spaceFilter.update((c) => (c === v ? 'all' : v)); }
+
+    // Chips de los filtros activos.
+    readonly chips = computed(() => {
+        const out: { key: 'role' | 'status' | 'space' | 'person'; label: string }[] = [];
+        const q = this.personQuery().trim();
+        const role = this.roleFilter();
+        const status = this.statusFilter();
+        if (q) out.push({ key: 'person', label: `"${q}"` });
+        if (role !== 'all') out.push({ key: 'role', label: ROLE_ES[role] ?? role });
+        if (this.spaceFilter() !== 'all') out.push({ key: 'space', label: this.spaceFilter() });
+        if (status !== 'all') out.push({ key: 'status', label: this.legend.find((l) => l.g === status)?.label ?? status });
+        return out;
+    });
+
+    clearChip(key: 'role' | 'status' | 'space' | 'person'): void {
+        if (key === 'role') this.roleFilter.set('all');
+        if (key === 'status') this.statusFilter.set('all');
+        if (key === 'space') this.spaceFilter.set('all');
+        if (key === 'person') this.personQuery.set('');
+    }
+
     // ---------- detalle (mismo patrón que reservation-list) ----------
     readonly selectedDetail = signal<ReservationDetail | null>(null);
     readonly detailError = signal<string | null>(null);
@@ -112,7 +203,7 @@ export class CalendarMonthComponent implements OnInit {
     // y new Date(r.date) la correría un día atrás en Ecuador.
     readonly byDay = computed(() => {
         const map = new Map<string, Reservation[]>();
-        for (const r of this.reservations()) {
+        for (const r of this.filtered()) {
             const key = r.date.slice(0, 10);
             map.set(key, [...(map.get(key) ?? []), r]);
         }
@@ -139,7 +230,6 @@ export class CalendarMonthComponent implements OnInit {
 
         // getDay(): domingo = 0. Con (n + 6) % 7 la semana empieza en lunes (lunes = 0).
         const blanks = (new Date(y, m, 1).getDay() + 6) % 7;
-        // El "día 0" del mes siguiente es el último día de este mes.
         const total = new Date(y, m + 1, 0).getDate();
 
         const byDay = this.byDay();
@@ -169,30 +259,24 @@ export class CalendarMonthComponent implements OnInit {
     });
 
     // ---------- panel del día ----------
-
-    // "Miércoles, 21 de octubre de 2026". La clave se convierte a un Date LOCAL
-    // (new Date(año, mes, día)), y longDateEs lo formatea en hora local: el día no se mueve.
     readonly selectedDateLabel = computed(() => {
         const [y, m, d] = this.selectedKey().split('-').map(Number);
         return longDateEs(new Date(y, m - 1, d));
     });
 
-    // Reservas del día seleccionado, ya ordenadas por hora (byDay las deja ordenadas),
-    // convertidas a lo que la tarjeta necesita mostrar.
     readonly items = computed(() =>
         (this.byDay().get(this.selectedKey()) ?? []).map((r) => {
             const visual = statusVisual(r.currentStatus);
-            const n = r.resourceCount ?? 0; // null/undefined = no calculado: no se muestra pastilla
+            const n = r.resourceCount ?? 0; 
             return {
                 id: r.id,
                 start: r.startTime.slice(0, 5),
                 end: r.endTime.slice(0, 5),
-                space: r.spaceId ? (r.spaceName ?? 'Espacio') : 'Solo recursos',
+                space: spaceOf(r),
                 resourcePill: n > 0 ? `${r.spaceId ? '+' : ''}${n} ${n === 1 ? 'recurso' : 'recursos'}` : null,
                 reason: r.reason,
                 visual,
                 statusLabel: STATUS_VISUAL_LABEL[visual],
-                // filter(Boolean) descarta lo que falte: "Ana Pérez · Estudiante · Software".
                 requester: this.isCoordinator
                     ? [r.requesterName, r.requesterRole ? (ROLE_ES[r.requesterRole] ?? r.requesterRole) : null, r.careerName]
                         .filter(Boolean)
@@ -206,8 +290,6 @@ export class CalendarMonthComponent implements OnInit {
         const n = this.items().length;
         return n === 0 ? 'Sin reservas' : n === 1 ? '1 reserva' : `${n} reservas`;
     });
-
-    // ---------- acciones ----------
 
     prevMonth(): void { this.moveMonth(-1); }
     nextMonth(): void { this.moveMonth(1); }
@@ -270,6 +352,6 @@ export class CalendarMonthComponent implements OnInit {
 
     closeDetail(): void {
         this.selectedDetail.set(null);
-        this.lastCard?.focus({ preventScroll: true }); // el foco vuelve a la tarjeta que abrió el modal
+        this.lastCard?.focus({ preventScroll: true });
     }
 }

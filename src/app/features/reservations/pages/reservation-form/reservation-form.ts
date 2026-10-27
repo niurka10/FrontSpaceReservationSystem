@@ -73,6 +73,115 @@ export class ReservationFormComponent implements OnInit {
   readonly spaceOpen = signal(false);
   readonly activeIndex = signal(0);
 
+  // ===== Buscador de personas (para quién es la reserva) =====
+  private readonly roleEs: Record<string, string> = {
+    Student: 'Estudiante', Teacher: 'Docente', Coordinator: 'Coordinador',
+    Vicerrector: 'Vicerrector', Bienes: 'Bienes', Admin: 'Administrador',
+  };
+
+  readonly personSearch = signal('');
+  readonly personOpen = signal(false);
+  readonly personActive = signal(0);
+  readonly personRole = signal<string>('all');
+
+  // Campos extra opcionales: ajusta los nombres a los de tu UserSummaryResponse.
+  private personMeta(c: UserSummaryResponse): { email: string; doc: string; career: string } {
+    const u = c as UserSummaryResponse & { email?: string; identification?: string; careerName?: string };
+    return { email: u.email ?? '', doc: u.identification ?? '', career: u.careerName ?? '' };
+  }
+
+  // Pestañas de rol: solo si hay más de un rol en la lista.
+  readonly personRoleTabs = computed(() => {
+    const roles = [...new Set(this.candidates().map((c) => c.role))];
+    if (roles.length < 2) return [];
+    return [
+      { value: 'all', label: 'Todos' },
+      ...roles.map((r) => ({ value: r, label: this.rolePlural[r] ?? r })),
+    ];
+  });
+
+  private readonly rolePlural: Record<string, string> = {
+    Student: 'Estudiantes',
+    Teacher: 'Docentes',
+    Coordinator: 'Coordinadores',
+    Vicerrector: 'Vicerrectores',
+    Bienes: 'Bienes',
+    Admin: 'Administradores',
+  };
+
+  readonly personOptions = computed(() => {
+    const q = this.normalize(this.personSearch());
+    const role = this.personRole();
+    const list = this.candidates()
+      .filter((c) => role === 'all' || c.role === role)
+      .filter((c) => {
+        if (!q) return true;
+        const m = this.personMeta(c);
+        return this.normalize(`${c.name} ${m.email} ${m.doc}`).includes(q);
+      })
+      .map((c) => {
+        const m = this.personMeta(c);
+        return {
+          id: c.id,
+          name: c.name,
+          sub: [m.email, m.doc, m.career].filter(Boolean).join(' · '),
+          role: this.roleEs[c.role] ?? c.role,
+        };
+      });
+
+    return q || role !== 'all'
+      ? list
+      : [{ id: '', name: 'Para mí', sub: 'La reserva quedará a tu nombre', role: '' }, ...list];
+  });
+
+  selectedPersonLabel(): string {
+    const id = this.form.controls.onBehalfOfUserId.value;
+    if (!id) return 'Para mí';
+    const c = this.candidates().find((x) => x.id === id);
+    return c ? `${c.name} — ${this.roleEs[c.role] ?? c.role}` : 'Para mí';
+  }
+
+  openPeople(): void {
+    this.personSearch.set('');
+    this.personActive.set(0);
+    this.personOpen.set(true);
+  }
+  closePeople(): void { this.personOpen.set(false); }
+
+  onPersonSearch(value: string): void {
+    this.personSearch.set(value);
+    this.personActive.set(0);
+    this.personOpen.set(true);
+  }
+
+  setPersonRole(value: string): void {
+    this.personRole.set(value);
+    this.personActive.set(0);
+  }
+
+  selectPerson(id: string): void {
+    this.form.controls.onBehalfOfUserId.setValue(id);
+    this.personOpen.set(false);
+  }
+
+  onPersonKeydown(event: KeyboardEvent): void {
+    const options = this.personOptions();
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.personOpen.set(true);
+      this.personActive.set(Math.min(this.personActive() + 1, options.length - 1));
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.personActive.set(Math.max(this.personActive() - 1, 0));
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const opt = options[this.personActive()];
+      if (opt) this.selectPerson(opt.id);
+    } else if (event.key === 'Escape') {
+      this.personOpen.set(false);
+    }
+  }
+
   private normalize(text: string): string {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }

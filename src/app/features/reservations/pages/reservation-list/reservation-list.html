@@ -74,8 +74,43 @@
           <th class="col-num">#</th>
           <th class="col-date">Fecha</th>
           <th class="col-time">Hora</th>
-          <th>Motivo</th>
-          <th class="col-status">Estado</th>
+          <th>
+            <span class="th-filter">Motivo
+              <button type="button" class="f-icon" [class.is-on]="reasonQuery()" aria-label="Filtrar por motivo"
+                (click)="$event.stopPropagation(); toggleMenu('reason')">
+                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+              </button>
+              @if (openMenu() === 'reason') {
+              <div class="f-pop" (click)="$event.stopPropagation()">
+                <p class="f-pop-title">Filtrar motivo</p>
+                <label class="f-input">
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                  <input type="search" placeholder="Buscar motivo..." [value]="reasonQuery()"
+                    (input)="onReason($event)" />
+                </label>
+              </div>
+              }
+            </span>
+          </th>
+          <th class="col-status">
+            <span class="th-filter">Estado
+              <button type="button" class="f-icon" [class.is-on]="filter() !== 'all'" aria-label="Filtrar por estado"
+                (click)="$event.stopPropagation(); toggleMenu('status')">
+                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+              </button>
+              @if (openMenu() === 'status') {
+              <div class="f-pop" (click)="$event.stopPropagation()">
+                <p class="f-pop-title">Filtrar estado</p>
+                <div class="f-opts">
+                  @for (s of statusOptions; track s) {
+                  <button type="button" class="f-opt" [class.is-active]="filter() === s" (click)="setFilter(s)">{{
+                    filterLabels[s] }}</button>
+                  }
+                </div>
+              </div>
+              }
+            </span>
+          </th>
           <th class="col-actions">Acciones</th>
         </tr>
       </thead>
@@ -132,8 +167,17 @@
         }
 
         @if (filtered().length === 0) {
-        <tr>
-          <td colspan="6" class="empty-cell">No tienes solicitudes en esta categoría.</td>
+        <tr class="empty-row">
+          <td colspan="6">
+            <div class="empty-box">
+              <span class="empty-ico"><i class="bi bi-inbox" aria-hidden="true"></i></span>
+              <strong>Sin resultados</strong>
+              <span>No hay solicitudes con este filtro.</span>
+              <button type="button" class="empty-btn" (click)="clearAllFilters()">
+                <i class="bi bi-x-circle" aria-hidden="true"></i> Quitar filtros
+              </button>
+            </div>
+          </td>
         </tr>
         }
       </tbody>
@@ -143,11 +187,14 @@
   <div class="pager">
     <span class="pager-info">Mostrando {{ range().from }}–{{ range().to }} de {{ range().total }}</span>
     <div class="pager-controls">
-      <button type="button" class="pager-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">‹
-        Anterior</button>
-      <span class="pager-page">Página {{ currentPage() }} de {{ totalPages() }}</span>
+      <button type="button" class="pager-btn" aria-label="Siguiente" (click)="goToPage(currentPage() + 1)"
+        [disabled]="currentPage() === totalPages()"><i class="bi bi-chevron-right"></i></button>
+      @for (p of pages(); track p) {
+      <button type="button" class="pager-btn pager-num" [class.is-current]="p === currentPage()"
+        (click)="goToPage(p)">{{ p }}</button>
+      }
       <button type="button" class="pager-btn" (click)="goToPage(currentPage() + 1)"
-        [disabled]="currentPage() === totalPages()">Siguiente ›</button>
+        [disabled]="currentPage() === totalPages()">›</button>
     </div>
   </div>
   }
@@ -155,8 +202,8 @@
 </div>
 
 @if (selectedDetail(); as detail) {
-  <app-reservation-detail-modal [detail]="detail" (closed)="closeDetail()" />
-  }
+<app-reservation-detail-modal [detail]="detail" (closed)="closeDetail()" />
+}
 
 
 @if (cancelling(); as current) {

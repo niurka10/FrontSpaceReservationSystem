@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, OnInit, signal } from '@angular/core';
+import { Component, HostListener, computed, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RESERVATION_STATUS_LABELS, Reservation, ReservationDetail } from '../../models/reservation.interface';
 import { ReservationService } from '../../services/reservation.service';
@@ -68,12 +68,17 @@ export class ReservationListComponent implements OnInit {
     };
   });
 
-  readonly filtered = computed(() =>
-    this.reservations().filter((r) => matchesFilter(r, this.filter()))
-  );
+  readonly reasonQuery = signal('');
+
+  readonly filtered = computed(() => {
+    const q = this.reasonQuery().trim().toLowerCase();
+    return this.reservations().filter(
+      (r) => matchesFilter(r, this.filter()) && (!q || r.reason.toLowerCase().includes(q))
+    );
+  });
 
   // Cuántas filas se muestran por página.
-  readonly pageSize = 10;
+  readonly pageSize = 7;
 
   // Página que el usuario pidió (empieza en 1). Es una signal porque cambia con los clics.
   private readonly requestedPage = signal(1);
@@ -113,6 +118,27 @@ export class ReservationListComponent implements OnInit {
     this.requestedPage.set(Math.min(Math.max(1, page), this.totalPages()));
   }
 
+  // Números de página para el paginador.
+  readonly pages = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+
+  // Panel de embudo abierto (solo uno a la vez).
+  readonly openMenu = signal<'reason' | 'status' | null>(null);
+  toggleMenu(m: 'reason' | 'status'): void { this.openMenu.update((c) => (c === m ? null : m)); }
+  onReason(e: Event): void {
+    this.reasonQuery.set((e.target as HTMLInputElement).value);
+    this.requestedPage.set(1);
+  }
+
+  clearAllFilters(): void {
+    this.filter.set('all');
+    this.reasonQuery.set('');
+    this.requestedPage.set(1);
+  }
+  readonly statusOptions = (['pending', 'approved', 'draft', 'closed'] as const);
+
+  @HostListener('document:click')
+  closeMenus(): void { this.openMenu.set(null); }
+
   // Si haces clic en la tarjeta que ya está activa, vuelve a mostrar todas.
   setFilter(value: StatusFilter): void {
     this.detailError.set(null);
@@ -125,8 +151,8 @@ export class ReservationListComponent implements OnInit {
 
   ngOnInit(): void {
     const estado = this.route.snapshot.queryParamMap.get('estado') as StatusFilter | null;
-      if (estado && FILTER_KEYS.includes(estado)) this.filter.set(estado);
-      
+    if (estado && FILTER_KEYS.includes(estado)) this.filter.set(estado);
+
     this.reservationsService.listMine().subscribe({
       next: (reservations) => {
         this.reservations.set(reservations);

@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, computed, OnInit, signal } from "@angular/core";
+import { Component, HostListener, computed, OnInit, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Reservation, RESERVATION_HISTORY_ACTION_LABELS, RESERVATION_STATUS_LABELS, RESERVATION_STEP_BY_STATUS, ReservationDetail } from "../../models/reservation.interface";
 import { ReservationService } from "../../services/reservation.service";
@@ -100,6 +100,41 @@ export class PendingCoordinatorComponent implements OnInit {
             this.spaceFilter() !== 'all' ||
             this.dateFilter() !== ''
     );
+
+    // Paginado
+    readonly pageSize = 8;
+    private readonly requestedPage = signal(1);
+    readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filteredReservations().length / this.pageSize)));
+    readonly currentPage = computed(() => Math.min(this.requestedPage(), this.totalPages()));
+    readonly firstIndex = computed(() => (this.currentPage() - 1) * this.pageSize);
+    readonly paged = computed(() =>
+        this.filteredReservations().slice(this.firstIndex(), this.firstIndex() + this.pageSize)
+    );
+    readonly pages = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+    readonly range = computed(() => {
+        const total = this.filteredReservations().length;
+        return {
+            from: total === 0 ? 0 : this.firstIndex() + 1,
+            to: Math.min(this.firstIndex() + this.pageSize, total),
+            total,
+        };
+    });
+    goToPage(page: number): void {
+        this.requestedPage.set(Math.min(Math.max(1, page), this.totalPages()));
+    }
+
+    //Embudos 
+    readonly openMenu = signal<'requester' | 'space' | 'date' | 'status' | null>(null);
+    toggleMenu(m: 'requester' | 'space' | 'date' | 'status'): void {
+        this.openMenu.update((c) => (c === m ? null : m));
+    }
+    @HostListener('document:click')
+    closeMenus(): void { this.openMenu.set(null); }
+
+    setRequester(v: string): void { this.requesterFilter.set(v); this.requestedPage.set(1); }
+    setSpace(v: string): void { this.spaceFilter.update((c) => (c === v ? 'all' : v)); this.requestedPage.set(1); }
+    setDate(v: string): void { this.dateFilter.set(v); this.requestedPage.set(1); }
+    setStatus(v: string): void { this.statusFilter.update((c) => (c === v ? 'all' : v)); this.requestedPage.set(1); }
 
     constructor(private reservationService: ReservationService) { }
 

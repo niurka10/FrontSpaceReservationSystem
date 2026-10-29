@@ -1,18 +1,152 @@
-<h1 class="h3 mb-1">Dashboard</h1>
-<p class="text-muted">Resumen de las solicitudes de tu carrera</p>
+<div class="dash">
 
-@if (isLoading()) {
-  <p class="text-muted">Cargando...</p>
-} @else {
+  @if (isLoading()) {
+
+  <div class="state-card" role="status">
+    <div class="loader"></div>
+    <p>Cargando tu panel...</p>
+  </div>
+
+  } @else {
+
+  <!-- CARRUSEL -->
+  @if (currentSlide(); as s) {
+  <section class="hero" [attr.data-theme]="s.theme" (mouseenter)="pause(true)" (mouseleave)="pause(false)"
+    aria-roledescription="carrusel" aria-label="Novedades">
+
+    <div class="hero-body" aria-live="polite">
+      <span class="hero-tag"><i class="bi" [ngClass]="s.icon" aria-hidden="true"></i> {{ s.tag }}</span>
+      <h2>{{ s.title }}</h2>
+      <p>{{ s.text }}</p>
+      <a [routerLink]="s.link" class="hero-cta">
+        {{ s.cta }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+      </a>
+    </div>
+
+    <!-- Foto de la universidad-->
+    <div class="hero-photo" aria-hidden="true">
+      @switch (s.theme) {
+      @case ('amber') {
+      <img src="hero-aula.png" alt="" (error)="$any($event.target).style.display = 'none'" />
+      }
+      @case ('teal') {
+      <img src="hero-laboratorio.jpg" alt="" (error)="$any($event.target).style.display = 'none'" />
+      }
+      @case ('violet') {
+      <img src="hero-auditorio.jpg" alt="" (error)="$any($event.target).style.display = 'none'" />
+      }
+      @default {
+      <img src="hero-campus.png" alt="" (error)="$any($event.target).style.display = 'none'" />
+      }
+      }
+      <span class="hero-badge"><i class="bi" [ngClass]="s.icon"></i></span>
+    </div>
+
+    <button type="button" class="hero-nav hero-nav--prev" aria-label="Anterior" (click)="prevSlide()">
+      <i class="bi bi-chevron-left"></i></button>
+    <button type="button" class="hero-nav hero-nav--next" aria-label="Siguiente" (click)="nextSlide()">
+      <i class="bi bi-chevron-right"></i></button>
+
+    <div class="hero-dots">
+      @for (sl of slides(); track $index) {
+      <button type="button" class="dot" [class.is-on]="$index === slideIndex()"
+        [attr.aria-label]="'Ir a la diapositiva ' + ($index + 1)" (click)="goTo($index)"></button>
+      }
+    </div>
+  </section>
+  }
+
+  <!-- BIENVENIDA -->
+  <section class="welcome">
+    <span class="welcome-avatar" aria-hidden="true">{{ (userName() || 'U').charAt(0) }}</span>
+
+    <div class="welcome-text">
+      <h1>Hola, {{ userName() | titlecase }}</h1>
+      <p>Coordinador de carrera · Resumen de las solicitudes de tu carrera</p>
+    </div>
+
+    <a routerLink="/reservations/pending-coordinator" class="welcome-pill" [class.is-clear]="pendingCount() === 0">
+      @if (pendingCount() > 0) {
+      <span class="pill-dot"></span>
+      {{ pendingCount() }} {{ pendingCount() === 1 ? 'solicitud por revisar' : 'solicitudes por revisar' }}
+      } @else {
+      <i class="bi bi-check2-circle" aria-hidden="true"></i> Todo al día
+      }
+    </a>
+  </section>
+
+  <!-- TARJETAS -->
   <div class="grid-kpi">
     @for (c of cards(); track c.label) {
-      <div class="kpi">
-        <div class="accentbar" [style.background]="c.accent"></div>
-        <div class="kpi-inner">
-          <div class="val">{{ c.value }}</div>
-          <div class="lbl">{{ c.label }}</div>
-        </div>
+    <a class="kpi" [routerLink]="c.link" [attr.data-tone]="c.tone">
+      <span class="kpi-icon"><i class="bi" [ngClass]="c.icon" aria-hidden="true"></i></span>
+      <div>
+        <div class="val">{{ c.value }}</div>
+        <div class="lbl">{{ c.label }}</div>
       </div>
+    </a>
     }
   </div>
-}
+
+  <!-- PANELES -->
+  <div class="panels">
+    <section class="panel panel--todo">
+      <div class="panel-head">
+        <h3>Esperan tu decisión</h3>
+        <a routerLink="/reservations/pending-coordinator" class="panel-link">Ver todas</a>
+      </div>
+
+      @if (pendingList().length > 0) {
+      <ul class="todo-list">
+        @for (r of pendingList(); track r.id) {
+        <li>
+          <div class="todo-date">
+            <strong>{{ r.date | slice:0:10 | date:'dd':'UTC' }}</strong>
+            <span>{{ r.date | slice:0:10 | date:'MMM':'UTC' }}</span>
+          </div>
+          <div class="todo-info">
+            <span class="todo-name">{{ r.requesterName ?? 'Solicitante' }}</span>
+            <span class="todo-sub">{{ r.spaceName ?? 'Solo recursos' }} · {{ r.startTime.slice(0, 5) }}–{{
+              r.endTime.slice(0, 5) }}</span>
+          </div>
+          <a routerLink="/reservations/pending-coordinator" class="todo-btn">Revisar</a>
+        </li>
+        }
+      </ul>
+      } @else {
+      <div class="panel-empty">
+        <i class="bi bi-check2-circle" aria-hidden="true"></i>
+        <strong>Todo al día</strong>
+        <span>No hay solicitudes esperando tu decisión.</span>
+      </div>
+      }
+    </section>
+
+    <section class="panel panel--spaces">
+      <div class="panel-head">
+        <h3>Espacios más solicitados</h3>
+        <a routerLink="/reservations/calendar" class="panel-link">Calendario</a>
+      </div>
+
+      @if (topSpaces().length > 0) {
+      <ul class="bars">
+        @for (s of topSpaces(); track s.name) {
+        <li>
+          <div class="bar-top"><span>{{ s.name }}</span><strong>{{ s.count }}</strong></div>
+          <div class="bar-track">
+            <div class="bar-fill" [style.width.%]="s.pct"></div>
+          </div>
+        </li>
+        }
+      </ul>
+      } @else {
+      <div class="panel-empty">
+        <i class="bi bi-bar-chart" aria-hidden="true"></i>
+        <strong>Sin datos todavía</strong>
+        <span>Aparecerán cuando haya reservas con espacio.</span>
+      </div>
+      }
+    </section>
+  </div>
+  }
+</div>

@@ -1,12 +1,9 @@
-<!-- Botón "Nueva reserva": se usa en el pie de la hoja y en el estado vacío. -->
 <ng-template #bookBtn>
     @if (canBook()) {
     <a routerLink="/reservations/new" class="btn-new">
         <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva reserva
     </a>
     } @else {
-    <!-- aria-disabled (no disabled): sigue enfocable y conserva el tooltip.
-         El texto visible de abajo cubre a quien no tiene mouse (móvil). -->
     <button type="button" class="btn-new is-disabled" aria-disabled="true" title="Se requiere 72 horas de anticipación"
         (click)="$event.preventDefault()">
         <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva reserva
@@ -22,7 +19,78 @@
     <div class="alert-error" role="alert">{{ msg }}</div>
     }
 
-    <!-- MES (ocupa todo el ancho) -->
+    <!-- FILTROS -->
+    <div class="filters" role="search" aria-label="Filtros del calendario" (keydown.escape)="filtersOpen.set(false)">
+        <div class="f-wrap">
+            <button type="button" class="f-btn" [class.is-on]="filtersOpen() || chips().length > 0" aria-haspopup="true"
+                [attr.aria-expanded]="filtersOpen()" (click)="toggleFilters()">
+                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+                Filtros
+                @if (chips().length > 0) { <span class="f-badge">{{ chips().length }}</span> }
+            </button>
+
+            @if (filtersOpen()) {
+            <div class="f-pop" role="group" aria-label="Filtrar reservas">
+                @if (isCoordinator) {
+                <label class="f-input">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" placeholder="Buscar persona..." [value]="personQuery()"
+                        (input)="onPerson($event)" />
+                </label>
+
+                <div class="f-group">
+                    <span class="f-label">Rol</span>
+                    <div class="f-opts">
+                        @for (o of roleOptions(); track o.value) {
+                        <button type="button" class="f-opt" [class.is-active]="roleFilter() === o.value"
+                            [attr.aria-pressed]="roleFilter() === o.value" (click)="setRole(o.value)">{{ o.label
+                            }}</button>
+                        }
+                    </div>
+                </div>
+                }
+
+                <div class="f-group">
+                    <span class="f-label">Espacio</span>
+                    <div class="f-opts f-opts--scroll">
+                        @for (s of spaceOptions(); track s) {
+                        <button type="button" class="f-opt" [class.is-active]="spaceFilter() === s"
+                            [attr.aria-pressed]="spaceFilter() === s" (click)="setSpace(s)">{{ s }}</button>
+                        }
+                    </div>
+                </div>
+
+                <div class="f-group">
+                    <span class="f-label">Estado</span>
+                    <div class="f-opts">
+                        @for (l of legend; track l.g) {
+                        <button type="button" class="f-opt" [class.is-active]="statusFilter() === l.g"
+                            [attr.aria-pressed]="statusFilter() === l.g" (click)="toggleStatus(l.g)">
+                            <span class="dot" [attr.data-g]="l.g"></span>{{ l.label }}
+                        </button>
+                        }
+                    </div>
+                </div>
+
+                <div class="f-foot">
+                    <button type="button" class="f-clear" [disabled]="!hasFilters()"
+                        (click)="clearFilters()">Limpiar</button>
+                    <button type="button" class="f-done" (click)="filtersOpen.set(false)">Listo</button>
+                </div>
+            </div>
+            }
+        </div>
+
+        @for (c of chips(); track c.key) {
+        <span class="f-chip">
+            {{ c.label }}
+            <button type="button" aria-label="Quitar filtro" (click)="clearChip(c.key)">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </span>
+        }
+    </div>
+
     <div class="month-card">
         <header class="month-head">
             <button type="button" class="nav-btn" aria-label="Mes anterior" (click)="prevMonth()">
@@ -62,13 +130,18 @@
                 }
             </div>
 
-            <ul class="legend" aria-label="Colores de estado">
+            <ul class="legend" aria-label="Filtrar por estado">
                 @for (l of legend; track l.g) {
-                <li><span class="dot" [attr.data-g]="l.g"></span>{{ l.label }}</li>
+                <li>
+                    <button type="button" class="legend-btn" [class.is-active]="statusFilter() === l.g"
+                        [attr.aria-pressed]="statusFilter() === l.g" (click)="toggleStatus(l.g)">
+                        <span class="dot" [attr.data-g]="l.g"></span>{{ l.label }}
+                    </button>
+                </li>
                 }
             </ul>
         </div>
-        <!-- HOJA INFERIOR: reservas del día. -->
+
         <div class="sheet-backdrop" [class.is-open]="panelOpen()" (click)="closePanel()"></div>
 
         <div class="sheet" [class.is-open]="panelOpen()" [attr.inert]="panelOpen() ? null : ''" role="dialog"
@@ -94,8 +167,6 @@
                 <ul class="res-list">
                     @for (it of items(); track it.id) {
                     <li>
-                        <!-- La tarjeta es un botón: se abre con clic, Enter o Espacio. Solo spans
-                   dentro (un botón no admite <p> ni <div>). -->
                         <button type="button" class="res-card" [attr.data-s]="it.visual" aria-haspopup="dialog"
                             [disabled]="loadingId() === it.id" (click)="openDetail(it.id, $event)">
                             <span class="res-top">
@@ -120,7 +191,6 @@
                     }
                 </ul>
                 } @else {
-                <!-- Estado vacío: ilustración animada (SVG + CSS) y el mismo botón. -->
                 <div class="empty-day">
                     <svg class="empty-art" viewBox="0 0 160 130" aria-hidden="true" focusable="false">
                         <ellipse class="art-shadow" cx="76" cy="119" rx="44" ry="6" />
@@ -158,7 +228,8 @@
                     </svg>
 
                     <h3 class="empty-title">Día libre</h3>
-                    <p class="empty-text">No hay reservas este día.</p>
+                    <p class="empty-text">{{ hasFilters() ? 'No hay reservas con estos filtros.' : 'No hay reservas este
+                        día.' }}</p>
                     <div class="empty-actions">
                         <ng-container [ngTemplateOutlet]="bookBtn" />
                     </div>

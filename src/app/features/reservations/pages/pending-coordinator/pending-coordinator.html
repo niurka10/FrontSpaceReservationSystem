@@ -2,15 +2,10 @@
   <div class="page-header">
     <div>
       <h1 class="h3 mb-1">Solicitudes por gestionar</h1>
-      <p class="text-muted">Revisa y remite las solicitudes de tu carrera</p>
+      <p class="text-muted">Revisa cada solicitud y elévala a Vicerrectorado o recházala con una justificación.</p>  <!--Revisar mensaje-->
     </div>
   </div>
 
-  <div class="info-banner">
-    Ves las solicitudes de docentes y estudiantes de tu carrera.
-  </div>
-
-  <!-- Tarjetas: cada una filtra por estado -->
   <div class="summary">
     <div class="summary-card" role="button" tabindex="0" [class.active]="statusFilter() === 'PendingCoordinator'"
       [title]="statusFilter() === 'PendingCoordinator' ? 'Clic para ver todas' : 'Clic para filtrar'"
@@ -84,63 +79,115 @@
 
   @if (hasActiveFilters()) {
   <div class="filter-info">
-    <span>{{ filteredReservations().length }} de {{ reservations().length }} solicitudes</span>
-    <button type="button" class="filter-clear" (click)="clearFilters()">Limpiar filtros</button>
+    <span class="filter-count">
+      <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+      Mostrando <strong>{{ filteredReservations().length }}</strong> de {{ reservations().length }} solicitudes
+    </span>
+    <button type="button" class="filter-clear" (click)="clearFilters()">
+      <i class="bi bi-x-circle" aria-hidden="true"></i> Limpiar filtros
+    </button>
   </div>
   }
 
-  <!-- La tabla hace scroll: encabezados y filtros quedan fijos arriba -->
   <div class="table-wrap">
     <table>
       <thead>
-        <tr class="head-row">
+        <tr>
           <th class="col-num">#</th>
-          <th>Solicitante</th>
-          <th>Espacio</th>
-          <th>Fecha</th>
+
+          <th>
+            <span class="th-filter">Solicitante
+              <button type="button" class="f-icon" [class.is-on]="requesterFilter()" aria-label="Filtrar solicitante"
+                (click)="$event.stopPropagation(); toggleMenu('requester')">
+                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+              </button>
+              @if (openMenu() === 'requester') {
+              <div class="f-pop" (click)="$event.stopPropagation()">
+                <p class="f-pop-title">Filtrar solicitante</p>
+                <label class="f-input">
+                  <i class="bi bi-search" aria-hidden="true"></i>
+                  <input type="search" placeholder="Nombre o rol..." [value]="requesterFilter()"
+                    (input)="setRequester($any($event.target).value)" />
+                </label>
+              </div>
+              }
+            </span>
+          </th>
+
+          <th>
+            <span class="th-filter">Espacio
+              <button type="button" class="f-icon" [class.is-on]="spaceFilter() !== 'all'" aria-label="Filtrar espacio"
+                (click)="$event.stopPropagation(); toggleMenu('space')">
+                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+              </button>
+              @if (openMenu() === 'space') {
+              <div class="f-pop" (click)="$event.stopPropagation()">
+                <p class="f-pop-title">Filtrar espacio</p>
+                <div class="f-opts">
+                  <button type="button" class="f-opt" [class.is-active]="spaceFilter() === '__none__'"
+                    (click)="setSpace('__none__')">Sin espacio</button>
+                  @for (s of spaceOptions(); track s) {
+                  <button type="button" class="f-opt" [class.is-active]="spaceFilter() === s" (click)="setSpace(s)">{{ s
+                    }}</button>
+                  }
+                </div>
+              </div>
+              }
+            </span>
+          </th>
+
+          <th>
+            <span class="th-filter">Fecha
+              <button type="button" class="f-icon" [class.is-on]="dateFilter()" aria-label="Filtrar fecha"
+                (click)="$event.stopPropagation(); toggleMenu('date')">
+                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+              </button>
+              @if (openMenu() === 'date') {
+              <div class="f-pop" (click)="$event.stopPropagation()">
+                <p class="f-pop-title">Filtrar fecha</p>
+                <label class="f-input">
+                  <i class="bi bi-calendar3" aria-hidden="true"></i>
+                  <input type="date" [value]="dateFilter()" (change)="setDate($any($event.target).value)" />
+                </label>
+                @if (dateFilter()) {
+                <button type="button" class="f-link" (click)="setDate('')">Quitar fecha</button>
+                }
+              </div>
+              }
+            </span>
+          </th>
+
           <th>Horario</th>
           <th>Motivo</th>
-          <th>Estado</th>
-          <th></th>
-        </tr>
 
-        <!-- Un filtro por columna -->
-        <tr class="filter-row">
-          <th></th>
           <th>
-            <input type="search" placeholder="Buscar…" [value]="requesterFilter()"
-              (input)="requesterFilter.set($any($event.target).value)" />
-          </th>
-          <th>
-            <select (change)="spaceFilter.set($any($event.target).value)">
-              <option value="all" [selected]="spaceFilter() === 'all'">Todos</option>
-              <option value="__none__" [selected]="spaceFilter() === '__none__'">Sin espacio</option>
-              @for (s of spaceOptions(); track s) {
-              <option [value]="s" [selected]="spaceFilter() === s">{{ s }}</option>
+            <span class="th-filter">Estado
+              <button type="button" class="f-icon" [class.is-on]="statusFilter() !== 'all'" aria-label="Filtrar estado"
+                (click)="$event.stopPropagation(); toggleMenu('status')">
+                <i class="bi bi-funnel-fill" aria-hidden="true"></i>
+              </button>
+              @if (openMenu() === 'status') {
+              <div class="f-pop f-pop--right" (click)="$event.stopPropagation()">
+                <p class="f-pop-title">Filtrar estado</p>
+                <div class="f-opts">
+                  @for (o of statusOptions(); track o.value) {
+                  <button type="button" class="f-opt" [class.is-active]="statusFilter() === o.value"
+                    (click)="setStatus(o.value)">{{ o.label }}</button>
+                  }
+                </div>
+              </div>
               }
-            </select>
+            </span>
           </th>
-          <th>
-            <input type="date" [value]="dateFilter()" (change)="dateFilter.set($any($event.target).value)" />
-          </th>
-          <th></th>
-          <th></th>
-          <th>
-            <select (change)="statusFilter.set($any($event.target).value)">
-              <option value="all" [selected]="statusFilter() === 'all'">Todos</option>
-              @for (o of statusOptions(); track o.value) {
-              <option [value]="o.value" [selected]="statusFilter() === o.value">{{ o.label }}</option>
-              }
-            </select>
-          </th>
-          <th></th>
+
+          <th class="col-actions-h">Acciones</th>
         </tr>
       </thead>
 
       <tbody>
-        @for (r of filteredReservations(); track r.id; let i = $index) {
+        @for (r of paged(); track r.id; let i = $index) {
         <tr>
-          <td class="col-num"><span class="num-badge">{{ i + 1 }}</span></td>
+          <td class="col-num"><span class="num-badge">{{ firstIndex() + i + 1 }}</span></td>
           <td>
             <div class="requester-name">{{ r.requesterName ?? r.userId }}</div>
             @if (requesterLabel(r)) {
@@ -159,12 +206,14 @@
             </span>
           </td>
           <td class="actions-cell">
-            <button class="icon-btn icon-btn--view" title="Ver detalle" (click)="openDetail(r.id)">👁</button>
+            <button class="icon-btn icon-btn--view" title="Ver detalle" (click)="openDetail(r.id)">
+              <i class="bi bi-eye-fill"></i></button>
 
             @if (r.currentStatus === 'PendingCoordinator') {
             <button class="icon-btn icon-btn--accept" title="Elevar a Vicerrectorado"
-              (click)="openAction(r.id, 'elevate')">✓</button>
-            <button class="icon-btn icon-btn--reject" title="Rechazar" (click)="openAction(r.id, 'reject')">✕</button>
+              (click)="openAction(r.id, 'elevate')"><i class="bi bi-check-lg"></i></button>
+            <button class="icon-btn icon-btn--reject" title="Rechazar" (click)="openAction(r.id, 'reject')">
+              <i class="bi bi-x-lg"></i></button>
             }
           </td>
         </tr>
@@ -176,6 +225,22 @@
       </tbody>
     </table>
   </div>
+
+  @if (totalPages() > 1) {
+  <div class="pager">
+    <span>Mostrando {{ range().from }}–{{ range().to }} de {{ range().total }}</span>
+    <div class="pager-controls">
+      <button type="button" class="pager-btn" aria-label="Anterior" (click)="goToPage(currentPage() - 1)"
+        [disabled]="currentPage() === 1"><i class="bi bi-chevron-left"></i></button>
+      @for (p of pages(); track p) {
+      <button type="button" class="pager-btn" [class.is-current]="p === currentPage()" (click)="goToPage(p)">{{ p
+        }}</button>
+      }
+      <button type="button" class="pager-btn" aria-label="Siguiente" (click)="goToPage(currentPage() + 1)"
+        [disabled]="currentPage() === totalPages()"><i class="bi bi-chevron-right"></i></button>
+    </div>
+  </div>
+  }
   }
 </div>
 
@@ -204,5 +269,5 @@
 }
 
 @if (selectedDetail(); as detail) {
-  <app-reservation-detail-modal [detail]="detail" (closed)="closeDetail()" />
-  }
+<app-reservation-detail-modal [detail]="detail" (closed)="closeDetail()" />
+}

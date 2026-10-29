@@ -22,13 +22,51 @@
 
         @if (canCreateForOthers()) {
         <div class="field">
-          <label for="onBehalfOfUserId">¿Para quién es esta reserva?</label>
-          <select id="onBehalfOfUserId" formControlName="onBehalfOfUserId">
-            <option value="">Para mí</option>
-            @for (candidate of candidates(); track candidate.id) {
-            <option [value]="candidate.id">{{ candidate.name }} — {{ candidate.role }}</option>
+          <label for="person">¿Para quién es esta reserva?</label>
+
+          <div class="combo-box">
+            <i class="bi bi-person-badge lead-ico" aria-hidden="true"></i>
+            <input id="person" type="text" class="with-lead" autocomplete="off" role="combobox"
+              [attr.aria-expanded]="personOpen()" aria-controls="person-list"
+              placeholder="Buscar por nombre, correo o cédula..."
+              [value]="personOpen() ? personSearch() : selectedPersonLabel()" (focus)="openPeople()"
+              (input)="onPersonSearch($any($event.target).value)" (keydown)="onPersonKeydown($event)"
+              (blur)="closePeople()" />
+            <span class="chevron" aria-hidden="true">▾</span>
+
+            @if (personOpen()) {
+            <div class="combo-list person-list" id="person-list">
+              @if (personRoleTabs().length > 0) {
+              <div class="combo-tabs">
+                @for (t of personRoleTabs(); track t.value) {
+                <button type="button" class="tab" [class.is-active]="personRole() === t.value"
+                  (mousedown)="$event.preventDefault(); setPersonRole(t.value)">{{ t.label }}</button>
+                }
+              </div>
+              }
+              <ul role="listbox">
+                @for (opt of personOptions(); track opt.id; let i = $index) {
+                <li role="option" [class.active]="i === personActive()"
+                  [class.selected]="opt.id === form.controls.onBehalfOfUserId.value"
+                  (mousedown)="$event.preventDefault(); selectPerson(opt.id)" (mouseenter)="personActive.set(i)">
+                  <span class="person">
+                    <span class="opt-name">{{ opt.name }}</span>
+                    @if (opt.sub) { <span class="opt-sub">{{ opt.sub }}</span> }
+                  </span>
+                  @if (opt.role) { <span class="role-badge">{{ opt.role }}</span> }
+                </li>
+                } @empty {
+                <li class="empty">No se encontraron personas</li>
+                }
+              </ul>
+            </div>
             }
-          </select>
+          </div>
+
+          @if (form.controls.onBehalfOfUserId.value) {
+          <small class="behalf-note"><i class="bi bi-info-circle" aria-hidden="true"></i>
+            La reserva quedará a nombre de <strong>{{ selectedPersonLabel() }}</strong>.</small>
+          }
           @if (candidatesError(); as msg) {
           <small class="field-error">{{ msg }}</small>
           }

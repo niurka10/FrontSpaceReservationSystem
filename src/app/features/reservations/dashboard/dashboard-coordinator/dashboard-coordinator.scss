@@ -1,36 +1,597 @@
+/* ===== Paleta UNIBE en tonos pastel (azul, amarillo, verde y naranja de la web) ===== */
+$navy: #053a5e;
+$blue: #0a5a85;
+$blue-dark: #07456a;
+$blue-soft: #eaf3f9;
+$blue-line: #d9e6ef;
+$yellow: #f9bc00;
+$yellow-dark: #e0a800;
+$text: #0f2438;
+$muted: #5f7385;
+$ok: #1f7a52;
+$danger: #b84a4a;
+
+:host { display: block; }
+
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 1280px;
+  min-height: calc(100dvh - 120px);
+  margin: 0 auto;
+  padding: 8px 0 24px;
+}
+
+.state-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 130px;
+  padding: 24px;
+  border: 1px solid $blue-line;
+  border-radius: 16px;
+  background: #fff;
+  color: $muted;
+
+  p { margin: 0; font-size: 14px; }
+}
+
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid $blue-line;
+  border-top-color: $blue;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ================= CARRUSEL (pastel, con foto a la derecha) ================= */
+.hero {
+  // Cada tema define: fondo, color de texto, color de acento y respaldo del recuadro.
+  --bg: linear-gradient(120deg, #e3f0f8, #cfe5f3);
+  --ink: #0b3a5a;
+  --soft: #3d6580;
+  --accent: #0a5a85;
+  --tag: #0a5a85;
+  --photo-fallback: linear-gradient(140deg, #b9d9ee, #8dbde0);
+
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: 28px;
+  flex: none;
+  min-height: 310px;
+  padding: 30px 84px 50px 84px;
+  overflow: hidden;
+  border: 1px solid rgba(5, 58, 94, 0.06);
+  border-radius: 22px;
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: 0 10px 26px rgba(5, 58, 94, 0.1);
+  animation: fade-in 0.45s ease;
+
+  // Mantequilla: "Requiere tu atención"
+  &[data-theme='amber'] {
+    --bg: linear-gradient(120deg, #fff4cf, #ffe8a6);
+    --ink: #4a3300;
+    --soft: #7a5b14;
+    --accent: #a86500;
+    --tag: #8a5a00;
+    --photo-fallback: linear-gradient(140deg, #ffe08a, #ffc94d);
+  }
+
+  // Menta: "Todo al día"
+  &[data-theme='teal'] {
+    --bg: linear-gradient(120deg, #e1f4ea, #c9ecda);
+    --ink: #0f3d2a;
+    --soft: #3f6b57;
+    --accent: #1f7a52;
+    --tag: #1f7a52;
+    --photo-fallback: linear-gradient(140deg, #a9e0c4, #7fcfa7);
+  }
+
+  // Durazno: "Dato de tu carrera"
+  &[data-theme='violet'] {
+    --bg: linear-gradient(120deg, #ffe8da, #ffd6bf);
+    --ink: #4a2208;
+    --soft: #7d4a28;
+    --accent: #b4540f;
+    --tag: #b4540f;
+    --photo-fallback: linear-gradient(140deg, #ffc9a4, #f9a877);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0.4; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.hero-body {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+
+  h2 {
+    margin: 14px 0 10px;
+    color: var(--ink);
+    font-size: 30px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+  }
+
+  p {
+    margin: 0 0 22px;
+    color: var(--soft);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tag);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(5, 58, 94, 0.08);
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 6px 14px rgba(5, 58, 94, 0.18);
+  transition: transform 0.15s ease, filter 0.15s ease;
+
+  &:hover { filter: brightness(1.08); transform: translateX(3px); }
+  &:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+}
+
+// Recuadro de foto con el rombo amarillo de la marca
+.hero-photo {
+  position: relative;
+  align-self: stretch;
+  min-height: 210px;
+  border: 5px solid #fff;
+  border-radius: 20px;
+  background-image: var(--photo-fallback);
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 12px 26px rgba(5, 58, 94, 0.18);
+
+  // Rombo amarillo de contorno (como en las fotos de la web de la UNIBE)
+  &::before {
+    content: '';
+    position: absolute;
+    top: -26px;
+    left: -26px;
+    z-index: 2;
+    width: 46px;
+    height: 46px;
+    border: 5px solid $yellow;
+    border-radius: 6px;
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+
+  // La foto real (public/hero-aula.png)
+  img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    object-fit: cover;
+  }
+}
+
+.hero-badge {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--accent);
+  font-size: 24px;
+  box-shadow: 0 6px 14px rgba(5, 58, 94, 0.2);
+}
+
+.hero-nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(5, 58, 94, 0.15);
+  transform: translateY(-50%);
+  transition: background 0.15s ease, transform 0.15s ease;
+
+  &:hover { background: #fff; transform: translateY(-50%) scale(1.06); }
+  &:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  &--prev { left: 20px; }
+  &--next { right: 20px; }
+}
+
+.hero-dots {
+  position: absolute;
+  right: 0;
+  bottom: 16px;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: rgba(5, 58, 94, 0.25);
+    cursor: pointer;
+    transition: width 0.2s ease, background 0.2s ease;
+
+    &.is-on { width: 26px; background: var(--accent); }
+  }
+}
+
+/* ================= BIENVENIDA ================= */
+.welcome {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border: 1px solid $blue-line;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(5, 58, 94, 0.05);
+}
+
+.welcome-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #ffe9a8;
+  color: #6b4a00;
+  font-size: 19px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.welcome-text {
+  flex: 1;
+  min-width: 0;
+
+  h1 {
+    margin: 0;
+    color: $text;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+  }
+
+  p {
+    margin: 3px 0 0;
+    color: $muted;
+    font-size: 13.5px;
+  }
+}
+
+.welcome-pill {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid #f3e0a3;
+  border-radius: 999px;
+  background: #fff4cf;
+  color: #8a5a00;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease;
+
+  &:hover { background: #ffecb0; }
+  &:focus-visible { outline: 3px solid rgba(10, 90, 133, 0.35); outline-offset: 2px; }
+
+  &.is-clear {
+    border-color: #bfe5d1;
+    background: #e1f4ea;
+    color: $ok;
+
+    &:hover { background: #d0eddf; }
+  }
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $yellow-dark;
+  box-shadow: 0 0 0 4px rgba(249, 188, 0, 0.25);
+}
+
+/* ================= TARJETAS (4 pasteles) ================= */
 .grid-kpi {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  flex: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 20px;
+
+  @media (max-width: 1000px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 520px) { grid-template-columns: 1fr; }
 }
 
 .kpi {
-  background: #fff;
-  border: 1px solid #e4e8f2;
+  --tone: #5f7385;
+  --tone-bg: #f3f6f9;
+  --tone-line: #e1e8ee;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  border: 1px solid var(--tone-line);
+  border-radius: 16px;
+  background: var(--tone-bg);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(5, 58, 94, 0.1); }
+  &:focus-visible { outline: 3px solid rgba(10, 90, 133, 0.35); outline-offset: 2px; }
+
+  // Mantequilla
+  &[data-tone='amber'] { --tone: #a86500; --tone-bg: #fff4cf; --tone-line: #f5e3a8; }
+  // Celeste
+  &[data-tone='blue'] { --tone: #0a5a85; --tone-bg: #e3f0f8; --tone-line: #c6dfee; }
+  // Rosado
+  &[data-tone='red'] { --tone: #b84a4a; --tone-bg: #fde8e8; --tone-line: #f5cccc; }
+  // Menta
+  &[data-tone='gray'] { --tone: #1f7a52; --tone-bg: #e1f4ea; --tone-line: #c2e5d2; }
+}
+
+.kpi-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 50px;
+  height: 50px;
   border-radius: 14px;
+  background: #fff;
+  color: var(--tone);
+  font-size: 22px;
+  box-shadow: 0 2px 8px rgba(5, 58, 94, 0.08);
+}
+
+.val { color: $text; font-size: 32px; font-weight: 800; line-height: 1; }
+.lbl { margin-top: 6px; color: $muted; font-size: 13px; font-weight: 500; }
+
+/* ================= PANELES ================= */
+.panels {
+  display: grid;
+  flex: 1;
+  align-items: stretch;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px;
+  border: 1px solid $blue-line;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(5, 58, 94, 0.06);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    color: $text;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    // Puntito de color según el panel
+    &::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: $yellow;
+    }
+  }
+}
+
+.panel--spaces .panel-head h3::before { background: #5aa7d6; }
+
+.panel-link {
+  color: $blue;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.todo-list,
+.bars {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+// Pendientes: tarjetas mantequilla, fecha en blanco, botón amarillo de marca
+.todo-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #f5e3a8;
+  border-radius: 14px;
+  background: #fff8e1;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover { border-color: $yellow; box-shadow: 0 4px 12px rgba(249, 188, 0, 0.18); }
+}
+
+.todo-date {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 52px;
+  padding: 6px 0;
+  border-radius: 12px;
+  background: #fff;
+  color: #6b4a00;
+  line-height: 1.1;
+  box-shadow: 0 2px 6px rgba(138, 90, 0, 0.12);
+
+  strong { font-size: 19px; font-weight: 800; }
+  span { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #a86500; }
+}
+
+.todo-info { display: grid; flex: 1; gap: 2px; min-width: 0; }
+.todo-name { color: $text; font-size: 14.5px; font-weight: 700; }
+
+.todo-sub {
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(16, 29, 56, .04), 0 8px 24px -12px rgba(16, 29, 56, .12);
-}
-
-.accentbar {
-  height: 4px;
-  width: 100%;
-}
-
-.kpi-inner {
-  padding: 17px 19px 16px;
-}
-
-.val {
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.lbl {
+  color: $muted;
   font-size: 12.5px;
-  color: #6c7690;
-  margin-top: 6px;
-  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.todo-btn {
+  flex: none;
+  padding: 8px 18px;
+  border: 1px solid $yellow;
+  border-radius: 10px;
+  background: $yellow;
+  color: $navy;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.15s ease;
+
+  &:hover { background: $yellow-dark; border-color: $yellow-dark; }
+  &:focus-visible { outline: 3px solid rgba(10, 90, 133, 0.35); outline-offset: 2px; }
+}
+
+// Espacios: cada barra con un pastel distinto
+.bars li {
+  --bar: #5aa7d6;
+  --bar-bg: #e3f0f8;
+
+  &:nth-child(2) { --bar: #4fb990; --bar-bg: #e1f4ea; }
+  &:nth-child(3) { --bar: #f2c14e; --bar-bg: #fff4cf; }
+  &:nth-child(4) { --bar: #f09a62; --bar-bg: #ffe8da; }
+}
+
+.bar-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: $text;
+  font-size: 13.5px;
+
+  strong { color: $text; font-weight: 800; }
+}
+
+.bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: var(--bar-bg); }
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--bar);
+  transition: width 0.5s ease;
+}
+
+.panel-empty {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  justify-items: center;
+  gap: 4px;
+  padding: 24px 12px;
+  color: $muted;
+  font-size: 13px;
+  text-align: center;
+
+  i { color: #4fb990; font-size: 36px; }
+  strong { color: $text; font-size: 15px; }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-photo { display: none; }
+}
+
+@media (max-width: 768px) {
+  .hero { min-height: 260px; padding: 28px 58px 50px; }
+  .hero-body h2 { font-size: 24px; }
+  .hero-nav--prev { left: 10px; }
+  .hero-nav--next { right: 10px; }
+
+  .welcome { flex-wrap: wrap; }
+  .welcome-pill { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero, .bar-fill, .hero-cta, .kpi, .loader { animation: none; transition: none; }
 }

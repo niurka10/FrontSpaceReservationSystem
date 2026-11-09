@@ -13,20 +13,43 @@
   (mouseleave)="onMouseLeave(sidebar)" (focusin)="onFocusIn($event)" (focusout)="onFocusOut($event, sidebar)">
 
   <div class="brand d-flex align-items-center gap-2">
-    <div class="mark" aria-hidden="true"></div>
+
+    <img
+      src="/unibe1.jpg"
+      alt="Sello de la Universidad Iberoamericana del Ecuador"
+      class="brand-logo"
+    />
+
     <div class="word">
       UNIB·E
       <small>Reservas</small>
     </div>
+
     @if (!isNarrow()) {
-    <button type="button" class="pin-btn ms-auto" [class.is-pinned]="pinned()" aria-label="Fijar menú"
-      [attr.aria-pressed]="pinned()" [attr.title]="pinned() ? 'Soltar menú' : 'Fijar menú'" (click)="togglePin()">
-      <i class="bi" [class.bi-pin-angle]="!pinned()" [class.bi-pin-angle-fill]="pinned()" aria-hidden="true"></i>
-    </button>
+      <button
+        type="button"
+        class="pin-btn ms-auto"
+        [class.is-pinned]="pinned()"
+        aria-label="Fijar menú"
+        [attr.aria-pressed]="pinned()"
+        [attr.title]="pinned() ? 'Soltar menú' : 'Fijar menú'"
+        (click)="togglePin()">
+        <i class="bi"
+          [class.bi-pin-angle]="!pinned()"
+          [class.bi-pin-angle-fill]="pinned()"
+          aria-hidden="true"></i>
+      </button>
     }
-    <button #closeBtn type="button" class="close-btn ms-auto" aria-label="Cerrar menú" (click)="closeDrawer()">
+
+    <button
+      #closeBtn
+      type="button"
+      class="close-btn ms-auto"
+      aria-label="Cerrar menú"
+      (click)="closeDrawer()">
       <i class="bi bi-x-lg"></i>
     </button>
+
   </div>
 
   <!-- Cada grupo se pinta solo si el rol ve al menos uno de sus links (canSee con varios

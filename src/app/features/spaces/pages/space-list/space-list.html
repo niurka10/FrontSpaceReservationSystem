@@ -1,196 +1,179 @@
 <div class="space-page">
 
-  <div class="page-header">
+  <!-- Encabezado -->
+  <header class="page-header">
     <div>
       <h1>Espacios</h1>
       <p>Administra los espacios físicos de la institución.</p>
     </div>
 
-    @if(canManageSpaces()){
+    @if (canManageSpaces()) {
     <a routerLink="/spaces/new" class="btn-new">
-      + Nuevo espacio
+      <i class="bi bi-plus-lg"></i> Nuevo espacio
     </a>
     }
-  </div>
+  </header>
 
   @if (loading()) {
-
-  <div class="alert alert-info">
-    Cargando espacios...
-  </div>
-
+  <div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Cargando espacios...</div>
   } @else if (error()) {
-
   <div class="alert alert-danger">
-    {{ error() }}
+    <i class="bi bi-exclamation-triangle"></i> {{ error() }}
+    <button type="button" class="link-btn" (click)="loadSpaces()">Reintentar</button>
   </div>
-
   } @else {
 
-  <!-- ========================= -->
-  <!-- ESPACIOS ACTIVOS -->
-  <!-- ========================= -->
-
-  <div class="summary-card">
-    <strong>{{ activeSpaces.length }}</strong>
-    <span>Espacios activos</span>
+  <div class="info-banner">
+    <i class="bi bi-info-circle-fill"></i>
+    Los espacios desactivados no se pueden reservar, pero conservan su historial. Puedes reactivarlos cuando quieras.
   </div>
 
-  <div class="table-card">
+  <!-- Tarjetas que funcionan como pestañas -->
+  <div class="stat-tabs" role="tablist">
+    <button type="button" role="tab" class="stat-tab" [class.selected]="statusFilter() === 'active'"
+      [attr.aria-selected]="statusFilter() === 'active'" (click)="setStatus('active')">
+      <span class="stat-icon ok"><i class="bi bi-check-lg"></i></span>
+      <span class="stat-text"><strong>Activos</strong><small>Disponibles para reservar</small></span>
+      <span class="stat-count ok">{{ activeCount() }}</span>
+    </button>
 
-    <h2>Espacios activos</h2>
+    <button type="button" role="tab" class="stat-tab" [class.selected]="statusFilter() === 'inactive'"
+      [attr.aria-selected]="statusFilter() === 'inactive'" (click)="setStatus('inactive')">
+      <span class="stat-icon muted"><i class="bi bi-pause-circle"></i></span>
+      <span class="stat-text"><strong>Inactivos</strong><small>Fuera de servicio</small></span>
+      <span class="stat-count muted">{{ inactiveCount() }}</span>
+    </button>
 
-    @if (activeSpaces.length === 0) {
+    <button type="button" role="tab" class="stat-tab" [class.selected]="statusFilter() === 'all'"
+      [attr.aria-selected]="statusFilter() === 'all'" (click)="setStatus('all')">
+      <span class="stat-icon info"><i class="bi bi-list-ul"></i></span>
+      <span class="stat-text"><strong>Todos</strong><small>Total de espacios</small></span>
+      <span class="stat-count info">{{ totalCount() }}</span>
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <section class="table-card">
+
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="search" placeholder="Buscar por nombre o ubicación..." [value]="search()"
+          (input)="onSearch($event)" aria-label="Buscar espacios" />
+      </div>
+
+      <select class="type-select" [value]="typeFilter()" (change)="onTypeChange($event)" aria-label="Filtrar por tipo">
+        <option value="0">Todos los tipos</option>
+        @for (t of types; track t.value) {
+        <option [value]="t.value">{{ t.label }}</option>
+        }
+      </select>
+
+      @if (search() || typeFilter()) {
+      <button type="button" class="link-btn" (click)="clearFilters()">
+        <i class="bi bi-x-circle"></i> Limpiar
+      </button>
+      }
+    </div>
+
+    @if (filtered().length === 0) {
 
     <div class="empty-state">
-      <h3>No hay espacios activos</h3>
-      <p>No existen espacios disponibles actualmente.</p>
+      <i class="bi bi-door-closed"></i>
+      @if (search() || typeFilter()) {
+      <h3>Sin resultados</h3>
+      <p>Ningún espacio coincide con tu búsqueda.</p>
+      } @else if (statusFilter() === 'inactive') {
+      <h3>No hay espacios desactivados</h3>
+      <p>Los espacios que desactives aparecerán aquí.</p>
+      } @else {
+      <h3>No hay espacios</h3>
+      <p>Aún no existen espacios para mostrar.</p>
+      }
     </div>
 
     } @else {
 
     <div class="table-responsive">
-
       <table>
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Capacidad</th>
-            <th>Ubicación</th>
+            <th><button type="button" class="th-btn" (click)="sortBy('name')">Nombre <i class="bi"
+                  [class]="sortIcon('name')"></i></button></th>
+            <th><button type="button" class="th-btn" (click)="sortBy('type')">Tipo <i class="bi"
+                  [class]="sortIcon('type')"></i></button></th>
+            <th><button type="button" class="th-btn" (click)="sortBy('capacity')">Capacidad <i class="bi"
+                  [class]="sortIcon('capacity')"></i></button></th>
+            <th><button type="button" class="th-btn" (click)="sortBy('location')">Ubicación <i class="bi"
+                  [class]="sortIcon('location')"></i></button></th>
             <th>Estado</th>
-            @if (canManageSpaces()){
-            <th>Acciones</th>
-            }
+            @if (canManageSpaces()) { <th class="col-actions">Acciones</th> }
           </tr>
         </thead>
 
         <tbody>
+          @for (space of filtered(); track space.id) {
+          <tr [class.row-inactive]="!space.isActive" [class.row-flash]="highlightId() === space.id">
 
-          @for (space of activeSpaces; track space.id) {
-
-          <tr>
-
-            <td>{{ space.name }}</td>
-
-            <td>
-              {{ getSpaceType(space.type) }}
-            </td>
+            <td class="cell-name">{{ space.name }}</td>
+            <td><span class="type-chip">{{ getSpaceType(space.type) }}</span></td>
+            <td><i class="bi bi-people"></i> {{ space.capacity }}</td>
+            <td>{{ space.location }}</td>
 
             <td>
-              {{ space.capacity }}
+              @if (space.isActive) {
+              <span class="badge badge-active">Activo</span>
+              } @else {
+              <span class="badge badge-inactive">Inactivo</span>
+              }
             </td>
 
-            <td>
-              {{ space.location }}
-            </td>
+            @if (canManageSpaces()) {
+            <td class="col-actions">
+              <div class="actions">
+                <a [routerLink]="['/spaces', space.id, 'edit']" class="icon-btn edit" title="Editar"
+                  aria-label="Editar">
+                  <i class="bi bi-pencil"></i>
+                </a>
 
-            <td>
-              <span class="status-active">
-                Activo
-              </span>
-            </td>
-
-            @if(canManageSpaces()) {
-            <td class="actions">
-              <a [routerLink]="['/spaces', space.id, 'edit']" class="btn-edit">
-                Editar
-              </a>
-
-              <button type="button" class="btn-deactivate" (click)="deactivate(space.id)">
-                Desactivar
-              </button>
+                @if (space.isActive) {
+                <button type="button" class="icon-btn warn" title="Desactivar" aria-label="Desactivar"
+                  [disabled]="busyId() === space.id" (click)="deactivate(space)">
+                  <i class="bi bi-pause-circle"></i>
+                </button>
+                } @else {
+                <button type="button" class="icon-btn ok" title="Activar" aria-label="Activar"
+                  [disabled]="busyId() === space.id" (click)="activate(space)">
+                  <i class="bi bi-play-circle"></i>
+                </button>
+                }
+              </div>
             </td>
             }
           </tr>
-
           }
-
         </tbody>
       </table>
+    </div>
 
+    <div class="table-footer">
+      Mostrando <strong>{{ filtered().length }}</strong> de <strong>{{ totalCount() }}</strong> espacios
     </div>
 
     }
+  </section>
+  }
 
-  </div>
-
-
-  <!-- ========================= -->
-  <!-- ESPACIOS DESACTIVADOS -->
-  <!-- ========================= -->
-
-  <div class="table-card inactive-card">
-
-    <h2>Espacios desactivados</h2>
-
-    @if (inactiveSpaces.length === 0) {
-
-    <div class="empty-state">
-      <h3>No hay espacios desactivados</h3>
-      <p>Los espacios que desactives aparecerán aquí.</p>
-    </div>
-
-    } @else {
-
-    <div class="table-responsive">
-
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Capacidad</th>
-            <th>Ubicación</th>
-            <th>Estado</th>
-            @if (canManageSpaces()){
-            <th>Acciones</th>
-            }
-          </tr>
-        </thead>
-
-        <tbody>
-
-          @for (space of inactiveSpaces; track space.id) {
-
-          <tr>
-
-            <td>{{ space.name }}</td>
-
-            <td>
-              {{ getSpaceType(space.type) }}
-            </td>
-
-            <td>
-              {{ space.capacity }}
-            </td>
-
-            <td>
-              {{ space.location }}
-            </td>
-
-            <td>
-              <span class="status-inactive">
-                Inactivo
-              </span>
-            </td>
-
-            @if(canManageSpaces()) {
-            <td class="actions">
-              <a [routerLink]="['/spaces', space.id, 'edit']" class="btn-edit">
-                Editar
-              </a>
-
-              <button type="button" class="btn-activate" (click)="activate(space.id)">
-                Activar
-              </button>
-            </td>
-            }
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+  <!-- Aviso flotante -->
+  @if (toast(); as t) {
+  <div class="toast" [class.toast-err]="t.kind === 'err'" role="status" aria-live="polite">
+    <i class="bi" [class.bi-check-circle-fill]="t.kind === 'ok'"
+      [class.bi-exclamation-circle-fill]="t.kind === 'err'"></i>
+    <span>{{ t.text }}</span>
+    @if (t.goTo) {
+    <button type="button" class="toast-link" (click)="goToToast()">
+      Ver {{ t.goTo === 'inactive' ? 'inactivos' : 'activos' }}
+    </button>
     }
   </div>
   }

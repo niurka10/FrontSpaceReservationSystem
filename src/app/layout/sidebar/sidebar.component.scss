@@ -1,16 +1,18 @@
-/* Colores como variables CSS en el host: para cambiar la paleta basta editar este bloque. */
 :host {
-  --brand-1: #0b4f7a; // fondo, arriba
-  --brand-2: #003a5c; // fondo, abajo
-  --accent: #fbba00; // SOLO para el indicador del item activo y detalles
+  --brand-1: #0b4f7a;
+  --brand-2: #003a5c;
+  --accent: #fbba00;
   --text: #e3edf4;
   --text-muted: #b3c7d6;
   --line: rgba(255, 255, 255, 0.12);
   --rail-w-open: 260px;
 
   display: block;
-  width: var(--rail-w, 72px); // compacto; --rail-w lo define el shell
-  transition: width 0.2s ease; // el contenido se desliza junto con el menú
+  width: var(--rail-w, 72px);
+  height: 100dvh;
+  min-height: 0;
+  flex-shrink: 0;
+  transition: width 0.2s ease;
 }
 
 :host(.is-expanded) {
@@ -18,22 +20,93 @@
 }
 
 .sidebar {
+  display: flex;
+  flex-direction: column;
+
   width: 100%;
   height: 100%;
+  min-height: 0;
 
-  overflow-x: hidden;
-  overflow-y: auto; // si la pantalla es baja, el menú scrollea por dentro
-  scrollbar-width: thin;
+  overflow: hidden;
 
-  background: linear-gradient(180deg, var(--brand-1) 0%, var(--brand-2) 100%);
+  background: linear-gradient(180deg,
+      var(--brand-1) 0%,
+      var(--brand-2) 100%);
+
   color: var(--text);
 
-  padding: 22px 14px;
-  gap: 4px;
+  padding: 16px 12px 12px;
 }
 
-/* Etiquetas: se ocultan con opacity + max-width (NO display:none) para que el texto siga
-   en el DOM y cada link conserve su nombre accesible. */
+
+.brand {
+  flex-shrink: 0;
+  min-height: 42px;
+  padding: 2px 4px 12px;
+}
+
+.nav {
+  flex: 1 1 auto;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;       
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 2px 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .25) transparent;
+}
+
+@media (max-height: 820px) and (min-width: 768px) {
+  .sidebar { padding-top: 10px; }
+  .brand { padding-bottom: 6px; }
+
+  .navitem {
+    padding: 6px 13px;
+    margin-bottom: 1px;
+    font-size: 13px;
+  }
+
+  .navgroup + .navgroup {
+    margin-top: 4px;
+    padding-top: 4px;
+  }
+
+  .sidebar.is-expanded .navgroup-label {
+    padding: 8px 12px 4px;
+  }
+
+  .sidebar-foot { padding-top: 6px; }
+}
+
+.navgroup {
+  flex-shrink: 0;         
+}
+
+.nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .25);
+  border-radius: 10px;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-foot {
+  flex-shrink: 0;
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
 .navitem>span,
 .brand .word,
 .userinfo,
@@ -70,10 +143,23 @@
   }
 }
 
-/* ===== Marca ===== */
-.brand {
-  padding: 6px 7px 22px 7px;
+.brand-logo {
+  display: block;
+  flex-shrink: 0;
+
+  width: 38px;
+  height: 38px;
+
+  object-fit: contain;
+  object-position: center;
+
+  border-radius: 5px;
 }
+
+/* ===== Marca ===== 
+.brand {
+  padding: 6px 6px 6px 6px;
+}*/
 
 .brand .mark {
   position: relative;
@@ -110,11 +196,10 @@
   text-transform: uppercase;
 }
 
-/* ===== Grupos del menú ===== */
 .navgroup+.navgroup {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 1px solid var(--line); // en el riel compacto hace de divisor
+  border-top: 1px solid var(--line); 
 }
 
 .navgroup-label {
@@ -125,9 +210,8 @@
   text-transform: uppercase;
 }
 
-/* ===== Links ===== */
 .navitem {
-  position: relative; // para el indicador amarillo
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -174,8 +258,6 @@
   opacity: 1;
 }
 
-/* Indicador amarillo: barra pegada al borde izquierdo del menú (el sidebar tiene 14px de
-   padding, de ahí el left negativo). */
 .navitem.active::before {
   content: "";
   position: absolute;
@@ -187,7 +269,6 @@
   background: var(--accent);
 }
 
-/* ===== Parte inferior ===== */
 .sidebar-foot {
   margin-top: auto;
   padding-top: 14px;
@@ -261,14 +342,12 @@
   color: #fff;
 }
 
-/* Foco visible para quien navega con teclado. */
 .navitem:focus-visible,
 .logout-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
 
-/* Sin animaciones para quien las desactiva en su sistema. */
 @media (prefers-reduced-motion: reduce) {
 
   :host,
@@ -279,7 +358,6 @@
   }
 }
 
-/* ===== Botón de fijar el menú (solo escritorio) ===== */
 .pin-btn {
   display: flex;
   align-items: center;
@@ -288,8 +366,6 @@
 
   width: 32px;
   height: 32px;
-  // Oculto en el riel compacto. Se esconde con max-width + opacity (NO display:none)
-  // para que siga en el orden de Tab: al enfocarlo, el menú se expande y aparece.
   max-width: 0;
   opacity: 0;
   overflow: hidden;
@@ -325,17 +401,17 @@
   outline-offset: 2px;
 }
 
-/* ===== Botones del cajón: ocultos en escritorio ===== */
 .menu-btn,
 .close-btn {
   display: none;
 }
 
-/* ===== Pantallas estrechas (menos de 768px): el menú es un cajón ===== */
 @media (max-width: 767.98px) {
+
   :host {
-    width: 0; // no reserva espacio: el contenido ocupa todo el ancho
-    z-index: 1101; // el topbar del shell tiene z-index 1100; sin esto taparía el botón y la X
+    width: 0;
+    height: 0;
+    z-index: 1101;
     transition: none;
   }
 
@@ -343,8 +419,122 @@
     width: 0;
   }
 
-  /* Botón ☰, alineado con la campana de notificaciones (que está arriba a la derecha).
-     Si no queda alineado, ajusta solo el "top". */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+
+    width: min(290px, 85vw);
+    height: 100dvh;
+    min-height: 0;
+
+    padding: 16px 12px 12px;
+
+    overflow: hidden;
+
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+  }
+
+  .sidebar.is-expanded {
+    transform: translateX(0);
+    box-shadow: 8px 0 28px rgba(0, 0, 0, .35);
+  }
+
+  /* Encabezado */
+  .brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    min-height: 52px;
+    padding: 2px 4px 12px;
+    gap: 9px;
+  }
+
+  .brand-logo {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+
+  .brand .word {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    max-width: 200px;
+    opacity: 1;
+    font-size: 16px;
+  }
+
+  /* Navegación */
+  .nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .navitem > span,
+  .userinfo,
+  .logout-btn > span {
+    max-width: 200px;
+    opacity: 1;
+  }
+
+  .navgroup-label {
+    max-height: 32px;
+    opacity: 1;
+    padding: 9px 11px 5px;
+  }
+
+  .navgroup + .navgroup {
+    margin-top: 5px;
+    padding-top: 7px;
+  }
+
+  .navitem {
+    min-height: 40px;
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+
+  /* Usuario */
+  .sidebar-foot {
+    flex-shrink: 0;
+    margin-top: 0;
+    padding-top: 10px;
+  }
+
+  /* Botón cerrar */
+  .close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    width: 34px;
+    height: 34px;
+
+    margin-left: auto;
+
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+    font-size: 15px;
+  }
+
+  .pin-btn {
+    display: none;
+  }
+
   .menu-btn {
     position: fixed;
     top: 39px;
@@ -357,23 +547,14 @@
 
     width: 40px;
     height: 40px;
+
     border: none;
     border-radius: 10px;
-
     background: var(--brand-1);
     color: #fff;
     font-size: 22px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    cursor: pointer;
   }
 
-  .menu-btn:focus-visible,
-  .close-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  /* Con el cajón abierto, o con un modal de Bootstrap abierto, el ☰ no debe verse. */
   :host(.is-expanded) .menu-btn,
   :host-context(.modal-open) .menu-btn {
     display: none;
@@ -383,61 +564,12 @@
     position: fixed;
     inset: 0;
     z-index: 1;
-    background: rgba(0, 16, 28, 0.55);
+    background: rgba(0, 16, 28, .55);
   }
 
-  /* El menú sale de pantalla hacia la izquierda y se desliza al abrirse. */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 2;
-
-    width: min(280px, 85vw);
-    height: auto;
-
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-  }
-
-  .sidebar.is-expanded {
-    transform: translateX(0);
-    box-shadow: 8px 0 28px rgba(0, 0, 0, 0.35);
-  }
-
-  /* En el cajón las etiquetas siempre se ven (no existe el modo compacto). */
-  .navitem>span,
-  .brand .word,
-  .userinfo,
-  .logout-btn>span {
-    max-width: 200px;
-    opacity: 1;
-  }
-
-  .navgroup-label {
-    max-height: 36px;
-    opacity: 1;
-    padding: 12px 12px 6px;
-  }
-
-  .close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 9px;
-
-    background: transparent;
-    color: var(--text);
-    font-size: 16px;
-    cursor: pointer;
-  }
-
-  .close-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
+  .close-btn:focus-visible,
+  .menu-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }

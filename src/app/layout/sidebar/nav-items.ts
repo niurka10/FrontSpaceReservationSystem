@@ -103,7 +103,7 @@ export const NAV_ITEMS: NavItem[] = [
     {
         label: 'Reportes',
         path: '/reports',
-        roles: ['Admin'],
+        roles: ALL_ROLES,
     },
 
 ]

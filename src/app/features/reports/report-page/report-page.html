@@ -1,0 +1,162 @@
+<div class="page">
+    <div class="page-header">
+        <div>
+            <h1 class="h3 mb-1">Reportes</h1>
+            <p class="text-muted">Genera una vista previa con filtros y exporta el resultado a Excel.</p>
+        </div>
+    </div>
+
+    @if (typesLoading()) {
+    <div class="state-card">
+        <p>Cargando reportes...</p>
+    </div>
+    } @else if (typesError(); as msg) {
+    <div class="alert-error">{{ msg }}</div>
+    } @else if (types().length === 0) {
+    <div class="state-card">
+        <h6>No tienes reportes disponibles</h6>
+    </div>
+    } @else {
+
+    <form class="filters-card" [formGroup]="form" (ngSubmit)="generate()">
+        <div class="field field--wide">
+            <label for="type">Tipo de reporte</label>
+            <select id="type" formControlName="type">
+                @if (types().length > 1) { <option value="">Selecciona un tipo</option> }
+                @for (t of types(); track t.code) { <option [value]="t.code">{{ t.name }}</option> }
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="from">Desde</label>
+            <input id="from" type="date" formControlName="from" [max]="form.controls.to.value || null" />
+        </div>
+        <div class="field">
+            <label for="to">Hasta</label>
+            <input id="to" type="date" formControlName="to" [min]="form.controls.from.value || null" />
+        </div>
+
+        <div class="field">
+            <label for="status">Estado</label>
+            <select id="status" formControlName="status">
+                <option value="">Todos</option>
+                @for (s of statuses; track s.code) { <option [value]="s.code">{{ s.label }}</option> }
+            </select>
+        </div>
+        <div class="field">
+            <label for="spaceId">Espacio</label>
+            <select id="spaceId" formControlName="spaceId">
+                <option value="">Todos</option>
+                @for (s of spaces(); track s.id) { <option [value]="s.id">{{ s.name }}</option> }
+            </select>
+        </div>
+        <div class="field">
+            <label for="resourceId">Recurso</label>
+            <select id="resourceId" formControlName="resourceId">
+                <option value="">Todos</option>
+                @for (r of resources(); track r.id) { <option [value]="r.id">{{ r.name }}</option> }
+            </select>
+        </div>
+
+        @if (isAdminAll()) {
+        <div class="field">
+            <label for="careerId">Carrera</label>
+            <select id="careerId" formControlName="careerId">
+                <option value="">Todas</option>
+                @for (c of careers(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }
+            </select>
+        </div>
+        <div class="field">
+            <label for="userId">Usuario</label>
+            <select id="userId" formControlName="userId">
+                <option value="">Todos</option>
+                @for (u of users(); track u.id) { <option [value]="u.id">{{ u.label }}</option> }
+            </select>
+        </div>
+        }
+
+        @if (rangeError(); as msg) { <small class="field-error field--wide">{{ msg }}</small> }
+        @if (listsError(); as msg) { <small class="field-error field--wide">{{ msg }}</small> }
+
+        <div class="actions field--wide">
+            <button type="submit" class="btn-primary"
+                [disabled]="!form.controls.type.value || !!rangeError() || isLoading()">
+                {{ isLoading() ? 'Generando...' : 'Generar vista previa' }}
+            </button>
+            <button type="button" class="btn-secondary" (click)="exportExcel()"
+                [disabled]="!form.controls.type.value || !!rangeError() || isExporting()"
+                [attr.aria-busy]="isExporting()">
+                <i class="bi bi-file-earmark-excel" aria-hidden="true"></i>
+                {{ isExporting() ? 'Exportando...' : 'Exportar a Excel' }}
+            </button>
+        </div>
+    </form>
+    @if (exportError(); as msg) {
+    <div class="alert-error alert-gap">{{ msg }}</div>
+    }
+
+    @if (isLoading()) {
+    <div class="state-card">
+        <p>Generando vista previa...</p>
+    </div>
+    } @else if (errorMessage(); as msg) {
+    <div class="alert-error">{{ msg }}</div>
+    } @else if (result(); as r) {
+
+    @if (r.rows.length === 0) {
+    <div class="state-card">
+        <h6>Sin resultados para los filtros aplicados</h6>
+    </div>
+    } @else {
+    <div class="result-info">
+        <strong>Mostrando {{ r.rows.length }} de {{ r.total }}</strong>
+        @if (r.total > r.rows.length) {
+        <span class="notice">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            La vista previa es parcial. El Excel incluye todas las filas.
+        </span>
+        }
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Solicitante</th>
+                    <th>Fecha</th>
+                    <th>Horario</th>
+                    <th>Espacio</th>
+                    <th>Recursos</th>
+                    <th>Motivo</th>
+                    <th>Estado</th>
+                    <th>Solicitada</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (row of r.rows; track $index) {
+                <tr>
+                    <td class="code-cell">{{ row.code }}</td>
+                    <td>{{ row.requester }}</td>
+                    <td class="nowrap">{{ formatDay(row.date) }}</td>
+                    <td class="nowrap">{{ row.startTime }}–{{ row.endTime }}</td>
+                    <td>{{ row.space || '—' }}</td>
+                    <td>{{ row.resources || '—' }}</td>
+                    <td>
+                        <div class="reason-cell" [title]="row.reason">{{ row.reason }}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge" [attr.data-status]="row.status">{{ row.statusText }}</span>
+                    </td>
+                    <!-- Instante UTC: el pipe date lo muestra en hora local -->
+                    <td class="nowrap">{{ row.requestDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    }
+    }
+
+    }
+</div>

@@ -72,11 +72,10 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/users/pages/user-list/user-list').then((m) => m.UserListComponent),
       },
-      {
+            {
         path: 'reports',
-        data: { title: 'Reports' },
-        loadComponent: () =>
-          import('./shared/coming-soon/coming-soon.component').then((m) => m.ComingSoonComponent),
+        loadChildren: () =>
+          import('./features/reports/reports.routes').then((m) => m.REPORTS_ROUTES),
       },
   
     ],
